@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/productRow"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:id="@+id/elem_lista_non_consumption"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width="10dp"
+        android:orientation="vertical"
+        android:layout_height="match_parent"
+        android:weightSum="100"
+        android:background="#8ac249">
+
+        <LinearLayout
+            android:id="@+id/elem_lista_consumption"
+            android:layout_weight="0"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#eaeaea"
+            android:orientation="horizontal">
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_marginTop="2dp"
+            android:id="@+id/elem_lista_nome"
+            android:text="Mela verde"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"/>
+        <TextView
+            android:text="Prodotto fresco"
+            android:id="@+id/elem_lista_tipo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"/>
+        <TextView
+            android:text="200g"
+            android:visibility="gone"
+            android:id="@+id/elem_lista_quantita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"/>
+        <TextView
+            android:text="13/09/2094"
+            android:id="@+id/elem_lista_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_weight="0"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_height="match_parent">
+        <Button
+            android:layout_margin="20dp"
+            android:onClick="deleteProduct"
+            android:focusable="false"
+            android:id="@+id/deleteButton"
+            android:focusableInTouchMode="false"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:text="Consuma"/>
+    </LinearLayout>
+
+</LinearLayout>
