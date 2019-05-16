@@ -417,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", 1);
-                retrieveProductsFromDB(data.getLongExtra("packId", 0));
+                retrieveProductsFromDB(0);
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
