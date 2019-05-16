@@ -14,6 +14,7 @@ import java.util.Map;
 
 import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -118,8 +120,13 @@ public class MainActivity extends AppCompatActivity {
         // Specifica cosa fare quando l'utente tocca un item della lista
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
-            if(p instanceof Pack && currentPackage==null)
-                setPackageView((Pack)p);
+            if(p instanceof Pack && currentPackage==null) {
+                searchBar.setText(""); // Svuota la barra di ricerca
+                searchBar.clearFocus(); // Togli il focus alla barra di ricerca
+                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
+
+                setPackageView((Pack) p);
+            }
             else
                 editSingleProduct((SingleProduct)p);
         });
@@ -240,7 +247,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPackageView(Pack pack){
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
+        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
+
         if(!showConsumedProducts){
             if(pack.getPieces()>0)
                 showPackageProducts(pack);
