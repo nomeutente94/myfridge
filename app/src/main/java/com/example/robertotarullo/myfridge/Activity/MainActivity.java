@@ -443,6 +443,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        resetSearchBar();
+
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", 1);
