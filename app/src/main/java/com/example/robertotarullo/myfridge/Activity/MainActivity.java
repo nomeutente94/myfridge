@@ -343,14 +343,14 @@ public class MainActivity extends AppCompatActivity {
                         if(p instanceof Pack) {
                             if (productDatabase.productDao().updatePackConsumption(p.getPackageId(), true) > 0) {
                                 runOnUiThread(() -> {
-                                    Toast.makeText(getApplicationContext(), "Confezione rimossa", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Confezione settato come consumata", Toast.LENGTH_LONG).show();
                                     retrieveProductsFromDB(0); // aggiorna lista
                                 });
                             }
                         } else {
                             if (productDatabase.productDao().updateConsumption(((SingleProduct) p).getId(), true) > 0){
                                 runOnUiThread(() -> {
-                                    Toast.makeText(getApplicationContext(), "Prodotto rimosso", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
                                     if(currentPackage!=null)
                                         retrieveProductsFromDB(currentPackage.getId()); // aggiorna lista
                                     else
