@@ -28,24 +28,24 @@ public class DateSpinnerListener implements AdapterView.OnItemSelectedListener {
     }
 
     @Override
+    // Avvisa se la data attuale non esiste
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String date;
-        String day, month, year;
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0) {
-            date = daySpinner.getSelectedItem().toString() + "/" + monthSpinner.getSelectedItem().toString() + "/" + yearSpinner.getSelectedItem().toString();
-            try {
-                Date convertedDate = dateFormat.parse(date);
-                if(!date.equals(dateFormat.format(convertedDate)))
-                    illegalExpiryDateTextView.setVisibility(View.VISIBLE);
-                else
-                    illegalExpiryDateTextView.setVisibility(View.GONE);
-            } catch (ParseException e) {
-                System.out.println("Data non valida: " + date);
-            }
+        // Controlla ad ogni cambiamento se sono compilati tutti e tre i campi
+        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0) { // Se tutti e tre gli spinner hanno un valore
+            date = daySpinner.getSelectedItem().toString() + "/" + monthSpinner.getSelectedItem().toString() + "/" + yearSpinner.getSelectedItem().toString(); // TODO Permettere di settare il formato della data
+
+            Date convertedDate = DateUtils.getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString()); // Leggi data
+
+            // Controlla se la data letta corrisponde a quella inserita
+            if(!date.equals(dateFormat.format(convertedDate)))
+                illegalExpiryDateTextView.setVisibility(View.VISIBLE); // Non corrisponde, mostra il messaggio di errore
+            else
+                illegalExpiryDateTextView.setVisibility(View.GONE); // Corrisponde, rimuovi il messaggio di errore
         } else
-            illegalExpiryDateTextView.setVisibility(View.GONE);
+            illegalExpiryDateTextView.setVisibility(View.GONE); // I campi non sono tutti compilati, rimuovi il messaggio di errore
     }
 
     @Override

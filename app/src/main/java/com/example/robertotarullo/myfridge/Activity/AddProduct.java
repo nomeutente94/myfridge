@@ -339,8 +339,9 @@ public class AddProduct extends AppCompatActivity {
         }).start();
     }
 
+    // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
     public void onConfirmButtonClick(View view) {
-        // esegui tutte le funzioni della perdita del focus
+        // esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
         onWeightFocusLost();
         onPriceFocusLost(priceField);
         onPriceFocusLost(pricePerKiloField);
@@ -352,14 +353,20 @@ public class AddProduct extends AppCompatActivity {
         } else if (TextUtils.isEmpty(nameField)) {
             Toast.makeText(getApplicationContext(), "Il campo nome non può essere vuoto", Toast.LENGTH_LONG).show();
             setFocusAndScrollToView(findViewById(R.id.nameBlock));
-        } else if (illegalExpiryDateTextView.getVisibility() == View.VISIBLE) {
+        } else if(expiryDateDaySpinner.getSelectedItemPosition()>0 && expiryDateMonthSpinner.getSelectedItemPosition()==0 && expiryDateYearSpinner.getSelectedItemPosition()==0){ // Se è stato compilato solo il giorno di scadenza
+            illegalExpiryDateTextView.setVisibility(View.VISIBLE);
+            //setFocusAndScrollToView(illegalExpiryDateTextView);
+        } else if(expiryDateDaySpinner.getSelectedItemPosition()==0 && expiryDateMonthSpinner.getSelectedItemPosition()>0 && expiryDateYearSpinner.getSelectedItemPosition()==0) { // Se è stato compilato solo il mese di scadenza
+            illegalExpiryDateTextView.setVisibility(View.VISIBLE);
+            //setFocusAndScrollToView(illegalExpiryDateTextView);
+        } else if (illegalExpiryDateTextView.getVisibility() == View.VISIBLE) { // TODO Non far dipendere questo controllo dalla visibilità del messaggio di errore, il metodo di avviso potrebbe cambiare in futuro!
             Toast.makeText(getApplicationContext(), "La data di scadenza immessa non è valida", Toast.LENGTH_LONG).show();
             //setFocusAndScrollToView(illegalExpiryDateTextView);
         } else {
             SingleProduct newProduct = createProductFromFields();
 
             new Thread(() -> {
-                int insertCount = 0;
+                int insertCount = 0; // counter inserimenti
 
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
@@ -426,7 +433,7 @@ public class AddProduct extends AppCompatActivity {
         System.out.println("openedstoragecondition: " + p.getOpenedStorageCondition());
     }
 
-    // costruisce l'oggetto prodotto dai valori inseriti nei campi
+    // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields(){
         SingleProduct p = new SingleProduct();
 
@@ -458,8 +465,7 @@ public class AddProduct extends AppCompatActivity {
         if(packagedCheckBox.isChecked()){
             p.setPackaged(true);
 
-            if(DateUtils.getDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner)!=null)
-                p.setExpiryDate(DateUtils.getDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
+            p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
 
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
