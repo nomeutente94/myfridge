@@ -40,19 +40,22 @@ import com.example.robertotarullo.myfridge.R;
 import static com.example.robertotarullo.myfridge.Database.DatabaseUtils.DATABASE_NAME;
 
 public class MainActivity extends AppCompatActivity {
+    // dichiarazione delle variabili di database
+    private ProductDatabase productDatabase;
 
     // variabili per intent
     private static final int ADD_PRODUCT_REQUEST = 1;
     private static final int EDIT_PRODUCT_REQUEST = 2;
 
-    private int currentFilter;
-    private Pack currentPackage;
-    private boolean showConsumedProducts;
+    // Variabili di stato
+    private int currentFilter; // Determina la modalità di conservazione corrente
+    private Pack currentPackage; // Riferimento alla confezione correntemente visualizzata, null se non si sta visualizzando una confezione
+    private boolean showConsumedProducts; // Determina se mostrare i prodotti consumati
 
-    // dichiarazione delle variabili di database
-    private ProductDatabase productDatabase;
-    private List<Product> products;
-    private List<Product> filteredProducts;
+    // dichiarazione delle liste di prodotti
+    private List<Product> products; // Lista di tutti i prodotti
+    private List<Product> filteredProducts; // Lista di prodotti della modalità di conservazione corrente
+    private List<Product> packProducts; // Lista di prodotti della confezione corrente
 
     // views
     private EditText searchBar;
@@ -95,10 +98,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(currentPackage!=null)
+        if(currentPackage!=null) {
+            resetSearchBar();
             setFilteredProducts(currentFilter);
-        else
+        } else
             super.onBackPressed();
+    }
+
+    private void resetSearchBar(){
+        searchBar.setText(""); // Svuota la barra di ricerca
+        searchBar.clearFocus(); // Togli il focus alla barra di ricerca
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
     }
 
     @Override
@@ -121,10 +131,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
             if(p instanceof Pack && currentPackage==null) {
-                searchBar.setText(""); // Svuota la barra di ricerca
-                searchBar.clearFocus(); // Togli il focus alla barra di ricerca
-                ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
-
+                resetSearchBar();
                 setPackageView((Pack) p);
             }
             else
@@ -155,22 +162,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private List<Product> getCurrentDisplayedProducts(){
+        if(currentPackage==null){
+            return filteredProducts;
+        } else {
+            return packProducts;
+        }
+    }
+
     private void filterBySearchBar(){
         List<Product> searchResults = new ArrayList<>();
-        if(searchBar.getText().length()>0){
-            for(int i=0; i<filteredProducts.size(); i++){
-                if(filteredProducts.get(i).getName()!=null){
-                    if(filteredProducts.get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
-                        searchResults.add(filteredProducts.get(i));
-                } else if(filteredProducts.get(i).getBrand()!=null){
-                    if(filteredProducts.get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
-                        searchResults.add(filteredProducts.get(i));
+
+        if(searchBar.getText().length()>0){ // Se la barra di ricerca contiene qualcosa
+            // Cerca la stringa della barra di ricerca nel nome o la marca dei prodotti
+            for(int i=0; i<getCurrentDisplayedProducts().size(); i++){
+                if(getCurrentDisplayedProducts().get(i).getName()!=null){
+                    if(getCurrentDisplayedProducts().get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                        searchResults.add(getCurrentDisplayedProducts().get(i));
+                } else if(getCurrentDisplayedProducts().get(i).getBrand()!=null){
+                    if(getCurrentDisplayedProducts().get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                        searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
             }
             productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults);
             listView.setAdapter(productsListAdapter);
-        } else {
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, filteredProducts);
+        } else { // Se la barra di ricerca è vuota resetta la view
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts());
             listView.setAdapter(productsListAdapter);
         }
     }
@@ -261,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
     private void showPackageProducts(Pack pack){
         setTitle(pack.getName());
         currentPackage = pack;
-        List<Product> packProducts = new ArrayList<>();
+        packProducts = new ArrayList<>();
         for(int i=0; i<pack.getProducts().size(); i++){
             if(showConsumedProducts)
                 packProducts.add(pack.getProducts().get(i));
