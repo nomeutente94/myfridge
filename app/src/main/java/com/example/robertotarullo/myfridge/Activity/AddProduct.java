@@ -869,7 +869,7 @@ public class AddProduct extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            // CONTROLLI SULLE DATE
+            // TODO Riabilitare i controlli sulle date, sia per quelle con input Spinner che quelle con EditText
             /*
             if(dateField.getTag().toString().equals("purchaseDate") && !DateUtils.isDateEmpty(purchaseDateField) && purchaseDateField.getTag(R.id.warningEdit)==null){ // purchaseDate
                 if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(purchaseDateField).after(TextUtils.getDate(expiryDateField)))

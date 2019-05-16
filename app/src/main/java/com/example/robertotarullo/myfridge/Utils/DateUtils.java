@@ -12,37 +12,34 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class DateUtils {
 
+    // Setta gli spinner alla data
     public static void setDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner, Date date){
         if(date!=null){
             SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
             SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
             SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
 
-            String day = dayFormat.format(date);
-            String month = monthFormat.format(date);
-            String year = yearFormat.format(date);
+            int dayPosition = -1, monthPosition = -1, yearPosition = -1;
 
-            boolean found = false;
+            for(int i=0; i<daySpinner.getAdapter().getCount() && dayPosition == -1; i++){
+                if(dayFormat.format(date).equals(daySpinner.getItemAtPosition(i)))
+                    dayPosition = i;
+            }
 
-            for(int i=0; i<daySpinner.getAdapter().getCount() && !found; i++){
-                if(day.equals(daySpinner.getItemAtPosition(i))) {
-                    daySpinner.setSelection(i);
-                    found = true;
-                }
+            for(int i=0; i<monthSpinner.getAdapter().getCount() && monthPosition == -1; i++){
+                if(monthFormat.format(date).equals(monthSpinner.getItemAtPosition(i)))
+                    monthPosition = i;
             }
-            found = false;
-            for(int i=0; i<monthSpinner.getAdapter().getCount() && !found; i++){
-                if(month.equals(monthSpinner.getItemAtPosition(i))) {
-                    monthSpinner.setSelection(i);
-                    found = true;
-                }
+
+            for(int i=0; i<yearSpinner.getAdapter().getCount() && yearPosition == -1; i++){
+                if(yearFormat.format(date).equals(yearSpinner.getItemAtPosition(i)))
+                    yearPosition = i;
             }
-            found = false;
-            for(int i=0; i<yearSpinner.getAdapter().getCount() && !found; i++){
-                if(year.equals(yearSpinner.getItemAtPosition(i))) {
-                    yearSpinner.setSelection(i);
-                    found = true;
-                }
+
+            if(dayPosition>-1 && monthPosition>-1 && yearPosition>-1){
+                daySpinner.setSelection(dayPosition);
+                monthSpinner.setSelection(monthPosition);
+                yearSpinner.setSelection(yearPosition);
             }
         }
     }
@@ -103,7 +100,7 @@ public abstract class DateUtils {
     }
 
     public static String getLastDayOfMonth(String month, String year){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // TODO Permettere di settare il formato della data
         String date = 01 + "/" + month + "/" + year;
         Calendar calendar = new GregorianCalendar();
 
