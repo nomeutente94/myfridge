@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
                     setPackageView(currentPackage);
                 else
                     setFilteredProducts(currentFilter);
+                filterBySearchBar();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -143,26 +144,29 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-            List<Product> searchResults = new ArrayList<>();
-            if(s.length()>0){
-                for(int i=0; i<filteredProducts.size(); i++){
-                    if(filteredProducts.get(i).getName()!=null){
-                        if(filteredProducts.get(i).getName().toLowerCase().contains(s.toString().toLowerCase()))
-                            searchResults.add(filteredProducts.get(i));
-                    } else if(filteredProducts.get(i).getBrand()!=null){
-                        if(filteredProducts.get(i).getBrand().toLowerCase().contains(s.toString().toLowerCase()))
-                            searchResults.add(filteredProducts.get(i));
-                    }
-                }
-                productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults);
-                listView.setAdapter(productsListAdapter);
-            } else {
-                productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, filteredProducts);
-                listView.setAdapter(productsListAdapter);
-            }
+            filterBySearchBar();
         }
     }
 
+    private void filterBySearchBar(){
+        List<Product> searchResults = new ArrayList<>();
+        if(searchBar.getText().length()>0){
+            for(int i=0; i<filteredProducts.size(); i++){
+                if(filteredProducts.get(i).getName()!=null){
+                    if(filteredProducts.get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                        searchResults.add(filteredProducts.get(i));
+                } else if(filteredProducts.get(i).getBrand()!=null){
+                    if(filteredProducts.get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                        searchResults.add(filteredProducts.get(i));
+                }
+            }
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults);
+            listView.setAdapter(productsListAdapter);
+        } else {
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, filteredProducts);
+            listView.setAdapter(productsListAdapter);
+        }
+    }
 
     // prende i prodotti dal db e li mostra (se si vuole mostrare il contenuto di una confezione inserire un id > 0)
     private void retrieveProductsFromDB(long packageId){
