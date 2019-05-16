@@ -47,6 +47,19 @@ public abstract class DateUtils {
         }
     }
 
+    // Ritorna false se la combinazione giorno-mese è illegale (es. 31/04)
+    public static boolean isDateValid(String day, String month, String year){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String dateAsString = day + "/" + month + "/" + year; // TODO Permettere di settare il formato della data
+        Date convertedDate = getDate(day, month, year); // Leggi data
+
+        // Controlla se la data letta corrisponde a quella inserita
+        if(dateAsString.equals(dateFormat.format(convertedDate)))
+            return true;
+
+        return false;
+    }
+
     public static Date getExpiryDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
         String day, month, year;
 

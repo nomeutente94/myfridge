@@ -359,6 +359,11 @@ public class AddProduct extends AppCompatActivity {
         } else if(expiryDateDaySpinner.getSelectedItemPosition()==0 && expiryDateMonthSpinner.getSelectedItemPosition()>0 && expiryDateYearSpinner.getSelectedItemPosition()==0) { // Se è stato compilato solo il mese di scadenza
             illegalExpiryDateTextView.setVisibility(View.VISIBLE);
             //setFocusAndScrollToView(illegalExpiryDateTextView);
+        } else if(expiryDateDaySpinner.getSelectedItemPosition()>0 && expiryDateMonthSpinner.getSelectedItemPosition()>0 && expiryDateYearSpinner.getSelectedItemPosition()==0){ // se è stato compilato 29/02 mentre l'anno corrente non è bisestile
+            if(!DateUtils.isDateValid(expiryDateDaySpinner.getSelectedItem().toString(), expiryDateMonthSpinner.getSelectedItem().toString(), "2019")){ // TODO settare anno corrente
+                illegalExpiryDateTextView.setVisibility(View.VISIBLE);
+                //setFocusAndScrollToView(illegalExpiryDateTextView);
+            }
         } else if (illegalExpiryDateTextView.getVisibility() == View.VISIBLE) { // TODO Non far dipendere questo controllo dalla visibilità del messaggio di errore, il metodo di avviso potrebbe cambiare in futuro!
             Toast.makeText(getApplicationContext(), "La data di scadenza immessa non è valida", Toast.LENGTH_LONG).show();
             //setFocusAndScrollToView(illegalExpiryDateTextView);

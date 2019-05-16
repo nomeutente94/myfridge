@@ -4,15 +4,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 
-import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class DateSpinnerListener implements AdapterView.OnItemSelectedListener {
     Spinner daySpinner;
@@ -28,24 +20,24 @@ public class DateSpinnerListener implements AdapterView.OnItemSelectedListener {
     }
 
     @Override
-    // Avvisa se la data attuale non esiste
+    // Avvisa se la combinazione giorno-mese è illegale (es. 31/04/YYYY) // TODO controllare solo per calendario gregoriano
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        String date;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-        // Controlla ad ogni cambiamento se sono compilati tutti e tre i campi
-        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0) { // Se tutti e tre gli spinner hanno un valore
-            date = daySpinner.getSelectedItem().toString() + "/" + monthSpinner.getSelectedItem().toString() + "/" + yearSpinner.getSelectedItem().toString(); // TODO Permettere di settare il formato della data
+        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0) { // Se giorno e mese hanno un valore
+            String year;
 
-            Date convertedDate = DateUtils.getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString()); // Leggi data
+            if(yearSpinner.getSelectedItemPosition()>0){
+                year = yearSpinner.getSelectedItem().toString();
+            } else {
+                year = "2020"; // max 29 feb (anno bisestile)
+            }
 
-            // Controlla se la data letta corrisponde a quella inserita
-            if(!date.equals(dateFormat.format(convertedDate)))
-                illegalExpiryDateTextView.setVisibility(View.VISIBLE); // Non corrisponde, mostra il messaggio di errore
+            if(DateUtils.isDateValid(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), year))
+                illegalExpiryDateTextView.setVisibility(View.GONE); // Permetti, rimuovi il messaggio di errore
             else
-                illegalExpiryDateTextView.setVisibility(View.GONE); // Corrisponde, rimuovi il messaggio di errore
+                illegalExpiryDateTextView.setVisibility(View.VISIBLE); // Non permettere, mostra il messaggio di errore
         } else
-            illegalExpiryDateTextView.setVisibility(View.GONE); // I campi non sono tutti compilati, rimuovi il messaggio di errore
+            illegalExpiryDateTextView.setVisibility(View.GONE); // day o month non è compilato, rimuovi il messaggio di errore
     }
 
     @Override
