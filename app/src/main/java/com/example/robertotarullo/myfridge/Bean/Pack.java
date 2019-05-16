@@ -183,6 +183,7 @@ public class Pack implements Product{
     }
 
     @Override
+    // Ritorna true se tutti i pezzi sono stati consumati, false se almeno uno non è consumato
     public boolean isConsumed() {
         int consumed = 0;
         for(int i=0; i<products.size(); i++){
@@ -210,6 +211,16 @@ public class Pack implements Product{
 
     @Override
     public int getPieces() {
+        return products.size();
+    }
+
+    @Override
+    public void setPieces(int pieces) {
+
+    }
+
+    // Ritorna il numero di pezzi ancora non consumati
+    public int getCurrentPieces() {
         int pieces = 0;
         for(int i=0; i<products.size(); i++){
             if(!products.get(i).isConsumed())
@@ -218,8 +229,7 @@ public class Pack implements Product{
         return pieces;
     }
 
-    @Override
-    public void setPieces(int pieces) {
+    public void setCurrentPieces(int pieces) {
 
     }
 

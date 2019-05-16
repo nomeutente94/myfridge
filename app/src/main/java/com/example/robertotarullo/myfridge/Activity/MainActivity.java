@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // prende i prodotti dal db e li mostra (se si vuole mostrare il contenuto di una confezione inserire un id > 0)
+    // Aggiorna la lista dei prodotti dal db e li mostra (se si vuole mostrare il contenuto di una confezione inserire un id > 0)
     private void retrieveProductsFromDB(long packageId){
         products = new ArrayList<>();
 
@@ -227,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    // Mostra a schermo i prodotti filtrati per modalità di conservazione attuale
     private void setFilteredProducts(int storageCondition){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE);
         currentPackage = null;
@@ -241,11 +242,16 @@ public class MainActivity extends AppCompatActivity {
 
         filteredProducts = new ArrayList<>();
         for(int i=0; i<products.size(); i++){
-            if(showConsumedProducts){
-                addFilteredProductToList(filteredProducts, products.get(i));
-            } else {
-                if(!products.get(i).isConsumed())
-                    addFilteredProductToList(filteredProducts, products.get(i));
+            if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro 'Mostra consumati'
+
+                // Controlla se il prodotto soddisfa il filtro 'Modalità di conservazione'
+                if (products.get(i) instanceof SingleProduct) {
+                    if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
+                        filteredProducts.add(products.get(i));
+                } else {
+                    if (((Pack) products.get(i)).belongsToStorageCondition(currentFilter))
+                        filteredProducts.add(products.get(i));
+                }
             }
         }
         sortByAscendingDate(filteredProducts); // controlla prima quale ordinamento utilizzare !!!!
@@ -254,22 +260,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addFilteredProductToList(List<Product> filteredProducts, Product p){
-        if (p instanceof SingleProduct) {
-            if (((SingleProduct) p).getActualStorageCondition() == currentFilter)
-                filteredProducts.add(p);
-        } else {
-            if (((Pack) p).belongsToStorageCondition(currentFilter))
-                filteredProducts.add(p);
-        }
+
     }
 
     private void setPackageView(Pack pack){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
 
         if(!showConsumedProducts){
-            if(pack.getPieces()>0)
+            if(!pack.isConsumed()) // Se la confezione non è attualmente vuota
                 showPackageProducts(pack);
-            else // se la confezione è stata consumata torna indietro
+            else // Se la confezione è stata consumata torna indietro
                 setFilteredProducts(currentFilter);
         } else
             showPackageProducts(pack);
