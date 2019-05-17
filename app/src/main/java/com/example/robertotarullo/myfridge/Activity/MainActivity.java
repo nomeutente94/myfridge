@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(() -> {
             List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi i prodotti singoli
-            List<Pack> packs = productDatabase.packDao().getAll();                         // Prendi tutti i pack
+            List<Pack> packs = productDatabase.packDao().getAll();                      // Prendi tutti i pack
 
             runOnUiThread(() -> {
                 // Crea un hashmap di pack
@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                 products.addAll(packs);
 
                 if(packageId==0)
-                    setFilteredProducts(currentFilter); // controlla prima quale filtro utilizzare !!!!
+                    setFilteredProducts(currentFilter); // TODO controlla prima quale filtro utilizzare !
                 else
                     setPackageView(packMap.get(packageId));
             });
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
                         if(p instanceof Pack) {
                             if (productDatabase.productDao().updatePackConsumption(p.getPackageId(), true) > 0) {
                                 runOnUiThread(() -> {
-                                    Toast.makeText(getApplicationContext(), "Confezione settato come consumata", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "Confezione settata come consumata", Toast.LENGTH_LONG).show();
                                     retrieveProductsFromDB(0); // aggiorna lista
                                 });
                             }
@@ -396,14 +396,14 @@ public class MainActivity extends AppCompatActivity {
 
         String msg;
         if(p instanceof Pack)
-            msg = "Vuoi eliminare la confezione \""+ p.getName() + "\"?";
+            msg = "Vuoi consumare la confezione \""+ p.getName() + "\"?";
         else
-            msg = "Vuoi eliminare il prodotto \""+ p.getName() + "\"?";
+            msg = "Vuoi consumare il prodotto \""+ p.getName() + "\"?";
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
-                .setTitle("Conferma eliminazione")
-                .setPositiveButton("Elimina", dialogClickListener)
+                .setTitle("Conferma consumazione")
+                .setPositiveButton("Consuma", dialogClickListener)
                 .setNegativeButton("Annulla", dialogClickListener)
                 .show();
     }
@@ -448,11 +448,15 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", 1);
-                retrieveProductsFromDB(0);
+                if(data.getBooleanExtra("addedPack", false))
+                    retrieveProductsFromDB(0); // Se è stata aggiunta una confezione mostra e aggiorna la lista generale dei prodotti
+                else
+                    retrieveProductsFromDB(data.getLongExtra("packId", 0)); // Se è stato aggiunto un prodotto mostra e aggiorna l'eventuale confezione che lo contiene
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                currentFilter = data.getIntExtra("filter", 1);
+                if(!data.getBooleanExtra("delete", false)) // Se il prodotto è stato modificato e non cancellato
+                    currentFilter = data.getIntExtra("filter", 1);
                 retrieveProductsFromDB(data.getLongExtra("packId", 0));
             }
         }

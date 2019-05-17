@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -57,6 +59,7 @@ public class AddProduct extends AppCompatActivity {
     // intent
     private String action;
     private ProductForm startingForm;
+    private long productToModifyId;
 
     // views
     private ScrollView listScrollView;
@@ -74,6 +77,52 @@ public class AddProduct extends AppCompatActivity {
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        if(action.equals("edit"))
+            menu.add(0, R.id.delete, Menu.NONE, "Elimina");
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete:
+                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            new Thread(() -> {
+                                if (productDatabase.productDao().deleteById(productToModifyId) > 0) {
+                                    Intent resultIntent = new Intent();
+                                    resultIntent.putExtra("delete", true);
+                                    resultIntent.putExtra("packId", Long.valueOf(packCheckBox.getTag().toString()));
+                                    setResult(RESULT_OK, resultIntent);
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
+                                    finish();
+                                }
+                            }).start();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                String msg = "Vuoi eliminare definitivamente il prodotto?";
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma eliminazione")
+                        .setPositiveButton("Elimina", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -207,6 +256,7 @@ public class AddProduct extends AppCompatActivity {
             startingForm = new ProductForm(createProductFromFields(), packNameField.getText().toString(), TextUtils.getInt(quantityField));
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
+            productToModifyId = getIntent().getLongExtra("id", 0);
             confirmButton.setText("Modifica prodotto");
             quantityBlock.setVisibility(View.GONE);
             fillForm();
@@ -254,10 +304,10 @@ public class AddProduct extends AppCompatActivity {
     // Compila tutti i campi con i dati del prodotto da modificare
     private void fillForm() {
         new Thread(() -> {
-            SingleProduct p = productDatabase.productDao().get(getIntent().getLongExtra("id", 0));
+            SingleProduct p = productDatabase.productDao().get(productToModifyId);
 
             runOnUiThread(() -> {
-                packCheckBox.setTag(String.valueOf(p.getPackageId()));
+                packCheckBox.setTag(String.valueOf(p.getPackageId())); // packCheckBox conserva l'id della confezione a cui il prodotto appartiene se si tratta di una modifica
 
                 // Campi immutabili
                 nameField.setText(p.getName());
@@ -372,24 +422,24 @@ public class AddProduct extends AppCompatActivity {
 
             new Thread(() -> {
                 int insertCount = 0; // counter inserimenti
+                Intent resultIntent = new Intent();
 
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
-                    newProduct.setId(getIntent().getLongExtra("id", 0));
-                    if(packCheckBox.getTag()!=null)
-                        newProduct.setPackageId(Long.valueOf(packCheckBox.getTag().toString()));
-                    else
-                        newProduct.setPackageId(getIntent().getLongExtra("package", 0));
-                    productDatabase.productDao().update(newProduct);
-                    insertCount++;
-                    String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField)-insertCount);
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                    newProduct.setId(productToModifyId);
+                    newProduct.setPackageId(Long.valueOf(packCheckBox.getTag().toString()));
+                    if(productDatabase.productDao().update(newProduct)>0) {
+                        insertCount++;
+                        String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                    }
                 } else {
                     // crea una nuova eventuale confezione
                     if(packCheckBox.isChecked() && TextUtils.getInt(quantityField)>1) {
                         Pack pack = new Pack();
                         pack.setName(packNameField.getText().toString());
                         newProduct.setPackageId(productDatabase.packDao().insertPack(pack));
+                        resultIntent.putExtra("addedPack", true);
                     }
 
                     // inserisci uno o più prodotti
@@ -403,7 +453,6 @@ public class AddProduct extends AppCompatActivity {
                 }
 
                 if(insertCount>0){
-                    Intent resultIntent = new Intent();
                     resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
                     resultIntent.putExtra("packId", newProduct.getPackageId());
                     setResult(RESULT_OK, resultIntent);
