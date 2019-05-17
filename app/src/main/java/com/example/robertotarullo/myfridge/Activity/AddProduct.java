@@ -158,7 +158,7 @@ public class AddProduct extends AppCompatActivity {
         // Ottieni un riferimento al db
         productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
 
-        // riferimenti ai campi
+        // Riferimenti ai campi
         packagedCheckBox = findViewById(R.id.packagedCheckBox);
         packNameField = findViewById(R.id.packageNameField);
         packCheckBox = findViewById(R.id.packCheckBox);
