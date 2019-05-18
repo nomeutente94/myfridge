@@ -1,5 +1,6 @@
 package com.example.robertotarullo.myfridge.Adapter;
 
+import java.util.Date;
 import java.util.List;
 
 import android.content.Context;
@@ -80,7 +81,9 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         else
             nonConsumptionBar.setBackgroundColor(Color.parseColor(RED_BAR));
 
-        if(p instanceof SingleProduct && ((SingleProduct) p).getActualExpiringDate()!=null)
+        if(p.getExpiryDate()!= null && p.getExpiryDate().equals(DateUtils.getDate("01", "01", "1970"))) // TODO Cambiare controllo data "mai"
+            dataTextView.setText("Non scade mai");
+        else if(p instanceof SingleProduct && ((SingleProduct) p).getActualExpiringDate()!=null)
             dataTextView.setText(DateUtils.getFormattedDate(((SingleProduct) p).getActualExpiringDate()));
         else if(p.getExpiryDate()!=null)
             dataTextView.setText(DateUtils.getFormattedDate(p.getExpiryDate()));

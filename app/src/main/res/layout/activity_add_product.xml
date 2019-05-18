@@ -575,6 +575,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
                     </Spinner>
+                    <CheckBox
+                        android:id="@+id/noExpiryCheckbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mai"/>
+
+                    <!--Spaziatore per allineare a dx, per qualche motivo dopo gli spinner ignora "layout_alignParentRight"-->
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
 
                     <Button
                         android:id="@+id/expiryDateClearButton"

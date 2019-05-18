@@ -45,6 +45,7 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.TextWatcher.PriceWeightRelationWatcher;
 import com.example.robertotarullo.myfridge.Listener.StorageConditionSpinnerListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class AddProduct extends AppCompatActivity {
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packNameField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner, expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner;
-    private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packCheckBox, packagedCheckBox;
+    private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel, illegalExpiryDateTextView;
@@ -185,6 +186,7 @@ public class AddProduct extends AppCompatActivity {
         currentPiecesField = findViewById(R.id.currentPiecesField);
         expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
         illegalExpiryDateTextView = findViewById(R.id.illegalExpiryDateTextView);
+        noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
 
         // riferimenti ad altre view
         listScrollView = findViewById(R.id.listScrollView);
@@ -226,6 +228,9 @@ public class AddProduct extends AppCompatActivity {
 
         initializePackagedCheckBox();
         packagedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackagedCheckBox());
+
+        initializeNoExpiryCheckBox();
+        noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox());
 
         // Validazione e comportamento
         currentWeightSlider.setTag(R.id.percentageValue, "100");
@@ -322,7 +327,7 @@ public class AddProduct extends AppCompatActivity {
                     currentWeightField.setText(PriceUtils.getFormattedWeight(p.getCurrentWeight()));
                 }
                 currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
-                if(p.getExpiringDaysAfterOpening()>0)
+                if(p.getExpiringDaysAfterOpening()>0) // TODO usare metodo appropriato per rappresentare l'informazione "mai"
                     editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
                 if(p.getPurchaseDate()!=null)
                     editFieldNotFromUser(purchaseDateField, DateUtils.getFormattedDate(p.getPurchaseDate()));
@@ -342,7 +347,11 @@ public class AddProduct extends AppCompatActivity {
                 if(p.isPackaged()){
                     packagedCheckBox.setChecked(true);
 
-                    DateUtils.setDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, p.getExpiryDate());
+                    if(p.getExpiryDate()!=null && p.getExpiryDate().equals(DateUtils.getDate("01", "01", "1970"))) { // TODO usare metodo appropriato per rappresentare l'informazione "mai"
+                        noExpiryCheckbox.setChecked(true);
+                        editFieldNotFromUser(expiryDaysAfterOpeningField, "");
+                    } else
+                        DateUtils.setDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, p.getExpiryDate());
 
                     // Se si tratta di un prodotto chiuso confezionato
                     if(p.isOpened()) {
@@ -519,7 +528,11 @@ public class AddProduct extends AppCompatActivity {
         if(packagedCheckBox.isChecked()){
             p.setPackaged(true);
 
-            p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
+            if(noExpiryCheckbox.isChecked()) {
+                p.setExpiryDate(DateUtils.getDate("01", "01", "1970")); // TODO rappresentare il dato "mai" in modo appropriato
+                p.setExpiringDaysAfterOpening(0); // riporta al valore di default
+            } else
+                p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
 
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
@@ -673,6 +686,16 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
+    private void initializeNoExpiryCheckBox(){
+        expiryDateDaySpinner.setEnabled(!noExpiryCheckbox.isChecked());
+        expiryDateMonthSpinner.setEnabled(!noExpiryCheckbox.isChecked());
+        expiryDateYearSpinner.setEnabled(!noExpiryCheckbox.isChecked());
+        findViewById(R.id.expiryDateClearButton).setEnabled(!noExpiryCheckbox.isChecked());
+        expiryDaysAfterOpeningField.setEnabled(!noExpiryCheckbox.isChecked());
+        expiryDaysAfterOpeningLabel.setEnabled(!noExpiryCheckbox.isChecked());
+        findViewById(R.id.expiryDaysAfterOpeningClearButton).setEnabled(!noExpiryCheckbox.isChecked());
+    }
+
     private void initializeStorageSpinners() {
         List<String> storageList = new ArrayList();
         storageList.add("Temperatura ambiente");
@@ -706,6 +729,7 @@ public class AddProduct extends AppCompatActivity {
         }).start();
     }
 
+    // TODO riabilitare avviso
     private void showDateWarning(String previousValue, EditText dateField, String message) {
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
