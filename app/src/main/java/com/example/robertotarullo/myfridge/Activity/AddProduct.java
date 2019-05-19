@@ -217,20 +217,11 @@ public class AddProduct extends AppCompatActivity {
         initializeExpiryDateSpinner();
 
         // Comportamenti delle checkbox
-        initializePackCheckBox();
-        packCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackCheckBox());
-
-        initializeDifferentStorageConditionAfterOpeningCheckBox();
-        differentStorageConditionAfterOpeningCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeDifferentStorageConditionAfterOpeningCheckBox());
-
-        initializeOpenedCheckBox();
-        openedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeOpenedCheckBox());
-
-        initializePackagedCheckBox();
-        packagedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackagedCheckBox());
-
-        initializeNoExpiryCheckBox();
-        noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox());
+        initializePackCheckBox(true);
+        initializeDifferentStorageConditionAfterOpeningCheckBox(true);
+        initializeOpenedCheckBox(true);
+        initializePackagedCheckBox(true);
+        initializeNoExpiryCheckBox(true);
 
         // Validazione e comportamento
         currentWeightSlider.setTag(R.id.percentageValue, "100");
@@ -574,7 +565,7 @@ public class AddProduct extends AppCompatActivity {
         return p;
     }
 
-    private void initializeOpenedCheckBox() {
+    private void initializeOpenedCheckBox(boolean addListener) {
         if(openedCheckBox.isChecked()) {
             currentWeightBlock.setVisibility(View.VISIBLE);
             openingDateBlock.setVisibility(View.VISIBLE);
@@ -584,9 +575,12 @@ public class AddProduct extends AppCompatActivity {
             openingDateBlock.setVisibility(View.GONE);
             currentWeightSlider.setVisibility(View.GONE);
         }
+
+        if(addListener)
+            openedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeOpenedCheckBox(false));
     }
 
-    private void initializeDifferentStorageConditionAfterOpeningCheckBox(){
+    private void initializeDifferentStorageConditionAfterOpeningCheckBox(boolean addListener){
         if(differentStorageConditionAfterOpeningCheckBox.isChecked()) {
             openedStorageConditionSpinner.setEnabled(true);
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
@@ -612,9 +606,12 @@ public class AddProduct extends AppCompatActivity {
             storageSpinnerAdapter.notifyDataSetChanged();
             openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
         }
+
+        if(addListener)
+            differentStorageConditionAfterOpeningCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeDifferentStorageConditionAfterOpeningCheckBox(false));
     }
 
-    private void initializePackCheckBox() {
+    private void initializePackCheckBox(boolean addListener) {
         TextView nameFieldLabel = findViewById(R.id.nameFieldLabel);
         TextView packagedCheckBoxLabel = findViewById(R.id.packagedCheckBoxLabel);
         TextView openedCheckBoxLabel = findViewById(R.id.openedCheckBoxLabel);
@@ -648,9 +645,12 @@ public class AddProduct extends AppCompatActivity {
             currentWeightLabel.setText("Peso attuale (grammi)");
             piecesFieldLabel.setText("N. pezzi totali");
         }
+
+        if(addListener)
+            packCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackCheckBox(false));
     }
 
-    private void initializePackagedCheckBox() {
+    private void initializePackagedCheckBox(boolean addListener) {
         if(packagedCheckBox.isChecked()){
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
             expiryDateBlock.setVisibility(View.VISIBLE);
@@ -684,9 +684,12 @@ public class AddProduct extends AppCompatActivity {
                 currentWeightSlider.setTag(R.id.percentageValue, 100);
             }
         }
+
+        if(addListener)
+            packagedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackagedCheckBox(false));
     }
 
-    private void initializeNoExpiryCheckBox(){
+    private void initializeNoExpiryCheckBox(boolean addListener){
         expiryDateDaySpinner.setEnabled(!noExpiryCheckbox.isChecked());
         expiryDateMonthSpinner.setEnabled(!noExpiryCheckbox.isChecked());
         expiryDateYearSpinner.setEnabled(!noExpiryCheckbox.isChecked());
@@ -694,6 +697,9 @@ public class AddProduct extends AppCompatActivity {
         expiryDaysAfterOpeningField.setEnabled(!noExpiryCheckbox.isChecked());
         expiryDaysAfterOpeningLabel.setEnabled(!noExpiryCheckbox.isChecked());
         findViewById(R.id.expiryDaysAfterOpeningClearButton).setEnabled(!noExpiryCheckbox.isChecked());
+
+        if(addListener)
+            noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox(false));
     }
 
     private void initializeStorageSpinners() {
