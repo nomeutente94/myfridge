@@ -269,10 +269,8 @@ public class MainActivity extends AppCompatActivity {
         sortByAscendingDate(filteredProducts); // controlla prima quale ordinamento utilizzare !!!!
         productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
         listView.setAdapter(productsListAdapter);
-    }
 
-    private void addFilteredProductToList(List<Product> filteredProducts, Product p){
-
+        filterBySearchBar();
     }
 
     private void setPackageView(Pack pack){
