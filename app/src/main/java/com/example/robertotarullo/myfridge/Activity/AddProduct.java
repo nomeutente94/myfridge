@@ -302,6 +302,8 @@ public class AddProduct extends AppCompatActivity {
         new Thread(() -> {
             SingleProduct p = productDatabase.productDao().get(productToModifyId);
 
+            printProductOnConsole(p);
+
             runOnUiThread(() -> {
                 packCheckBox.setTag(String.valueOf(p.getPackageId())); // packCheckBox conserva l'id della confezione a cui il prodotto appartiene se si tratta di una modifica
 
@@ -424,10 +426,13 @@ public class AddProduct extends AppCompatActivity {
                 int insertCount = 0; // counter inserimenti
                 Intent resultIntent = new Intent();
 
+                printProductOnConsole(newProduct);
+
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
                     newProduct.setId(productToModifyId);
                     newProduct.setPackageId(Long.valueOf(packCheckBox.getTag().toString()));
+
                     if(productDatabase.productDao().update(newProduct)>0) {
                         insertCount++;
                         String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
@@ -530,16 +535,16 @@ public class AddProduct extends AppCompatActivity {
 
                 if(TextUtils.getDate(openingDateField)!=null)
                     p.setOpeningDate(TextUtils.getDate(openingDateField));
-
-                if(openedStorageConditionSpinner.getSelectedItem().equals("Temperatura ambiente"))
-                    p.setOpenedStorageCondition(0);
-                else if(openedStorageConditionSpinner.getSelectedItem().equals("Frigorifero"))
-                    p.setOpenedStorageCondition(1);
-                else if(openedStorageConditionSpinner.getSelectedItem().equals("Congelatore"))
-                    p.setOpenedStorageCondition(2);
-            } else {
+            } else
                 p.setOpened(false);
-            }
+
+            if(openedStorageConditionSpinner.getSelectedItem().equals("Temperatura ambiente"))
+                p.setOpenedStorageCondition(0);
+            else if(openedStorageConditionSpinner.getSelectedItem().equals("Frigorifero"))
+                p.setOpenedStorageCondition(1);
+            else if(openedStorageConditionSpinner.getSelectedItem().equals("Congelatore"))
+                p.setOpenedStorageCondition(2);
+
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
             p.setOpened(true);
             p.setOpeningDate(p.getPurchaseDate());
