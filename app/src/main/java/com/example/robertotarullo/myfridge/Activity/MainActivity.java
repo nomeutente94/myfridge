@@ -17,6 +17,7 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -74,6 +76,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilteredProducts(View v){
+        if(findViewById(R.id.StorageConditionFilterButton0)!=v)
+            findViewById(R.id.StorageConditionFilterButton0).setBackgroundColor(Color.parseColor("#d6d8d7"));
+        if(findViewById(R.id.StorageConditionFilterButton1)!=v)
+            findViewById(R.id.StorageConditionFilterButton1).setBackgroundColor(Color.parseColor("#d6d8d7"));
+        if(findViewById(R.id.StorageConditionFilterButton2)!=v)
+            findViewById(R.id.StorageConditionFilterButton2).setBackgroundColor(Color.parseColor("#d6d8d7"));
+
+        v.setBackgroundColor(Color.parseColor("#bcbebd"));
         setFilteredProducts(Integer.valueOf(v.getTag().toString()));
     }
 
@@ -122,12 +132,15 @@ public class MainActivity extends AppCompatActivity {
         searchBar = findViewById(R.id.searchBar);
 
         searchBar.addTextChangedListener(new SearchBarWatcher());
-
-        currentFilter = 1; // leggere valore da impostazioni
+        currentFilter = 1; // TODO leggere valore da impostazioni
 
         retrieveProductsFromDB(0); // Inizializza la lista leggendo dal db
 
-        // Specifica cosa fare quando l'utente tocca un item della lista
+        initializeItemBehaviour();
+    }
+
+    // Specifica cosa fare quando l'utente tocca un item della lista
+    private void initializeItemBehaviour(){
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
             if(p instanceof Pack && currentPackage==null) {
@@ -137,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
             else
                 editSingleProduct((SingleProduct)p);
         });
-
     }
 
     public void eraseField(View view) {
@@ -220,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 products.addAll(packs);
 
                 if(packageId==0)
-                    setFilteredProducts(currentFilter); // TODO controlla prima quale filtro utilizzare !
+                    setFilteredProducts(findViewById(R.id.StorageConditionFilterButton1)); // TODO controlla prima quale filtro utilizzare !
                 else
                     setPackageView(packMap.get(packageId));
             });
