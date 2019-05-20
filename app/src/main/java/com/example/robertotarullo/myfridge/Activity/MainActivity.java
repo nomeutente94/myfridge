@@ -160,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Mostra i risultati di ricerca
-    // Confronta la ricerca col nome e la marca
     public class SearchBarWatcher implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -175,11 +174,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private List<Product> getCurrentDisplayedProducts(){
-        if(currentPackage==null){
+        if(currentPackage==null)
             return filteredProducts;
-        } else {
+        else
             return packProducts;
-        }
     }
 
     private void filterBySearchBar(){

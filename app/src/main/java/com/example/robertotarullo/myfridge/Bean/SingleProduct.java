@@ -21,34 +21,72 @@ import java.util.Date;
         )})*/
 
 public class SingleProduct implements Product {
+    // identificatore autogenerato univoco del prodotto
+    // Se non specificato è 0, il primo prodotto ha id 1
     @PrimaryKey(autoGenerate = true)
     private long id;
-    private boolean packaged; // indica se si tratta di un prodotto confezionato o meno
-    private String name; // nome del prodotto
-    private String brand; // marca del prodotto
-    private float price; // prezzo del prodotto per la quantità specificata
-    private float pricePerKilo; // prezzo al kilo
-    private float weight; // peso del prodotto al momento dell'acquisto
-    private float currentWeight; // peso attuale del prodotto
-    private int percentageQuantity; // indica la percentuale generale rimanente del prodotto
-    private int pieces; // indica il numero totale di pezzi, 1 se non ve ne sono
-    private int currentPieces; // indica i pezzi rimanenti
-    private int expiringDaysAfterOpening; // giorni entro cui consumare il prodotto (da quando aperto nel caso di una confezione, dalla data di acquisto altrimenti)
-    private Date purchaseDate; // data di acquisto del prodotto
-    private int storageCondition; // indica la modalità di conservazione
-    private long pointOfPurchaseId; // indica il punto di acquisto
-    private long packageId; // id della confezione di appartenza, 0 se non esiste
-    private boolean consumed; // indica se il prodotto è stato esaurito o meno
 
-    // Attributi di prodotto confezionato                                                           Se prodotto fresco (NON confezionato):
-    private boolean opened; // indica se il prodotto è stato aperto                                 (= true)
-    private Date openingDate; // data di apertura del prodotto                                      (= purchaseDate)
-    private Date expiryDate; // data di scadenza                                                    (= openingDate + expiringDaysAfterOpening)
-    private int openedStorageCondition; // Modalità di conservazione dopo l'apertura                (= storageCondition)
+    // Indica se si tratta di un prodotto confezionato
+    private boolean packaged;
 
-    public SingleProduct(){
+    // Nome del prodotto
+    private String name;
 
-    }
+    // Marca del prodotto
+    private String brand;
+
+    // Prezzo del prodotto per la quantità totale specificata
+    private float price;
+
+    // Prezzo al chilo
+    private float pricePerKilo;
+
+    // Peso totale del prodotto al momento dell'acquisto
+    private float weight;
+
+    // Peso corrente del prodotto
+    private float currentWeight;
+
+    // Indica la percentuale generale attuale rimanente del prodotto, non specificato se 0
+    private int percentageQuantity;
+
+    // Indica il numero totale di pezzi, 1 se non ve n'è più di uno, 0 se non specificato
+    private int pieces;
+
+    // Indica il numero di pezzi rimanenti su quelli totali
+    private int currentPieces;
+
+    // Giorni entro cui consumare il prodotto (da quando aperto nel caso di una confezione, dalla data di acquisto altrimenti)
+    // Dovrebbe essere 0 se expiryDate!=null (e viceversa)
+    private int expiringDaysAfterOpening;
+
+    // Data in cui il prodotto è stato acquistato
+    private Date purchaseDate;
+
+    // Indica la modalità di conservazione nello stato in cui lo si è comprato
+    private int storageCondition;
+
+    // Indica l'id del punto di acquisto
+    private long pointOfPurchaseId;
+
+    // id della confezione di appartenza, 0 se non esiste
+    private long packageId;
+
+    // Indica se il prodotto è stato esaurito o meno, diverso da percentageQuantity=0
+    private boolean consumed;
+
+    // Data di scadenza indicata sulla confezione del prodotto
+    // Per prodotto fresco si può calcolare: (= openingDate/purchaseDate + expiringDaysAfterOpening)
+    // Dovrebbe essere null se expiringDaysAfterOpening>0 (e viceversa)
+    private Date expiryDate;
+
+    //             !!! ATTRIBUTI PROPRI DI UN PRODOTTO CONFEZIONATO !!!
+    // !!! IL VALORE DI QUESTE VARIABILI VIENE DEDOTTO SE IL PRODOTTO E' FRESCO !!!                 // Se prodotto fresco (NON confezionato) si assumono i seguenti valori:
+    private boolean opened; // Indica se il prodotto è stato aperto                                 (= true)
+    private Date openingDate; // Data di apertura del prodotto                                      (= purchaseDate)
+    private int openedStorageCondition; // Modalità di conservazione a seguito dell'apertura        (= storageCondition)
+
+    public SingleProduct(){}
 
     public String getName() {
         return name;
@@ -72,6 +110,14 @@ public class SingleProduct implements Product {
 
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    // TODO spostare in classe Utils esterna
+    public Date calculateExpiryDate() {
+        if(getExpiryDate()==null && getOpeningDate()!=null && getExpiringDaysAfterOpening()>0 && !isPackaged()) // se non lo ha ed è un prodotto fresco, prova a calcolarlo
+            return DateUtils.getDateByAddingDays(getOpeningDate(), getExpiringDaysAfterOpening());
+        else
+            return getExpiryDate();
     }
 
     public Date getExpiryDate() {
@@ -210,6 +256,14 @@ public class SingleProduct implements Product {
         this.openedStorageCondition = openedStorageCondition;
     }
 
+    // TODO spostare in classe Utils esterna
+    public int calculateExpiringDaysAfterOpening(){
+        if(getExpiringDaysAfterOpening()==0 && getOpeningDate()!=null && getExpiryDate()!=null && !isPackaged()) // se non lo ha ed è un prodotto fresco, prova a calcolarlo
+            return DateUtils.getDaysByDateDiff(getOpeningDate(), getExpiryDate());
+        else
+            return getExpiringDaysAfterOpening();
+    }
+
     public int getExpiringDaysAfterOpening() {
         return expiringDaysAfterOpening;
     }
@@ -236,15 +290,10 @@ public class SingleProduct implements Product {
     public boolean equals(Object obj) {
         if(obj instanceof SingleProduct){
             SingleProduct singleProductObj = (SingleProduct)obj;
-
-            System.out.println(singleProductObj.getName() + " : " + name);
-            System.out.println(singleProductObj.getStorageCondition() + " : " + storageCondition);
-            System.out.println(singleProductObj.getOpenedStorageCondition() + " : " + openedStorageCondition);
-
             if(     singleProductObj.getId()==id &&
                     singleProductObj.isPackaged()==packaged &&
-                    (singleProductObj.getName()==name || singleProductObj.getName().equals(name)) &&
-                    (singleProductObj.getBrand()==brand || singleProductObj.getBrand().equals(brand)) &&
+                   (singleProductObj.getName()==name || singleProductObj.getName().equals(name)) &&
+                   (singleProductObj.getBrand()==brand || singleProductObj.getBrand().equals(brand)) &&
                     singleProductObj.getPrice()==price &&
                     singleProductObj.getPricePerKilo()==pricePerKilo &&
                     singleProductObj.getWeight()==weight &&
@@ -253,14 +302,14 @@ public class SingleProduct implements Product {
                     singleProductObj.getPieces()==pieces &&
                     singleProductObj.getCurrentPieces()==currentPieces &&
                     singleProductObj.getExpiringDaysAfterOpening()==expiringDaysAfterOpening &&
-                    (singleProductObj.getPurchaseDate()==purchaseDate || singleProductObj.getPurchaseDate().equals(purchaseDate)) &&
+                   (singleProductObj.getPurchaseDate()==purchaseDate || singleProductObj.getPurchaseDate().equals(purchaseDate)) &&
                     singleProductObj.getStorageCondition()==storageCondition &&
                     singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
                     singleProductObj.getPackageId()==packageId &&
                     singleProductObj.isConsumed()==consumed &&
                     singleProductObj.isOpened()==opened &&
-                    (singleProductObj.getOpeningDate()==openingDate || singleProductObj.getOpeningDate().equals(openingDate)) &&
-                    (singleProductObj.getExpiryDate()==expiryDate || singleProductObj.getExpiryDate().equals(expiryDate)) &&
+                   (singleProductObj.getOpeningDate()==openingDate || singleProductObj.getOpeningDate().equals(openingDate)) &&
+                   (singleProductObj.getExpiryDate()==expiryDate || singleProductObj.getExpiryDate().equals(expiryDate)) &&
                     singleProductObj.getOpenedStorageCondition()==openedStorageCondition)
                 return true;
         }

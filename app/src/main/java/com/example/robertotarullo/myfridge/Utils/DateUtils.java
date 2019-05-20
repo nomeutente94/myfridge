@@ -125,10 +125,10 @@ public abstract class DateUtils {
         return null;
     }
 
-    // aggiunge giorni ad una data e la ritorna
-    public static int getDaysByDateDiff(Date date1, Date date2){
-        if(date1!=null && date2!=null){
-            long diff = date2.getTime() - date1.getTime();
+    // calcola la differenza in giorni tra due date
+    public static int getDaysByDateDiff(Date dateToSubtract, Date biggerDate){
+        if(dateToSubtract!=null && biggerDate!=null){
+            long diff = biggerDate.getTime() - dateToSubtract.getTime();
             return (int)TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
         }
         return 0;
@@ -155,6 +155,8 @@ public abstract class DateUtils {
         return getFormattedDate(cal);
     }
 
+
+    // Confronta due date di tipo Calendar ignorando l'orario
     public static boolean equalsNoTime(Calendar date1, Calendar date2){
         if(date1.get(Calendar.DAY_OF_MONTH) == date2.get(Calendar.DAY_OF_MONTH) && date1.get(Calendar.MONTH) == date2.get(Calendar.MONTH) && date1.get(Calendar.YEAR) == date2.get(Calendar.YEAR))
             return true;

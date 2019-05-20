@@ -532,6 +532,46 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/purchaseDateBlock"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="11dp">
+
+                <TextView
+                    android:id="@+id/purchaseDateFieldLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Data di acquisto" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        android:id="@+id/purchaseDateField"
+                        android:layout_width="280dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:cursorVisible="false"
+                        android:focusable="false"
+                        android:hint="Data non impostata"
+                        android:onClick="showDatePickerDialog"
+                        android:tag="purchaseDate" />
+
+                    <Button
+                        android:id="@+id/purchaseDateClearButton"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:onClick="eraseField"
+                        android:tag="purchaseDate"
+                        android:text="X" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/expiryDateBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -588,6 +628,12 @@
                         android:layout_weight="1" />
 
                     <Button
+                        android:id="@+id/changeToExpiryDays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="changeExpiryMode"
+                        android:text="Cambia" />
+                    <Button
                         android:id="@+id/expiryDateClearButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
@@ -595,46 +641,6 @@
                         android:layout_weight="0"
                         android:onClick="eraseField"
                         android:tag="expiryDate"
-                        android:text="X" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/purchaseDateBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/purchaseDateFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data di acquisto" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/purchaseDateField"
-                        android:layout_width="280dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showDatePickerDialog"
-                        android:tag="purchaseDate" />
-
-                    <Button
-                        android:id="@+id/purchaseDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="eraseField"
-                        android:tag="purchaseDate"
                         android:text="X" />
                 </LinearLayout>
             </LinearLayout>
@@ -664,7 +670,12 @@
                         android:layout_weight="1"
                         android:hint="0"
                         android:inputType="number" />
-
+                    <Button
+                        android:id="@+id/changeToExpiryDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="changeExpiryMode"
+                        android:text="Cambia" />
                     <Button
                         android:id="@+id/expiryDaysAfterOpeningClearButton"
                         android:layout_width="50dp"
