@@ -70,67 +70,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/packCheckBoxBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/packCheckBoxLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Raggruppare in una confezione?" />
-
-                <CheckBox
-                    android:id="@+id/packCheckBox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/packageNameBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/packageNameLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nome confezione" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/packageNameField"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:enabled="false"
-                        android:hint="Nome confezione"
-                        android:inputType="textCapWords" />
-
-                    <Button
-                        android:id="@+id/packageNameClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_weight="0"
-                        android:onClick="eraseField"
-                        android:tag="packageName"
-                        android:text="X" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/nameBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

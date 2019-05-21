@@ -13,5 +13,4 @@ import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 public abstract class ProductDatabase extends RoomDatabase {
     public abstract SingleProductDao productDao();
     public abstract PointOfPurchaseDao pointOfPurchaseDao();
-    public abstract PackDao packDao();
 }

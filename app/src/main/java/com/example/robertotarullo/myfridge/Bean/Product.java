@@ -1,61 +1,36 @@
 package com.example.robertotarullo.myfridge.Bean;
 
-import java.util.Date;
-
+// Interfaccia per prodotti e gruppi di prodotti
 public interface Product {
-    public String getName();
+    boolean isPackaged();
 
-    public void setName(String name);
+    String getName();
 
-    public String getBrand();
+    void setName(String name);
 
-    public void setBrand(String brand);
+    String getBrand();
 
-    public float getPrice();
+    void setBrand(String brand);
 
-    public void setPrice(float price);
+    float getWeight();
 
-    public void setPricePerKilo(float price);
+    void setWeight(float weight);
 
-    public float getPricePerKilo();
+    int getPieces();
 
-    public Date getExpiryDate();
+    void setPieces(int pieces);
 
-    public void setExpiryDate(Date expiryDate);
+    int getStorageCondition();
 
-    public float getWeight();
+    void setStorageCondition(int storageCondition);
 
-    public void setWeight(float weight);
+    int getOpenedStorageCondition();
 
-    public float getCurrentWeight();
+    void setOpenedStorageCondition(int openedStorageCondition);
 
-    public void setCurrentWeight(float currentWeight);
+    int getPercentageQuantity();
 
-    public Date getPurchaseDate();
+    boolean isConsumed();
 
-    public void setPurchaseDate(Date purchaseDate);
-
-    public long getPointOfPurchaseId();
-
-    public void setPointOfPurchaseId(long pointOfPurchaseId);
-
-    public int getPercentageQuantity();
-
-    public void setPercentageQuantity(int percentageQuantity);
-
-    public boolean isConsumed();
-
-    public void setConsumed(boolean consumed);
-
-    public long getPackageId();
-
-    public void setPackageId(long packageId);
-
-    public int getPieces();
-
-    public void setPieces(int pieces);
-
-    public boolean isPackaged();
-
-    public void setPackaged(boolean packaged);
+    void setConsumed(boolean consumed);
 }

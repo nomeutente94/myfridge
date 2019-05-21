@@ -20,9 +20,9 @@ import java.util.Date;
                 onDelete = ForeignKey.NO_ACTION
         )})*/
 
-public class SingleProduct implements Product {
-    // identificatore autogenerato univoco del prodotto
-    // Se non specificato è 0, il primo prodotto ha id 1
+public class SingleProduct implements Product{
+    // Identificatore univoco del prodotto
+    // Se non specificato è 0, parte da id 1
     @PrimaryKey(autoGenerate = true)
     private long id;
 
@@ -64,13 +64,11 @@ public class SingleProduct implements Product {
     private Date purchaseDate;
 
     // Indica la modalità di conservazione nello stato in cui lo si è comprato
+    // Può assumere valori tra 0, 1, 2, rispettivamente per Dispensa, Frigorifero, Congelatore
     private int storageCondition;
 
     // Indica l'id del punto di acquisto
     private long pointOfPurchaseId;
-
-    // id della confezione di appartenza, 0 se non esiste
-    private long packageId;
 
     // Indica se il prodotto è stato esaurito o meno, diverso da percentageQuantity=0
     private boolean consumed;
@@ -168,6 +166,7 @@ public class SingleProduct implements Product {
         this.pointOfPurchaseId = pointOfPurchaseId;
     }
 
+    // TODO spostare in classe Utils esterna
     public int getActualStorageCondition(){
         if(opened)
             return openedStorageCondition;
@@ -198,14 +197,6 @@ public class SingleProduct implements Product {
         this.percentageQuantity = percentageQuantity;
     }
 
-    public long getPackageId() {
-        return packageId;
-    }
-
-    public void setPackageId(long packageId) {
-        this.packageId = packageId;
-    }
-
     public boolean isConsumed() {
         return consumed;
     }
@@ -214,12 +205,10 @@ public class SingleProduct implements Product {
         this.consumed = consumed;
     }
 
-    @Override
     public float getPricePerKilo() {
         return pricePerKilo;
     }
 
-    @Override
     public void setPricePerKilo(float pricePerKilo) {
         this.pricePerKilo = pricePerKilo;
     }
@@ -272,6 +261,7 @@ public class SingleProduct implements Product {
         this.expiringDaysAfterOpening = expiringDaysAfterOpening;
     }
 
+    // TODO spostare in classe Utils esterna
     public Date getActualExpiringDate(){
         if(packaged && opened && openingDate!=null && expiringDaysAfterOpening>0)
             return DateUtils.getDateByAddingDays(openingDate, expiringDaysAfterOpening);
@@ -284,6 +274,24 @@ public class SingleProduct implements Product {
 
     public void setPackaged(boolean packaged) {
         this.packaged = packaged;
+    }
+
+    public boolean packEquals(SingleProduct singleProduct){
+        if(singleProduct==null)
+            return false;
+        else if(    !singleProduct.isPackaged()==packaged ||                            // packaged
+                    !singleProduct.getName().equalsIgnoreCase(name) ||                  // name
+                    !singleProduct.getBrand().equalsIgnoreCase(brand) ||                // brand
+                    singleProduct.getWeight()!=weight ||                                // weight
+                    singleProduct.getPieces()!=pieces ||                                // pieces
+                    singleProduct.getStorageCondition()!=storageCondition ||            // storageCondition
+                    singleProduct.getOpenedStorageCondition()!=openedStorageCondition   // openedStorageCondition
+            )
+        {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -305,7 +313,6 @@ public class SingleProduct implements Product {
                    (singleProductObj.getPurchaseDate()==purchaseDate || singleProductObj.getPurchaseDate().equals(purchaseDate)) &&
                     singleProductObj.getStorageCondition()==storageCondition &&
                     singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
-                    singleProductObj.getPackageId()==packageId &&
                     singleProductObj.isConsumed()==consumed &&
                     singleProductObj.isOpened()==opened &&
                    (singleProductObj.getOpeningDate()==openingDate || singleProductObj.getOpeningDate().equals(openingDate)) &&

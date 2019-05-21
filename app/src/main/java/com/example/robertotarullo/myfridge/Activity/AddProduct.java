@@ -26,7 +26,6 @@ import android.widget.Toast;
 import com.example.robertotarullo.myfridge.Adapter.DateSpinnerAdapter;
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
-import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapter;
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
@@ -64,9 +63,9 @@ public class AddProduct extends AppCompatActivity {
 
     // views
     private ScrollView listScrollView;
-    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packNameField;
+    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner, expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner;
-    private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packCheckBox, packagedCheckBox, noExpiryCheckbox;
+    private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel, illegalExpiryDateTextView;
@@ -74,7 +73,7 @@ public class AddProduct extends AppCompatActivity {
     private StorageSpinnerArrayAdapter storageSpinnerAdapter;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout pricePerKiloBlock, openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, packCheckBoxBlock, packNameBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
+    private LinearLayout pricePerKiloBlock, openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -98,7 +97,6 @@ public class AddProduct extends AppCompatActivity {
                                 if (productDatabase.productDao().deleteById(productToModifyId) > 0) {
                                     Intent resultIntent = new Intent();
                                     resultIntent.putExtra("delete", true);
-                                    resultIntent.putExtra("packId", Long.valueOf(packCheckBox.getTag().toString()));
                                     setResult(RESULT_OK, resultIntent);
                                     runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
                                     finish();
@@ -128,7 +126,7 @@ public class AddProduct extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
-        ProductForm currentForm = new ProductForm(createProductFromFields(), packNameField.getText().toString(), TextUtils.getInt(quantityField));
+        ProductForm currentForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
         if(!startingForm.equals(currentForm)){
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
@@ -161,8 +159,6 @@ public class AddProduct extends AppCompatActivity {
 
         // Riferimenti ai campi
         packagedCheckBox = findViewById(R.id.packagedCheckBox);
-        packNameField = findViewById(R.id.packageNameField);
-        packCheckBox = findViewById(R.id.packCheckBox);
         nameField = findViewById(R.id.nameField);
         brandField = findViewById(R.id.brandField);
         pricePerKiloField = findViewById(R.id.pricePerKiloField);
@@ -205,8 +201,6 @@ public class AddProduct extends AppCompatActivity {
         currentWeightBlock = findViewById(R.id.currentWeightBlock);
         differentStorageConditionAfterOpeningCheckBoxBlock = findViewById(R.id.differentStorageConditionAfterOpeningCheckBoxBlock);
         quantityBlock = findViewById(R.id.quantityBlock);
-        packCheckBoxBlock = findViewById(R.id.packCheckBoxBlock);
-        packNameBlock = findViewById(R.id.packageNameBlock);
         expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
 
         // riferimenti ai pulsanti clear di campi coinvolti in relazioni
@@ -220,7 +214,6 @@ public class AddProduct extends AppCompatActivity {
         initializeExpiryDateSpinner();
 
         // Comportamenti delle checkbox
-        initializePackCheckBox(true);
         initializeDifferentStorageConditionAfterOpeningCheckBox(true);
         initializeOpenedCheckBox(true);
         initializePackagedCheckBox(true);
@@ -252,7 +245,7 @@ public class AddProduct extends AppCompatActivity {
         if(action.equals("add")) {
             setTitle("Aggiungi prodotto");
             confirmButton.setText("Aggiungi prodotto");
-            startingForm = new ProductForm(createProductFromFields(), packNameField.getText().toString(), TextUtils.getInt(quantityField));
+            startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
@@ -308,9 +301,6 @@ public class AddProduct extends AppCompatActivity {
             // printProductOnConsole(p);
 
             runOnUiThread(() -> {
-                packCheckBox.setTag(String.valueOf(p.getPackageId())); // packCheckBox conserva l'id della confezione a cui il prodotto appartiene se si tratta di una modifica
-
-                // Campi immutabili
                 nameField.setText(p.getName());
                 if(p.getBrand()!=null)
                     brandField.setText(p.getBrand());
@@ -394,7 +384,7 @@ public class AddProduct extends AppCompatActivity {
                     }
                 }
 
-                startingForm = new ProductForm(createProductFromFields(), packNameField.getText().toString(), TextUtils.getInt(quantityField));
+                startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
             });
         }).start();
     }
@@ -406,11 +396,8 @@ public class AddProduct extends AppCompatActivity {
         onPriceFocusLost(priceField);
         onPriceFocusLost(pricePerKiloField);
 
-        // Il campo nome è obbligatorio, il nome della confezione se si tratta di una confezione
-        if(packCheckBox.isChecked() && TextUtils.isEmpty(packNameField)) {
-            Toast.makeText(getApplicationContext(), "Il campo nome confezione non può essere vuoto", Toast.LENGTH_LONG).show();
-            setFocusAndScrollToView(findViewById(R.id.packageNameBlock));
-        } else if (TextUtils.isEmpty(nameField)) {
+        // Il campo nome è obbligatorio
+        if (TextUtils.isEmpty(nameField)) {
             Toast.makeText(getApplicationContext(), "Il campo nome non può essere vuoto", Toast.LENGTH_LONG).show();
             setFocusAndScrollToView(findViewById(R.id.nameBlock));
         } else if(expiryDateDaySpinner.getSelectedItemPosition()>0 && expiryDateMonthSpinner.getSelectedItemPosition()==0 && expiryDateYearSpinner.getSelectedItemPosition()==0){ // Se è stato compilato solo il giorno di scadenza
@@ -439,7 +426,6 @@ public class AddProduct extends AppCompatActivity {
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
                     newProduct.setId(productToModifyId);
-                    newProduct.setPackageId(Long.valueOf(packCheckBox.getTag().toString()));
 
                     if(productDatabase.productDao().update(newProduct)>0) {
                         insertCount++;
@@ -447,14 +433,6 @@ public class AddProduct extends AppCompatActivity {
                         runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                     }
                 } else {
-                    // crea una nuova eventuale confezione
-                    if(packCheckBox.isChecked() && TextUtils.getInt(quantityField)>1) {
-                        Pack pack = new Pack();
-                        pack.setName(packNameField.getText().toString());
-                        newProduct.setPackageId(productDatabase.packDao().insertPack(pack));
-                        resultIntent.putExtra("addedPack", true);
-                    }
-
                     // inserisci uno o più prodotti
                     for(int i=0; i<TextUtils.getInt(quantityField); i++){
                         if(productDatabase.productDao().insert(newProduct)!=-1)  // se l'inserimento è andato a buon fine
@@ -467,7 +445,6 @@ public class AddProduct extends AppCompatActivity {
 
                 if(insertCount>0){
                     resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
-                    resultIntent.putExtra("packId", newProduct.getPackageId());
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }
@@ -491,7 +468,6 @@ public class AddProduct extends AppCompatActivity {
         System.out.println("purchasedate: " + p.getPurchaseDate());
         System.out.println("storagecondition: " + p.getStorageCondition());
         System.out.println("pointofpurchaseid: " + p.getPointOfPurchaseId());
-        System.out.println("packageid: " + p.getPackageId());
         System.out.println("consumed: " + p.isConsumed());
         System.out.println("-------------------------");
         System.out.println("opened: " + p.isOpened());
@@ -504,7 +480,6 @@ public class AddProduct extends AppCompatActivity {
     private SingleProduct createProductFromFields(){
         SingleProduct p = new SingleProduct();
 
-        // Campi immutabili
         p.setName(nameField.getText().toString());
         if(!TextUtils.isEmpty(brandField))
             p.setBrand(brandField.getText().toString());
@@ -522,8 +497,6 @@ public class AddProduct extends AppCompatActivity {
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
         if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
             p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
-        if(getIntent().getLongExtra("package", 0)>0) // Se si tratta di un inserimento in una confezione
-            p.setPackageId(getIntent().getLongExtra("package", 0));
         if(!TextUtils.isEmpty(expiryDaysAfterOpeningField) && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));
         p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
@@ -622,45 +595,6 @@ public class AddProduct extends AppCompatActivity {
 
         if(addListener)
             differentStorageConditionAfterOpeningCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeDifferentStorageConditionAfterOpeningCheckBox(false));
-    }
-
-    private void initializePackCheckBox(boolean addListener) {
-        TextView nameFieldLabel = findViewById(R.id.nameFieldLabel);
-        TextView packagedCheckBoxLabel = findViewById(R.id.packagedCheckBoxLabel);
-        TextView openedCheckBoxLabel = findViewById(R.id.openedCheckBoxLabel);
-        TextView openingDateFieldLabel = findViewById(R.id.openingDateFieldLabel);
-        TextView currentWeightLabel = findViewById(R.id.currentWeightFieldLabel);
-        TextView piecesFieldLabel = findViewById(R.id.piecesFieldLabel);
-        TextView priceFieldLabel = findViewById(R.id.priceFieldLabel);
-        TextView pricePerKiloFieldLabel = findViewById(R.id.pricePerKiloFieldLabel);
-        TextView weightLabel = findViewById(R.id.weightFieldLabel);
-
-        if (packCheckBox.isChecked()) {
-            packNameField.setEnabled(true);
-            nameFieldLabel.setText("Nome (singolo prodotto)");
-            priceFieldLabel.setText("Prezzo (singolo prodotto)");
-            pricePerKiloFieldLabel.setText("Prezzo/Kg (singolo prodotto)");
-            weightLabel.setText("Peso (singolo prodotto)");
-            packagedCheckBoxLabel.setText("I prodotti contenuti sono confezionati?");
-            openedCheckBoxLabel.setText("E' stato aperto? (!!! MODIFICA OGNI PRODOTTO !!!)");
-            openingDateFieldLabel.setText("Data di apertura (!!! MODIFICA OGNI PRODOTTO !!!)");
-            currentWeightLabel.setText("Peso attuale (!!! MODIFICA OGNI PRODOTTO !!!)");
-            piecesFieldLabel.setText("N. pezzi totali (!!! MODIFICA OGNI PRODOTTO !!!)");
-        } else {
-            packNameField.setEnabled(false);
-            nameFieldLabel.setText("Nome");
-            priceFieldLabel.setText("Prezzo");
-            pricePerKiloFieldLabel.setText("Prezzo/Kg");
-            weightLabel.setText("Peso");
-            packagedCheckBoxLabel.setText("E' un prodotto confezionato?");
-            openedCheckBoxLabel.setText("E' stato aperto?");
-            openingDateFieldLabel.setText("Data di apertura");
-            currentWeightLabel.setText("Peso attuale (grammi)");
-            piecesFieldLabel.setText("N. pezzi totali");
-        }
-
-        if(addListener)
-            packCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializePackCheckBox(false));
     }
 
     private void initializePackagedCheckBox(boolean addListener) {
@@ -898,21 +832,10 @@ public class AddProduct extends AppCompatActivity {
         int min = MIN_QUANTITY;
         int max = MAX_QUANTITY;
 
-        if(view.getTag().toString().equals("add")) {
+        if(view.getTag().toString().equals("add"))
             TextUtils.editQuantityByButtons(addButton, subtractButton, field, min, max);
-
-            if(getIntent().getLongExtra("package", 0)==0) {
-                packCheckBoxBlock.setVisibility(View.VISIBLE);
-                packNameBlock.setVisibility(View.VISIBLE);
-            }
-        }
-        else if(view.getTag().toString().equals("subtract")) {
+        else if(view.getTag().toString().equals("subtract"))
             TextUtils.editQuantityByButtons(subtractButton, addButton, field, min, max);
-            if(TextUtils.getInt(field)==1) {
-                packCheckBoxBlock.setVisibility(View.GONE);
-                packNameBlock.setVisibility(View.GONE);
-            }
-        }
     }
 
     // Svuota il contenuto del campo corrispondente al pulsante premuto
@@ -948,9 +871,6 @@ public class AddProduct extends AppCompatActivity {
         } else if(view.getTag().toString().equals("expiryDaysAfterOpening")){
             expiryDaysAfterOpeningField.setText("");
             expiryDaysAfterOpeningField.requestFocus();
-        } else if(view.getTag().toString().equals("packageName")) {
-            packNameField.setText("");
-            packNameField.requestFocus();
         }
     }
 

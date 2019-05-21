@@ -27,7 +27,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -76,14 +75,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilteredProducts(View v){
-        if(findViewById(R.id.StorageConditionFilterButton0)!=v)
-            findViewById(R.id.StorageConditionFilterButton0).setBackgroundColor(Color.parseColor("#d6d8d7"));
-        if(findViewById(R.id.StorageConditionFilterButton1)!=v)
-            findViewById(R.id.StorageConditionFilterButton1).setBackgroundColor(Color.parseColor("#d6d8d7"));
-        if(findViewById(R.id.StorageConditionFilterButton2)!=v)
-            findViewById(R.id.StorageConditionFilterButton2).setBackgroundColor(Color.parseColor("#d6d8d7"));
+        // Resetta i colori
+        findViewById(R.id.StorageConditionFilterButton0).setBackgroundColor(Color.parseColor("#d6d8d7"));
+        findViewById(R.id.StorageConditionFilterButton1).setBackgroundColor(Color.parseColor("#d6d8d7"));
+        findViewById(R.id.StorageConditionFilterButton2).setBackgroundColor(Color.parseColor("#d6d8d7"));
 
+        // Evidenzia il filtro attuale
         v.setBackgroundColor(Color.parseColor("#bcbebd"));
+
+        // Filtra la lista dei prodotti in base al filtro selezionato
         setFilteredProducts(Integer.valueOf(v.getTag().toString()));
     }
 
@@ -203,14 +203,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Aggiorna la lista dei prodotti dal db e li mostra (se si vuole mostrare il contenuto di una confezione inserire un id > 0)
-    private void retrieveProductsFromDB(long packageId){
+    private void retrieveProductsFromDB(Pack package){
         products = new ArrayList<>();
 
         new Thread(() -> {
             List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi i prodotti singoli
-            List<Pack> packs = productDatabase.packDao().getAll();                      // Prendi tutti i pack
 
             runOnUiThread(() -> {
+                List<Pack> packs = new ArrayList<>();
+
+                for(int i=0; i<singleProducts.size(); i++){                                                                 // Per ogni prodotto
+                    boolean packFound = false;
+
+                    for(int j=0; j<packs.size() && !packFound; j++){                                                        // cerca un pack esistente adatto
+                        if(!packs.get(j).isEmpty() && packs.get(j).getProducts().get(0).packEquals(singleProducts.get(i))){ // se il pack è adatto
+                            packs.get(j).addProduct(singleProducts.get(i));                                                 // aggiungi prodotto al pack
+                            singleProducts.remove(i);                                                                       // rimuovi il prodotto appena aggiunto dalla lista dei prodotti
+                            i--;                                                                                            // aggiorna l'indice della lista prodotti
+                            packFound = true;                                                                               // ferma la ricerca del pacco
+                        }
+                    }
+                    if(!packFound){                                                                                         // Se nessun pack adatto è stato trovato
+                        Pack newPack = new Pack();                                                                          // Crea un nuovo pack
+                        newPack.addProduct(singleProducts.get(i));                                                          // Aggiungici il prodotto
+                        packs.add(newPack);                                                                                 // Aggiungilo alla lista dei packs
+                    }
+                }
+
                 // Crea un hashmap di pack
                 Map<Long, Pack> packMap = new HashMap<>();
                 for(Pack pack : packs)
@@ -259,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                     if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
                         filteredProducts.add(products.get(i));
                 } else {
-                    if (((Pack) products.get(i)).belongsToStorageCondition(currentFilter))
+                    if (((Pack) products.get(i)).getStorageCondition() == currentFilter)
                         filteredProducts.add(products.get(i));
                 }
             }
@@ -350,8 +369,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AddProduct.class);
         intent.putExtra("action", "add");
         intent.putExtra("filter", currentFilter);
-        if(currentPackage!=null)
-            intent.putExtra("package", currentPackage.getId());
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
@@ -378,18 +395,20 @@ public class MainActivity extends AppCompatActivity {
                 case DialogInterface.BUTTON_POSITIVE:
                     new Thread(() -> {
                         if(p instanceof Pack) {
+                            // TODO elimina tutto il contenuto del gruppo
+                            /*
                             if (productDatabase.productDao().updatePackConsumption(p.getPackageId(), true) > 0) {
                                 runOnUiThread(() -> {
                                     Toast.makeText(getApplicationContext(), "Confezione settata come consumata", Toast.LENGTH_LONG).show();
                                     retrieveProductsFromDB(0); // aggiorna lista
                                 });
-                            }
+                            }*/
                         } else {
                             if (productDatabase.productDao().updateConsumption(((SingleProduct) p).getId(), true) > 0){
                                 runOnUiThread(() -> {
                                     Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
                                     if(currentPackage!=null)
-                                        retrieveProductsFromDB(currentPackage.getId()); // aggiorna lista
+                                        retrieveProductsFromDB(currentPackage); // aggiorna lista
                                     else
                                         retrieveProductsFromDB(0); // aggiorna lista
                                 });

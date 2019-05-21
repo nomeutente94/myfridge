@@ -1,26 +1,24 @@
 package com.example.robertotarullo.myfridge.Bean;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.PrimaryKey;
-
-import com.example.robertotarullo.myfridge.Utils.DateUtils;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-@Entity
 public class Pack implements Product{
-    @PrimaryKey(autoGenerate = true)
-    private long id;
-    private String name;
-    @Ignore
-    private List<SingleProduct> products; // non accedere MAI DIRETTAMENTE a questa variabile, usare il metodo getProducts()
+    private List<SingleProduct> products;
+
+    public Pack(){
+        this.products = new ArrayList<>();
+    }
+
+    public Pack(List<SingleProduct> products){
+        this.products = products;
+    }
+
+    public boolean isEmpty(){
+        return products.size()==0;
+    }
 
     public List<SingleProduct> getProducts() {
-        if(products==null)
-            return new ArrayList<>();
         return products;
     }
 
@@ -29,27 +27,20 @@ public class Pack implements Product{
     }
 
     public void addProduct(SingleProduct singleProduct){
-        if(products==null)
-            products = new ArrayList<>();
         products.add(singleProduct);
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     @Override
     public String getName() {
-        return name;
+        if(getProducts().size()>0)
+            return getProducts().get(0).getName();
+        return null;
     }
 
     @Override
     public void setName(String name) {
-        this.name = name;
+        for(int i=0; i<getProducts().size(); i++)
+            getProducts().get(i).setName(name);
     }
 
     @Override
@@ -66,42 +57,6 @@ public class Pack implements Product{
     }
 
     @Override
-    public float getPrice() {
-        if(getProducts().size()>0)
-            return getProducts().get(0).getPrice();
-        return 0;
-    }
-
-    @Override
-    public void setPrice(float price) {
-        for(int i=0; i<getProducts().size(); i++)
-            getProducts().get(i).setPrice(price);
-    }
-
-    @Override
-    public void setPricePerKilo(float price) {
-
-    }
-
-    @Override
-    public float getPricePerKilo() {
-        return 0;
-    }
-
-    @Override
-    public Date getExpiryDate() {
-        if(getProducts().size()>0)
-            return getProducts().get(0).getExpiryDate();
-        return null;
-    }
-
-    @Override
-    public void setExpiryDate(Date expiryDate) {
-        for(int i=0; i<getProducts().size(); i++)
-            getProducts().get(0).setExpiryDate(expiryDate);
-    }
-
-    @Override
     public float getWeight() {
         if(getProducts().size()>0)
             return getProducts().get(0).getWeight();
@@ -110,63 +65,12 @@ public class Pack implements Product{
 
     @Override
     public void setWeight(float weight) {
-
-    }
-
-    @Override
-    public float getCurrentWeight() {
-        if(getProducts().size()>0)
-            return getProducts().get(0).getCurrentWeight();
-        return 0;
-    }
-
-    @Override
-    public void setCurrentWeight(float currentWeight) {
-        // ??
-    }
-
-    @Override
-    public Date getPurchaseDate() {
-        if(getProducts().size()>0)
-            return getProducts().get(0).getExpiryDate();
-        return null;
-    }
-
-    @Override
-    public void setPurchaseDate(Date purchaseDate) {
         for(int i=0; i<getProducts().size(); i++)
-            getProducts().get(i).setPurchaseDate(purchaseDate);
-    }
-
-    public boolean belongsToStorageCondition(int storageCondition){
-        for(int i=0; i<getProducts().size(); i++){
-            if(getProducts().get(i).getStorageCondition()==storageCondition)
-                return true;
-        }
-        return false;
-    }
-
-    public int[] getStorageConditions() {
-        int[] storageConditions = new int[getProducts().size()];
-        for(int i=0; i<storageConditions.length; i++)
-            storageConditions[i] = getProducts().get(i).getStorageCondition();
-
-        return storageConditions;
+            getProducts().get(i).setWeight(weight);
     }
 
     @Override
-    public long getPointOfPurchaseId() {
-        if(getProducts().size()>0)
-            return getProducts().get(0).getPointOfPurchaseId();
-        return 0;
-    }
-
-    @Override
-    public void setPointOfPurchaseId(long pointOfPurchaseId) {
-
-    }
-
-    @Override
+    // Ritorna una media da tutti i prodotti
     public int getPercentageQuantity() {
         if(getProducts().size()>0){
             int sum = 0;
@@ -177,11 +81,6 @@ public class Pack implements Product{
             return (int) Math.ceil(sum/(float)getProducts().size());
         } else
             return 0;
-    }
-
-    @Override
-    public void setPercentageQuantity(int percentageQuantity) {
-
     }
 
     @Override
@@ -202,37 +101,42 @@ public class Pack implements Product{
     }
 
     @Override
-    public long getPackageId() {
-        return id;
-    }
-
-    @Override
-    public void setPackageId(long packageId) {
-        this.id = id;
-    }
-
-    @Override
     public int getPieces() {
-        return getProducts().size();
+        if(getProducts().size()>0)
+            return getProducts().get(0).getPieces();
+        return 0;
     }
 
     @Override
     public void setPieces(int pieces) {
-
+        for(int i=0; i<getProducts().size(); i++)
+            getProducts().get(i).setPieces(pieces);
     }
 
-    // Ritorna il numero di pezzi ancora non consumati
-    public int getCurrentPieces() {
-        int pieces = 0;
-        for(int i=0; i<getProducts().size(); i++){
-            if(!getProducts().get(i).isConsumed())
-                pieces++;
-        }
-        return pieces;
+    @Override
+    public int getStorageCondition() {
+        if(getProducts().size()>0)
+            return getProducts().get(0).getStorageCondition();
+        return 0;
     }
 
-    public void setCurrentPieces(int pieces) {
+    @Override
+    public void setStorageCondition(int storageCondition) {
+        for(int i=0; i<getProducts().size(); i++)
+            getProducts().get(i).setStorageCondition(storageCondition);
+    }
 
+    @Override
+    public int getOpenedStorageCondition() {
+        if(getProducts().size()>0)
+            return getProducts().get(0).getOpenedStorageCondition();
+        return 0;
+    }
+
+    @Override
+    public void setOpenedStorageCondition(int openedStorageCondition) {
+        for(int i=0; i<getProducts().size(); i++)
+            getProducts().get(i).setOpenedStorageCondition(openedStorageCondition);
     }
 
     @Override
@@ -242,18 +146,5 @@ public class Pack implements Product{
                 return false;
         }
         return true;
-    }
-
-    @Override
-    public void setPackaged(boolean packaged) {
-        for(int i=0; i<getProducts().size(); i++){
-            getProducts().get(i).setPackaged(packaged);
-            if(!packaged){
-                getProducts().get(i).setOpened(true);
-                getProducts().get(i).setOpeningDate(getProducts().get(i).getPurchaseDate());
-                getProducts().get(i).setExpiryDate(DateUtils.getDateByAddingDays(getProducts().get(i).getOpeningDate(), getProducts().get(i).getExpiringDaysAfterOpening()));
-                getProducts().get(i).setOpenedStorageCondition(getProducts().get(i).getStorageCondition());
-            }
-        }
     }
 }
