@@ -8,7 +8,7 @@ import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 
-@Database(entities = {SingleProduct.class, PointOfPurchase.class, Pack.class}, version = 1)
+@Database(entities = {SingleProduct.class, PointOfPurchase.class}, version = 1)
 @TypeConverters({DateConverter.class})
 public abstract class ProductDatabase extends RoomDatabase {
     public abstract SingleProductDao productDao();

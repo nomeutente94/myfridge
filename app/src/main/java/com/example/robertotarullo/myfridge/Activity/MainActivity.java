@@ -8,9 +8,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
@@ -41,10 +39,11 @@ import com.example.robertotarullo.myfridge.R;
 import static com.example.robertotarullo.myfridge.Database.DatabaseUtils.DATABASE_NAME;
 
 public class MainActivity extends AppCompatActivity {
-    // dichiarazione delle variabili di database
+
+    // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
-    // variabili per intent
+    // Variabili per intent
     private static final int ADD_PRODUCT_REQUEST = 1;
     private static final int EDIT_PRODUCT_REQUEST = 2;
 
@@ -53,15 +52,16 @@ public class MainActivity extends AppCompatActivity {
     private Pack currentPackage; // Riferimento alla confezione correntemente visualizzata, null se non si sta visualizzando una confezione
     private boolean showConsumedProducts; // Determina se mostrare i prodotti consumati
 
-    // dichiarazione delle liste di prodotti
-    private List<Product> products; // Lista di tutti i prodotti
-    private List<Product> filteredProducts; // Lista di prodotti della modalità di conservazione corrente
-    private List<Product> packProducts; // Lista di prodotti della confezione corrente
+    // Dichiarazione delle liste di prodotti
+    private List<Product> products; // Lista di tutti i prodotti della view (pack e singleProduct)
+    private List<Product> filteredProducts; // Lista di prodotti della modalità di conservazione corrente (pack e singleProduct)
+    private List<Product> packProducts; // Lista di prodotti della confezione corrente (solo singleProduct)
 
-    // views
+    // Riferimenti a elementi della view
     private EditText searchBar;
     private ListView listView;
 
+    // Adapter lista
     private ProductsListAdapter productsListAdapter;
 
     @Override
@@ -75,12 +75,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilteredProducts(View v){
-        // Resetta i colori
+        // Resetta i colori dei filtri
         findViewById(R.id.StorageConditionFilterButton0).setBackgroundColor(Color.parseColor("#d6d8d7"));
         findViewById(R.id.StorageConditionFilterButton1).setBackgroundColor(Color.parseColor("#d6d8d7"));
         findViewById(R.id.StorageConditionFilterButton2).setBackgroundColor(Color.parseColor("#d6d8d7"));
 
-        // Evidenzia il filtro attuale
+        // Cambia il colore del filtro attuale
         v.setBackgroundColor(Color.parseColor("#bcbebd"));
 
         // Filtra la lista dei prodotti in base al filtro selezionato
@@ -126,16 +126,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DATABASE_NAME).build(); // Ottieni un riferimento al db
+        // Ottieni un riferimento al db
+        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DATABASE_NAME).build();
 
+        // Ottieni riferimenti alle view
         listView = findViewById(R.id.mylistview);
         searchBar = findViewById(R.id.searchBar);
 
+        // Inizializza la search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
+
+        // Setta il filtro prodotti iniziale
         currentFilter = 1; // TODO leggere valore da impostazioni
 
-        retrieveProductsFromDB(0); // Inizializza la lista leggendo dal db
+        // Inizializza la lista leggendo dal DB
+        retrieveProductsFromDB(null);
 
+        // Setta il comportamento al click di un elemento
         initializeItemBehaviour();
     }
 
@@ -143,15 +150,16 @@ public class MainActivity extends AppCompatActivity {
     private void initializeItemBehaviour(){
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
-            if(p instanceof Pack && currentPackage==null) {
+
+            if(p instanceof Pack && currentPackage==null) { // Se si è clickato un pack
                 resetSearchBar();
                 setPackageView((Pack) p);
-            }
-            else
+            } else                                          // Se si è clickato un singleProduct
                 editSingleProduct((SingleProduct)p);
         });
     }
 
+    // Svuota il testo contenuto nella search bar
     public void eraseField(View view) {
         if(view.getTag().toString().equals("searchBar")) {
             searchBar.setText("");
@@ -159,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Mostra i risultati di ricerca
+    // Setta il comportamento al variare del testo contenuto nella search bar
     public class SearchBarWatcher implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -173,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Ritorna una lista dei prodotti attualmente visualizzati a schermo
     private List<Product> getCurrentDisplayedProducts(){
         if(currentPackage==null)
             return filteredProducts;
@@ -180,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             return packProducts;
     }
 
+    // Filtra e mostra i prodotti filtrati in base al testo contenuto nella search bar
     private void filterBySearchBar(){
         List<Product> searchResults = new ArrayList<>();
 
@@ -202,107 +212,92 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Aggiorna la lista dei prodotti dal db e li mostra (se si vuole mostrare il contenuto di una confezione inserire un id > 0)
-    private void retrieveProductsFromDB(Pack package){
+    // Aggiorna la lista dei prodotti dal DB e aggiorna la view
+    // Se non si vuole visualizzare il contenuto di un gruppo passare null
+    // .. altrimenti passare il riferimento all'oggetto pack
+    private void retrieveProductsFromDB(Pack pack){
         products = new ArrayList<>();
 
         new Thread(() -> {
-            List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi i prodotti singoli
+            List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
 
             runOnUiThread(() -> {
-                List<Pack> packs = new ArrayList<>();
-
-                for(int i=0; i<singleProducts.size(); i++){                                                                 // Per ogni prodotto
-                    boolean packFound = false;
-
-                    for(int j=0; j<packs.size() && !packFound; j++){                                                        // cerca un pack esistente adatto
-                        if(!packs.get(j).isEmpty() && packs.get(j).getProducts().get(0).packEquals(singleProducts.get(i))){ // se il pack è adatto
-                            packs.get(j).addProduct(singleProducts.get(i));                                                 // aggiungi prodotto al pack
-                            singleProducts.remove(i);                                                                       // rimuovi il prodotto appena aggiunto dalla lista dei prodotti
-                            i--;                                                                                            // aggiorna l'indice della lista prodotti
-                            packFound = true;                                                                               // ferma la ricerca del pacco
-                        }
-                    }
-                    if(!packFound){                                                                                         // Se nessun pack adatto è stato trovato
-                        Pack newPack = new Pack();                                                                          // Crea un nuovo pack
-                        newPack.addProduct(singleProducts.get(i));                                                          // Aggiungici il prodotto
-                        packs.add(newPack);                                                                                 // Aggiungilo alla lista dei packs
-                    }
-                }
-
-                // Crea un hashmap di pack
-                Map<Long, Pack> packMap = new HashMap<>();
-                for(Pack pack : packs)
-                    packMap.put(pack.getId(), pack);
-
-                // Sposta i singleProducts nei relativi pack
-                for(int i=0; i<singleProducts.size(); i++) {
-                    if(singleProducts.get(i).getPackageId()>0) {
-                        packMap.get(singleProducts.get(i).getPackageId()).addProduct(singleProducts.get(i));
-                        singleProducts.remove(i);
-                        i--;
-                    }
-                }
-
                 // Aggiungi packs e singleProducts alla lista globale
-                products.addAll(singleProducts);
-                products.addAll(packs);
+                products.addAll(groupProducts(singleProducts)); // Passa gli eventuali raggruppamenti di prodotti
+                products.addAll(singleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
-                if(packageId==0)
+                if(pack==null)
                     setFilteredProducts(findViewById(R.id.StorageConditionFilterButton1)); // TODO controlla prima quale filtro utilizzare !
                 else
-                    setPackageView(packMap.get(packageId));
+                    setPackageView(pack);
             });
         }).start();
     }
 
-    // Mostra a schermo i prodotti filtrati per modalità di conservazione attuale
-    private void setFilteredProducts(int storageCondition){
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE);
-        currentPackage = null;
-        currentFilter = storageCondition;
+    // Raggruppa prodotti in base a caratteristiche comuni spostandoli dall'array di SingleProduct ricevuto
+    private List<Pack> groupProducts(List<SingleProduct> singleProducts){
+        List<Pack> packs = new ArrayList<>();
 
-        if(storageCondition==0)
-            setTitle("Dispensa");
-        else if(storageCondition==1)
-            setTitle("Frigorifero");
-        else if(storageCondition==2)
-            setTitle("Congelatore");
+        for(int i=0; i<singleProducts.size(); i++){                                     // Per ogni prodotto
+            Pack p = new Pack();                                                        // Crea un nuovo pack
+            for(int j=0; j<singleProducts.size(); j++){                                 // Cerca tra tutti i prodotti
+                if(j!=i && singleProducts.get(i).packEquals(singleProducts.get(j))){    // .. se i due prodotti sono raggruppabili
+                    p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
+                    singleProducts.remove(j);
+                    j--;
+                }
+            }
+            if(!p.getProducts().isEmpty()){                                             // Se è stato raggruppato con almeno un altro prodotto
+                p.addProduct(singleProducts.get(i));                                    // .. sposta il prodotto nel pack
+                singleProducts.remove(i);
+                i--;
+                packs.add(p);                                                           // .. aggiungi il pack alla lista
+            }
+        }
+
+        return packs;
+    }
+
+    // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
+    private void setFilteredProducts(int storageCondition){
+        findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
+        currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
+        currentFilter = storageCondition;   // Comunica quale filtro si sta utilizzando
 
         filteredProducts = new ArrayList<>();
         for(int i=0; i<products.size(); i++){
-            if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro 'Mostra consumati'
+            if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
 
-                // Controlla se il prodotto soddisfa il filtro 'Modalità di conservazione'
+                // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
                 if (products.get(i) instanceof SingleProduct) {
                     if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
                         filteredProducts.add(products.get(i));
                 } else {
-                    if (((Pack) products.get(i)).getStorageCondition() == currentFilter)
+                    if ((products.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
                         filteredProducts.add(products.get(i));
                 }
             }
         }
-        sortByAscendingDate(filteredProducts); // controlla prima quale ordinamento utilizzare !!!!
+        sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
         productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
         listView.setAdapter(productsListAdapter);
-
         filterBySearchBar();
     }
 
+    // Mostra nella view il contenuto di un raggruppamento (se non vuoto)
     private void setPackageView(Pack pack){
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
-
         if(!showConsumedProducts){
             if(!pack.isConsumed()) // Se la confezione non è attualmente vuota
                 showPackageProducts(pack);
-            else // Se la confezione è stata consumata torna indietro
+            else // Se la confezione è vuota torna indietro
                 setFilteredProducts(currentFilter);
         } else
             showPackageProducts(pack);
     }
 
+    // Metodo utilizzato da setPackageView(Pack pack)
     private void showPackageProducts(Pack pack){
+        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
         setTitle(pack.getName());
         currentPackage = pack;
         packProducts = new ArrayList<>();
@@ -318,8 +313,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(productsListAdapter);
     }
 
-
-    public void exportDB(View view) {
+    /*public void exportDB(View view) {
         new AlertDialog.Builder(this)
             .setTitle("Esporta Database")
             .setMessage("Ogni database precedentemente esportato verrà sostituito, continuare comunque? Il database verrà esportato nella directory principale del dispositivo")
@@ -362,9 +356,9 @@ public class MainActivity extends AppCompatActivity {
                     // non fare niente
                 }
             }).show();
-    }
+    }*/
 
-    // lancia AddProduct
+    // Avvia l'activity AddProduct per l'aggiunta
     public void addProduct(View view){
         Intent intent = new Intent(this, AddProduct.class);
         intent.putExtra("action", "add");
@@ -372,12 +366,13 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
-    // lancia AddPointOfPurchase
+    // Avvia l'activity AddPointOfPurchase
     public void addPointOfPurchase(View view){
         Intent intent = new Intent(this, AddPointOfPurchase.class);
         startActivity(intent);
     }
 
+    // Avvia l'activity AddProduct per la modifica
     public void editSingleProduct(SingleProduct p){
         Intent intent = new Intent(this, AddProduct.class);
         intent.putExtra("id", p.getId());
@@ -385,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 
-    // ELIMINAZIONE TRAMITE CONSUMAZIONE
+    // Mostra dialog per la consumazione di un singleProduct
     public void deleteProduct(View view){
         int position = Integer.parseInt(view.getTag().toString());
         Product p = productsListAdapter.getItem(position);
@@ -410,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
                                     if(currentPackage!=null)
                                         retrieveProductsFromDB(currentPackage); // aggiorna lista
                                     else
-                                        retrieveProductsFromDB(0); // aggiorna lista
+                                        retrieveProductsFromDB(null); // aggiorna lista
                                 });
                             }
                         }
@@ -423,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
 
         String msg;
         if(p instanceof Pack)
-            msg = "Vuoi consumare la confezione \""+ p.getName() + "\"?";
+            msg = "Vuoi consumare tutti i prodotti di tipo \""+ p.getName() + "\"?";
         else
             msg = "Vuoi consumare il prodotto \""+ p.getName() + "\"?";
 
@@ -437,7 +432,9 @@ public class MainActivity extends AppCompatActivity {
 
     // ordina dalla data più recente alla più lontana, con i valori null alla fine
     private void sortByAscendingDate(List<Product> products){
-        Collections.sort(products, (p1, p2) -> {
+
+        // TODO Implementare confronto data di scadenza tra Pack e SingleProduct
+        /*Collections.sort(products, (p1, p2) -> {
 
             Date date1;
             Date date2;
@@ -462,10 +459,10 @@ public class MainActivity extends AppCompatActivity {
                 return 1;
             else //if(date1.before(date2))
                 return -1;
-        });
+        });*/
     }
 
-    // aggiorna la lista aggiungendo il nuovo prodotto inserito
+    // Aggiorna la lista rispecchiando le eventuali modifiche applicate dalle altre activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -476,15 +473,18 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", 1);
                 if(data.getBooleanExtra("addedPack", false))
-                    retrieveProductsFromDB(0); // Se è stata aggiunta una confezione mostra e aggiorna la lista generale dei prodotti
-                else
-                    retrieveProductsFromDB(data.getLongExtra("packId", 0)); // Se è stato aggiunto un prodotto mostra e aggiorna l'eventuale confezione che lo contiene
+                    retrieveProductsFromDB(null); // Se è stata aggiunta una confezione mostra e aggiorna la lista generale dei prodotti
+                else {
+                    // TODO mostra la view dell'eventuale gruppo d'appartenenza del prodotto aggiunto
+                    // retrieveProductsFromDB(data.getLongExtra("packId", 0)); // Se è stato aggiunto un prodotto mostra e aggiorna l'eventuale confezione che lo contiene
+                }
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 if(!data.getBooleanExtra("delete", false)) // Se il prodotto è stato modificato e non cancellato
                     currentFilter = data.getIntExtra("filter", 1);
-                retrieveProductsFromDB(data.getLongExtra("packId", 0));
+                // TODO mostra la view dell'eventuale gruppo d'appartenenza del prodotto modificato
+                // retrieveProductsFromDB(data.getLongExtra("packId", 0));
             }
         }
     }

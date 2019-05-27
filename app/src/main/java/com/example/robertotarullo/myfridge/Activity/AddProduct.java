@@ -73,7 +73,7 @@ public class AddProduct extends AppCompatActivity {
     private StorageSpinnerArrayAdapter storageSpinnerAdapter;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout pricePerKiloBlock, openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
+    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -193,7 +193,6 @@ public class AddProduct extends AppCompatActivity {
 
         // riferimenti ai blocchi che hanno regole per la visibilità
         currentPiecesBlock = findViewById(R.id.currentPiecesBlock);
-        pricePerKiloBlock = findViewById(R.id.pricePerKiloBlock);
         openingDateBlock = findViewById(R.id.openingDateBlock);
         expiryDateBlock = findViewById(R.id.expiryDateBlock);
         openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);

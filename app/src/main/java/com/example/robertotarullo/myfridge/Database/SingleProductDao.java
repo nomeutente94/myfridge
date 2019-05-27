@@ -40,14 +40,8 @@ public interface SingleProductDao {
     @Query("DELETE FROM SingleProduct WHERE id = :id")
     int deleteById(long id);
 
-    @Query("UPDATE SingleProduct SET packageId = :packageId WHERE id = :id")
-    int updatePackageId(long id, long packageId);
-
     @Query("UPDATE SingleProduct SET consumed = :consumed WHERE id = :id")
     int updateConsumption(long id, boolean consumed);
-
-    @Query("UPDATE SingleProduct SET consumed = :consumed WHERE packageId = :packageId")
-    int updatePackConsumption(long packageId, boolean consumed);
 
     @Update
     int update(SingleProduct p);
