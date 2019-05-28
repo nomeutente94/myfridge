@@ -126,7 +126,7 @@ public class AddProduct extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
-        ProductForm currentForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
+        ProductForm currentForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
         if(!startingForm.equals(currentForm)){
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
@@ -244,7 +244,7 @@ public class AddProduct extends AppCompatActivity {
         if(action.equals("add")) {
             setTitle("Aggiungi prodotto");
             confirmButton.setText("Aggiungi prodotto");
-            startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
+            startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
@@ -252,6 +252,12 @@ public class AddProduct extends AppCompatActivity {
             quantityBlock.setVisibility(View.GONE);
             fillForm();
         }
+    }
+
+    private boolean isExpiryDateBlockVisible(){
+        if(expiryDateBlock.getVisibility()==View.VISIBLE)
+            return true;
+        return false;
     }
 
     private void initializeExpiryDateSpinner() {
@@ -383,7 +389,7 @@ public class AddProduct extends AppCompatActivity {
                     }
                 }
 
-                startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField));
+                startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
             });
         }).start();
     }
