@@ -18,7 +18,6 @@ public abstract class TextUtils {
         try{
             return Float.valueOf(field.getText().toString().replace(',', '.'));
         } catch (NumberFormatException e){
-            System.out.println("Ops! Impossibile operare con il valore +" + field.getText().toString());
             return 0;
         }
     }
@@ -28,7 +27,6 @@ public abstract class TextUtils {
         try{
             return Integer.valueOf(field.getText().toString());
         } catch (NumberFormatException e){
-            System.out.println("Ops! Impossibile operare con il valore +");
             return 0;
         }
     }
@@ -38,7 +36,6 @@ public abstract class TextUtils {
         try{
             return Integer.valueOf(field.getText().toString());
         } catch (NumberFormatException e){
-            System.out.println("Ops! Impossibile operare con il valore +");
             return 0;
         }
     }
@@ -48,7 +45,6 @@ public abstract class TextUtils {
         try{
             return Integer.valueOf(field.getHint().toString());
         } catch (NumberFormatException e){
-            System.out.println("Ops! Impossibile operare con il valore +");
             return 0;
         }
     }
@@ -58,7 +54,6 @@ public abstract class TextUtils {
         try{
             return Integer.valueOf(s.toString());
         } catch (NumberFormatException e){
-            System.out.println("Ops! Impossibile operare con il valore +");
             return 0;
         }
     }
@@ -96,7 +91,6 @@ public abstract class TextUtils {
         try{
             return Float.valueOf(s.toString().replace(',', '.'));
         } catch (NumberFormatException e){
-            Log.d("error", "Ops! Impossibile operare con il valore +" + s.toString());
             return 0;
         }
     }
@@ -105,7 +99,6 @@ public abstract class TextUtils {
         try{
             return Float.valueOf(s.getText().toString().replace(',', '.'));
         } catch (NumberFormatException e){
-            Log.d("error", "Ops! Impossibile operare con il valore +" + s.toString());
             return 0;
         }
     }

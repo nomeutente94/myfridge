@@ -126,8 +126,7 @@ public class AddProduct extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
-        ProductForm currentForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
-        if(!startingForm.equals(currentForm)){
+        if(!startingForm.equals(getCurrentForm())){
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
@@ -147,6 +146,13 @@ public class AddProduct extends AppCompatActivity {
 
         } else
             super.onBackPressed();
+    }
+
+    private ProductForm getCurrentForm(){
+        return new ProductForm( createProductFromFields(),
+                                TextUtils.getInt(quantityField),
+                                DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner),
+                                TextUtils.getInt(expiryDaysAfterOpeningField));
     }
 
     @Override
@@ -244,7 +250,7 @@ public class AddProduct extends AppCompatActivity {
         if(action.equals("add")) {
             setTitle("Aggiungi prodotto");
             confirmButton.setText("Aggiungi prodotto");
-            startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
+            startingForm = getCurrentForm();
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
@@ -252,12 +258,6 @@ public class AddProduct extends AppCompatActivity {
             quantityBlock.setVisibility(View.GONE);
             fillForm();
         }
-    }
-
-    private boolean isExpiryDateBlockVisible(){
-        if(expiryDateBlock.getVisibility()==View.VISIBLE)
-            return true;
-        return false;
     }
 
     private void initializeExpiryDateSpinner() {
@@ -318,7 +318,7 @@ public class AddProduct extends AppCompatActivity {
                     currentWeightField.setText(PriceUtils.getFormattedWeight(p.getCurrentWeight()));
                 }
                 currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
-                if(p.getExpiringDaysAfterOpening()>0) // TODO usare metodo appropriato per rappresentare l'informazione "mai"
+                if(p.getExpiringDaysAfterOpening()>0)
                     editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
                 if(p.getPurchaseDate()!=null)
                     editFieldNotFromUser(purchaseDateField, DateUtils.getFormattedDate(p.getPurchaseDate()));
@@ -335,7 +335,7 @@ public class AddProduct extends AppCompatActivity {
                 currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
                 if(p.getExpiryDate()!=null) {
-                    if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) { // TODO usare metodo appropriato per rappresentare l'informazione "mai"
+                    if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {
                         noExpiryCheckbox.setChecked(true);
                         editFieldNotFromUser(expiryDaysAfterOpeningField, "");
                     } else {
@@ -389,7 +389,7 @@ public class AddProduct extends AppCompatActivity {
                     }
                 }
 
-                startingForm = new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), isExpiryDateBlockVisible());
+                startingForm = getCurrentForm();
             });
         }).start();
     }
