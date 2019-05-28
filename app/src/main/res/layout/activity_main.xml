@@ -1,121 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/storageConditionsBlock"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/noProductsWarning"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:weightSum="3">
-
-        <Button
-            android:id="@+id/StorageConditionFilterButton0"
-            android:background="#d6d8d7"
-            android:layout_width="match_parent"
-            android:width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:tag="0"
-            android:onClick="setFilteredProducts"
-            android:text="Dispensa"/>
-        <Button
-            android:id="@+id/StorageConditionFilterButton1"
-            android:background="#d6d8d7"
-            android:width="0dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:tag="1"
-            android:onClick="setFilteredProducts"
-            android:text="Frigorifero"/>
-        <Button
-            android:id="@+id/StorageConditionFilterButton2"
-            android:background="#d6d8d7"
-            android:width="0dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:tag="2"
-            android:onClick="setFilteredProducts"
-            android:text="Congelatore"/>
-
-    </LinearLayout>
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:text="Nessun prodotto da visualizzare"/>
 
     <LinearLayout
-        android:padding="11dp"
-        android:id="@+id/searchBarBlock"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/searchBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:layout_weight="1"
-            android:hint="Cerca"/>
-        <Button
-            android:id="@+id/searchBarClearButton"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:onClick="eraseField"
-            android:tag="searchBar"
-            android:text="X" />
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/noProductsWarning"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="gone"
-            android:text="Nessun prodotto trovato"/>
 
         <LinearLayout
+            android:id="@+id/storageConditionsBlock"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="45dp">
+            android:weightSum="3">
 
-            <ListView
-                android:id="@+id/mylistview"
+            <Button
+                android:id="@+id/StorageConditionFilterButton0"
+                android:background="#d6d8d7"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-            </ListView>
+                android:width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="0"
+                android:onClick="setFilteredProducts"
+                android:text="Dispensa"/>
+            <Button
+                android:id="@+id/StorageConditionFilterButton1"
+                android:background="#d6d8d7"
+                android:width="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="1"
+                android:onClick="setFilteredProducts"
+                android:text="Frigorifero"/>
+            <Button
+                android:id="@+id/StorageConditionFilterButton2"
+                android:background="#d6d8d7"
+                android:width="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="2"
+                android:onClick="setFilteredProducts"
+                android:text="Congelatore"/>
+
         </LinearLayout>
 
-        <Button
-            android:onClick="addProduct"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aggiungi prodotto"/>
+        <LinearLayout
+            android:padding="11dp"
+            android:id="@+id/searchBarBlock"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <Button
-            android:visibility="gone"
-            android:onClick="exportDB"
-            android:layout_alignParentTop="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Esporta db"/>
+            <EditText
+                android:id="@+id/searchBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:layout_weight="1"
+                android:hint="Cerca"/>
+            <Button
+                android:id="@+id/searchBarClearButton"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:onClick="eraseField"
+                android:tag="searchBar"
+                android:text="X" />
+        </LinearLayout>
 
-        <Button
-            android:onClick="addPointOfPurchase"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aggiungi negozio"/>
-    </RelativeLayout>
-</LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="45dp">
+
+                <ListView
+                    android:id="@+id/mylistview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+                </ListView>
+            </LinearLayout>
+
+            <Button
+                android:onClick="addProduct"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aggiungi prodotto"/>
+
+            <Button
+                android:visibility="gone"
+                android:onClick="exportDB"
+                android:layout_alignParentTop="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Esporta db"/>
+
+            <Button
+                android:onClick="addPointOfPurchase"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aggiungi negozio"/>
+        </RelativeLayout>
+    </LinearLayout>
+
+</RelativeLayout>
+
+
 

@@ -1,6 +1,8 @@
 package com.example.robertotarullo.myfridge.Activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -20,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.ProductsListAdapter;
@@ -28,6 +31,7 @@ import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.Utils.DateUtils;
 
 import static com.example.robertotarullo.myfridge.Database.DatabaseUtils.DATABASE_NAME;
 
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Adapter lista
     private ProductsListAdapter productsListAdapter;
+    private TextView noProductsWarning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +77,13 @@ public class MainActivity extends AppCompatActivity {
         filterButton0 = findViewById(R.id.StorageConditionFilterButton0);
         filterButton1 = findViewById(R.id.StorageConditionFilterButton1);
         filterButton2 = findViewById(R.id.StorageConditionFilterButton2);
+        noProductsWarning = findViewById(R.id.noProductsWarning);
 
         // Inizializza la search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
 
         // Setta il filtro prodotti iniziale
-        currentFilter = 1; // TODO leggere valore filtro da impostazioni
+        currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
         highlightButton(filterButton1);
 
         // Inizializza la lista leggendo dal DB
@@ -99,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setFilteredProducts(View v){
         highlightButton((Button)v); // Cambia il colore del filtro attuale
+        clearSerchBarFocus();
         setFilteredProducts(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
     }
 
@@ -144,13 +151,16 @@ public class MainActivity extends AppCompatActivity {
         if(currentPackage!=null) {
             resetSearchBar();
             setFilteredProducts(currentFilter);
-            setTitle("MyFridge");
         } else
             super.onBackPressed();
     }
 
     private void resetSearchBar(){
         searchBar.setText(""); // Svuota la barra di ricerca
+        clearSerchBarFocus();
+    }
+
+    private void clearSerchBarFocus(){
         searchBar.clearFocus(); // Togli il focus alla barra di ricerca
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
     }
@@ -214,18 +224,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults);
-            listView.setAdapter(productsListAdapter);
-        } else { // Se la barra di ricerca è vuota resetta la view
+        } else // Se la barra di ricerca è vuota resetta la view
             productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts());
-            listView.setAdapter(productsListAdapter);
-        }
+
+        setAdapter(productsListAdapter);
     }
 
     // Aggiorna la lista dei prodotti dal DB e aggiorna la view
     // Se non si vuole visualizzare il contenuto di un gruppo passare null
     // .. altrimenti passare il riferimento all'oggetto pack
     private void retrieveProductsFromDB(Pack pack){
-        products = new ArrayList<>();
+        System.out.println("Aggiorno la lista dei prodotti...");
+        products = new ArrayList<>(); // Svuoto la lista precedente
 
         new Thread(() -> {
             List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
@@ -271,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
     private void setFilteredProducts(int storageCondition){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
+        setTitle("MyFridge");
         currentFilter = storageCondition;   // Comunica quale filtro si sta utilizzando
 
         filteredProducts = new ArrayList<>();
@@ -289,29 +300,26 @@ public class MainActivity extends AppCompatActivity {
         }
         sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
         productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
-        listView.setAdapter(productsListAdapter);
+        setAdapter(productsListAdapter);
         filterBySearchBar();
+    }
+
+    private void updateNoProductsWarning(){
+        if(listView.getAdapter().getCount()==0)
+            noProductsWarning.setVisibility(View.VISIBLE);
+        else
+            noProductsWarning.setVisibility(View.GONE);
     }
 
     // Mostra nella view il contenuto di un raggruppamento (se non vuoto)
     private void setPackageView(Pack pack){
-        if(!showConsumedProducts){
-            if(!pack.isConsumed()) // Se la confezione non è attualmente vuota
-                showPackageProducts(pack);
-            else // Se la confezione è vuota torna indietro
-                setFilteredProducts(currentFilter);
-        } else
-            showPackageProducts(pack);
-    }
-
-    // Metodo utilizzato da setPackageView(Pack pack)
-    private void showPackageProducts(Pack pack){
+        currentPackage = pack;
         findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
         if(pack.getBrand()!=null)
             setTitle(pack.getName() + " " + pack.getBrand());
         else
             setTitle(pack.getName());
-        currentPackage = pack;
+
         packProducts = new ArrayList<>();
         for(int i=0; i<pack.getProducts().size(); i++){
             if(showConsumedProducts)
@@ -321,8 +329,17 @@ public class MainActivity extends AppCompatActivity {
                     packProducts.add(pack.getProducts().get(i));
             }
         }
+
         productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts);
-        listView.setAdapter(productsListAdapter);
+        setAdapter(productsListAdapter);
+        // TODO comunica tramite un textview il caso in cui non ci sia nessun prodotto da visualizzare, sia nel gruppo che non
+    }
+
+    // aggiunge adapter e aggiorna warning
+    // TODO cambia lista all'adapter esistente senza inizializzarlo ogni volta e metti un observer per aggiornare il warning
+    private void setAdapter(ProductsListAdapter adapter){
+        listView.setAdapter(adapter);
+        updateNoProductsWarning();
     }
 
     /*public void exportDB(View view) {
@@ -422,10 +439,7 @@ public class MainActivity extends AppCompatActivity {
                             if (productDatabase.productDao().updateConsumption(((SingleProduct) p).getId(), true) > 0){
                                 runOnUiThread(() -> {
                                     Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
-                                    if(currentPackage!=null)
-                                        retrieveProductsFromDB(currentPackage); // aggiorna lista
-                                    else
-                                        retrieveProductsFromDB(null); // aggiorna lista
+                                    retrieveProductsFromDB(null); // aggiorna lista
                                 });
                             }
                         }
@@ -453,33 +467,39 @@ public class MainActivity extends AppCompatActivity {
     // ordina dalla data più recente alla più lontana, con i valori null alla fine
     private void sortByAscendingDate(List<Product> products){
 
-        // TODO Implementare confronto data di scadenza tra Pack e SingleProduct
-        /*Collections.sort(products, (p1, p2) -> {
+        // Ordine: non specificata > data crescente > mai
 
-            Date date1;
-            Date date2;
+        Collections.sort(products, (p1, p2) -> {
 
-            if(p1 instanceof SingleProduct)
-                date1 = ((SingleProduct) p1).getActualExpiringDate();
-            else
-                date1 = p1.getExpiryDate();
+            Date date1 = DateUtils.getActualExpiryDate(p1);
+            Date date2 = DateUtils.getActualExpiryDate(p2);
 
-            if(p2 instanceof SingleProduct)
-                date2 = ((SingleProduct) p2).getActualExpiringDate();
-            else
-                date2 = p2.getExpiryDate();
+            // -1 mette in alto p1
+            // 1 mette in alto p2
+            // 0 mantiene l'ordine di default
 
-            if(date1==null)
-                return -1;
-            else if(date2==null)
-                return 1;
-            else if(date1.equals(date2))
+            if(date1==null && date2==null)                      // entrambe non specificate
                 return 0;
-            else if(date1.after(date2))
-                return 1;
-            else //if(date1.before(date2))
+            else if(date1==null)                                // dai precedenza a non specificata
                 return -1;
-        });*/
+            else if(date2==null)                                // dai precedenza a non specificata
+                return 1;
+            else if(date1.equals(date2))                        // date uguali
+                return 0;
+            else if(date1.after(date2)){
+                if(date2.equals(DateUtils.getNoExpiryDate()))   // dai precedenze a data non 'mai'
+                    return -1;
+                else
+                    return 1;                                   // dai precedenza alla data più vecchia
+            } else if(date1.before(date2)) {
+                if(date1.equals(DateUtils.getNoExpiryDate()))
+                    return 1;                                   // dai precedenze a data non 'mai'
+                else
+                    return -1;                                  // dai precedenza alla data più vecchia
+            }
+
+            return 0;
+        });
     }
 
     // Aggiorna la lista rispecchiando le eventuali modifiche applicate dalle altre activity

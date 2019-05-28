@@ -329,7 +329,7 @@ public class AddProduct extends AppCompatActivity {
                 currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
                 if(p.getExpiryDate()!=null) {
-                    if(p.getExpiryDate().equals(DateUtils.getDate("01", "01", "1970"))) { // TODO usare metodo appropriato per rappresentare l'informazione "mai"
+                    if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) { // TODO usare metodo appropriato per rappresentare l'informazione "mai"
                         noExpiryCheckbox.setChecked(true);
                         editFieldNotFromUser(expiryDaysAfterOpeningField, "");
                     } else {
@@ -507,7 +507,7 @@ public class AddProduct extends AppCompatActivity {
             p.setPackaged(true);
 
             if(noExpiryCheckbox.isChecked())
-                p.setExpiryDate(DateUtils.getDate("01", "01", "1970")); // TODO rappresentare il dato "mai" in modo appropriato
+                p.setExpiryDate(DateUtils.getNoExpiryDate()); // TODO rappresentare il dato "mai" in modo appropriato
             else
                 p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
 

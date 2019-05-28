@@ -261,13 +261,6 @@ public class SingleProduct implements Product{
         this.expiringDaysAfterOpening = expiringDaysAfterOpening;
     }
 
-    // TODO spostare in classe Utils esterna
-    public Date getActualExpiringDate(){
-        if(packaged && opened && openingDate!=null && expiringDaysAfterOpening>0)
-            return DateUtils.getDateByAddingDays(openingDate, expiringDaysAfterOpening);
-        return expiryDate;
-    }
-
     public boolean isPackaged() {
         return packaged;
     }
@@ -277,15 +270,18 @@ public class SingleProduct implements Product{
     }
 
     // ritorna true se raggruppabile
+    // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct!=null){
-            if( singleProduct.isPackaged()==packaged &&                                                       // packaged
-                (singleProduct.getName()==name || singleProduct.getName().equalsIgnoreCase(name)) &&          // name
-                (singleProduct.getBrand()==brand || singleProduct.getBrand().equalsIgnoreCase(brand)) &&      // brand
-                singleProduct.getWeight()==weight &&                                                          // weight
-                singleProduct.getPieces()==pieces &&                                                          // pieces
-                singleProduct.getStorageCondition()==storageCondition &&                                      // storageCondition
-                singleProduct.getOpenedStorageCondition()==openedStorageCondition                             // openedStorageCondition
+            if( singleProduct.isPackaged()==packaged &&                                                                 // packaged
+                (singleProduct.getName()==name || singleProduct.getName().equalsIgnoreCase(name)) &&                    // name
+                (singleProduct.getBrand()==brand || singleProduct.getBrand().equalsIgnoreCase(brand)) &&                // brand
+                singleProduct.getWeight()==weight &&                                                                    // weight
+                singleProduct.getPieces()==pieces &&                                                                    // pieces
+                singleProduct.getStorageCondition()==storageCondition &&                                                // storageCondition
+                singleProduct.getOpenedStorageCondition()==openedStorageCondition &&                                    // openedStorageCondition
+                (singleProduct.getExpiryDate()==expiryDate || singleProduct.getExpiryDate().equals(expiryDate)) &&      // expiryDate
+                singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening                                   // expiringDaysAfterOpening
             ){
                 return true;
             }

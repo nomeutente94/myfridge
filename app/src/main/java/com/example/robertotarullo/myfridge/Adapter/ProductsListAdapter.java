@@ -22,13 +22,16 @@ import com.example.robertotarullo.myfridge.R;
 
 public class ProductsListAdapter extends ArrayAdapter<Product> {
     private LayoutInflater inflater;
-    private List<Product> products;
     private static final String GREEN_BAR = "#8ac249", YELLOW_BAR = "#fec006", RED_BAR = "#f34236";
+    private static final int HALF_CONSUMPTION = 50, LOW_CONSUMPTION = 25;
+    private Product p;
+    private TextView quantityTextView, nameTextView, dataTextView, typeTextView;
+    private LinearLayout consumptionBar, nonConsumptionBar;
+    private Button deleteButton;
 
     public ProductsListAdapter(Context context, int resourceId, List<Product> products) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
-        this.products = products;
     }
 
     @Override
@@ -38,20 +41,34 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             v = inflater.inflate(R.layout.list_element, null);
         }
 
-        Product p = getItem(position);
+        p = getItem(position);
 
-        TextView quantityTextView = v.findViewById(R.id.elem_lista_quantita);
-        TextView nameTextView = v.findViewById(R.id.elem_lista_nome);
-        LinearLayout consumptionBar = v.findViewById(R.id.elem_lista_consumption);
-        LinearLayout nonConsumptionBar = v.findViewById(R.id.elem_lista_non_consumption);
-        TextView dataTextView = v.findViewById(R.id.elem_lista_data);
-        TextView typeTextView = v.findViewById(R.id.elem_lista_tipo);
-        Button deleteButton = v.findViewById(R.id.deleteButton);
+        quantityTextView = v.findViewById(R.id.elem_lista_quantita);
+        nameTextView = v.findViewById(R.id.elem_lista_nome);
+        consumptionBar = v.findViewById(R.id.elem_lista_consumption);
+        nonConsumptionBar = v.findViewById(R.id.elem_lista_non_consumption);
+        dataTextView = v.findViewById(R.id.elem_lista_data);
+        typeTextView = v.findViewById(R.id.elem_lista_tipo);
+        deleteButton = v.findViewById(R.id.deleteButton);
 
-        nameTextView.setText(p.getName());
+        setName();
+        setType();
+        setConsumption();
+        setDate();
+
+        deleteButton.setTag(position);
+
+        return v;
+    }
+
+    private void setName(){
         if(p.getBrand()!=null)
-            nameTextView.setText(nameTextView.getText() + " " + p.getBrand());
+            nameTextView.setText(p.getName() + " " + p.getBrand());
+        else
+            nameTextView.setText(p.getName());
+    }
 
+    private void setType(){
         if(p instanceof SingleProduct) {
             deleteButton.setVisibility(View.VISIBLE);
 
@@ -63,7 +80,9 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             deleteButton.setVisibility(View.INVISIBLE);
             typeTextView.setText(((Pack) p).getProducts().size() + " prodotti");
         }
+    }
 
+    private void setConsumption(){
         int consumedQuantity;
         if(p.isConsumed()) {
             consumedQuantity = 100;
@@ -80,26 +99,24 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         );
 
         consumptionBar.setLayoutParams(param);
-        if(p.getPercentageQuantity()>50)
+        if(p.getPercentageQuantity() > HALF_CONSUMPTION)
             nonConsumptionBar.setBackgroundColor(Color.parseColor(GREEN_BAR));
-        else if(p.getPercentageQuantity()>30)
+        else if(p.getPercentageQuantity() > LOW_CONSUMPTION)
             nonConsumptionBar.setBackgroundColor(Color.parseColor(YELLOW_BAR));
         else
             nonConsumptionBar.setBackgroundColor(Color.parseColor(RED_BAR));
+    }
 
-        // TODO implementare visualizzazione data per Pack
-        /*if(p.getExpiryDate()!= null && p.getExpiryDate().equals(DateUtils.getDate("01", "01", "1970"))) // TODO Cambiare controllo data "mai"
-            dataTextView.setText("Non scade mai");
-        else if(p instanceof SingleProduct && ((SingleProduct) p).getActualExpiringDate()!=null)
-            dataTextView.setText(DateUtils.getFormattedDate(((SingleProduct) p).getActualExpiringDate()));
-        else if(p.getExpiryDate()!=null)
-            dataTextView.setText(DateUtils.getFormattedDate(p.getExpiryDate()));
-        else
-            dataTextView.setText("Data di scadenza non specificata");*/
+    private void setDate(){
+        Date expiryDate = DateUtils.getActualExpiryDate(p);
 
-        deleteButton.setTag(position);
-
-        return v;
+        if(expiryDate!= null){
+            if(expiryDate.equals(DateUtils.getNoExpiryDate())) // TODO Cambiare controllo data "mai"
+                dataTextView.setText("Mai");
+            else
+                dataTextView.setText(DateUtils.getLanguageFormattedDate(expiryDate)); // TODO prevedere altre formattazioni data
+        } else
+            dataTextView.setText("Non specificata");
     }
 }
 

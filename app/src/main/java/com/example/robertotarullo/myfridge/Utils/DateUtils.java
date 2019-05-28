@@ -3,6 +3,10 @@ package com.example.robertotarullo.myfridge.Utils;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.robertotarullo.myfridge.Bean.Pack;
+import com.example.robertotarullo.myfridge.Bean.Product;
+import com.example.robertotarullo.myfridge.Bean.SingleProduct;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,6 +15,22 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
 public abstract class DateUtils {
+
+    public static Date getActualExpiryDate(Product p){
+        if(p!=null){
+            SingleProduct productToCheck;
+
+            if(p instanceof SingleProduct)
+                productToCheck = (SingleProduct)p;
+            else
+                productToCheck = ((Pack)p).getProducts().get(0); // TODO si dà per scontato che tutti i prodotti di un gruppo abbiano la stessa data di scadenza
+
+            if(productToCheck.isPackaged() && productToCheck.isOpened() && productToCheck.getOpeningDate()!=null && productToCheck.getExpiringDaysAfterOpening()>0)
+                return getDateByAddingDays(productToCheck.getOpeningDate(), productToCheck.getExpiringDaysAfterOpening());
+            return productToCheck.getExpiryDate();
+        } else
+            return null;
+    }
 
     // Setta gli spinner alla data
     public static void setDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner, Date date){
@@ -86,6 +106,10 @@ public abstract class DateUtils {
         return getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString());
     }
 
+    public static Date getNoExpiryDate(){
+        return getDate("01", "01", "1970");
+    }
+
     // Restituisce un oggetto data a partire dalle stringhe giorno, mese e anno, ritorna null se qualche valore non valido
     public static Date getDate(String day, String month, String year){
         String date = day + "/" + month + "/" + year;
@@ -137,14 +161,54 @@ public abstract class DateUtils {
     // ottieni una stringa formattata da un oggetto Calendar
     public static String getFormattedDate(Calendar cal){
         String dateAsString = "";
-        if(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)).length()==1){
+
+        if(String.valueOf(cal.get(Calendar.DAY_OF_MONTH)).length()==1)
             dateAsString += "0";
-        }
+
         dateAsString += String.valueOf(cal.get(Calendar.DAY_OF_MONTH)) + "/";
-        if(String.valueOf(cal.get(Calendar.MONTH)+1).length()==1){
+        if(String.valueOf(cal.get(Calendar.MONTH)+1).length()==1)
             dateAsString += "0";
-        }
+
         dateAsString += String.valueOf(cal.get(Calendar.MONTH)+1) + "/" + cal.get(Calendar.YEAR);
+        return dateAsString;
+    }
+
+    // ottieni una stringa formattata da un oggetto Calendar
+    public static String getLanguageFormattedDate(Calendar cal){
+        String dateAsString = "";
+
+        dateAsString += String.valueOf(cal.get(Calendar.DAY_OF_MONTH)) + " ";
+
+        String month = String.valueOf(cal.get(Calendar.MONTH)+1);
+        String monthAsString = "error_month";
+
+        if(month.equals("1"))
+            monthAsString = "Gen";
+        else if(month.equals("2"))
+            monthAsString = "Feb";
+        else if(month.equals("3"))
+            monthAsString = "Mar";
+        else if(month.equals("4"))
+            monthAsString = "Apr";
+        else if(month.equals("5"))
+            monthAsString = "Mag";
+        else if(month.equals("6"))
+            monthAsString = "Giu";
+        else if(month.equals("7"))
+            monthAsString = "Lug";
+        else if(month.equals("8"))
+            monthAsString = "Ago";
+        else if(month.equals("9"))
+            monthAsString = "Set";
+        else if(month.equals("10"))
+            monthAsString = "Ott";
+        else if(month.equals("11"))
+            monthAsString = "Nov";
+        else if(month.equals("12"))
+            monthAsString = "Dic";
+
+        dateAsString += monthAsString + " " + cal.get(Calendar.YEAR);
+
         return dateAsString;
     }
 
@@ -153,6 +217,13 @@ public abstract class DateUtils {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         return getFormattedDate(cal);
+    }
+
+    // ottieni una stringa formattata da un oggetto Date
+    public static String getLanguageFormattedDate(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return getLanguageFormattedDate(cal);
     }
 
 
