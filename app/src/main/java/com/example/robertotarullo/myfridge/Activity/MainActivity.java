@@ -239,8 +239,10 @@ public class MainActivity extends AppCompatActivity {
         List<Pack> packs = new ArrayList<>();
 
         for(int i=0; i<singleProducts.size(); i++){                                     // Per ogni prodotto
+            System.out.println("prodotto n." + i);
             Pack p = new Pack();                                                        // Crea un nuovo pack
             for(int j=0; j<singleProducts.size(); j++){                                 // Cerca tra tutti i prodotti
+                System.out.println("Confrontabile con prodotto n." + j + ": " + singleProducts.get(i).packEquals(singleProducts.get(j)));
                 if(j!=i && singleProducts.get(i).packEquals(singleProducts.get(j))){    // .. se i due prodotti sono raggruppabili
                     p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
                     singleProducts.remove(j);

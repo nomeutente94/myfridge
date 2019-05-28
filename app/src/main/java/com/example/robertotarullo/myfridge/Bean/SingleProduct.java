@@ -276,22 +276,23 @@ public class SingleProduct implements Product{
         this.packaged = packaged;
     }
 
+    // ritorna true se raggruppabile
     public boolean packEquals(SingleProduct singleProduct){
-        if(singleProduct==null)
+        if(singleProduct!=null){
+            if( singleProduct.isPackaged()==packaged &&                                                       // packaged
+                (singleProduct.getName()==name || singleProduct.getName().equalsIgnoreCase(name)) &&          // name
+                (singleProduct.getBrand()==brand || singleProduct.getBrand().equalsIgnoreCase(brand)) &&      // brand
+                singleProduct.getWeight()==weight &&                                                          // weight
+                singleProduct.getPieces()==pieces &&                                                          // pieces
+                singleProduct.getStorageCondition()==storageCondition &&                                      // storageCondition
+                singleProduct.getOpenedStorageCondition()==openedStorageCondition                             // openedStorageCondition
+            ){
+                return true;
+            }
+        } else
             return false;
-        else if(    singleProduct.isPackaged() != packaged ||                                                       // packaged
-                    (singleProduct.getName() !=name || !singleProduct.getName().equalsIgnoreCase(name)) ||          // name
-                    (singleProduct.getBrand() != brand || !singleProduct.getBrand().equalsIgnoreCase(brand)) ||     // brand
-                    singleProduct.getWeight() != weight ||                                                          // weight
-                    singleProduct.getPieces() != pieces ||                                                          // pieces
-                    singleProduct.getStorageCondition() != storageCondition ||                                      // storageCondition
-                    singleProduct.getOpenedStorageCondition() != openedStorageCondition                             // openedStorageCondition
-            )
-        {
-            return false;
-        }
 
-        return true;
+        return false;
     }
 
     @Override
