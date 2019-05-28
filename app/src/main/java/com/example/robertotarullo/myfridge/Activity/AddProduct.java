@@ -420,7 +420,7 @@ public class AddProduct extends AppCompatActivity {
                 int insertCount = 0; // counter inserimenti
                 Intent resultIntent = new Intent();
 
-                printProductOnConsole(newProduct);
+                //printProductOnConsole(newProduct);
 
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
@@ -451,6 +451,7 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
+    /*
     private void printProductOnConsole(SingleProduct p){
         System.out.println("id: " + p.getId());
         System.out.println("packaged: " + p.isPackaged());
@@ -474,6 +475,7 @@ public class AddProduct extends AppCompatActivity {
         System.out.println("expirydate: " + p.getExpiryDate());
         System.out.println("openedstoragecondition: " + p.getOpenedStorageCondition());
     }
+    */
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields(){

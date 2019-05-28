@@ -49,6 +49,8 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         Button deleteButton = v.findViewById(R.id.deleteButton);
 
         nameTextView.setText(p.getName());
+        if(p.getBrand()!=null)
+            nameTextView.setText(nameTextView.getText() + " " + p.getBrand());
 
         if(p instanceof SingleProduct) {
             if(p.isPackaged())
@@ -56,7 +58,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             else
                 typeTextView.setText("Prodotto fresco");
         } else
-            typeTextView.setText("Confezione");
+            typeTextView.setText(((Pack)p).getProducts().size() + " prodotti");
 
         int consumedQuantity;
         if(p.isConsumed()) {

@@ -1,13 +1,6 @@
 package com.example.robertotarullo.myfridge.Activity;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -17,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -58,11 +51,41 @@ public class MainActivity extends AppCompatActivity {
     private List<Product> packProducts; // Lista di prodotti della confezione corrente (solo singleProduct)
 
     // Riferimenti a elementi della view
-    private EditText searchBar;
     private ListView listView;
+    private EditText searchBar;
+    private Button filterButton0, filterButton1, filterButton2;
 
     // Adapter lista
     private ProductsListAdapter productsListAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Ottieni un riferimento al DB
+        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DATABASE_NAME).build();
+
+        // Ottieni riferimenti alle view
+        listView = findViewById(R.id.mylistview);
+        searchBar = findViewById(R.id.searchBar);
+        filterButton0 = findViewById(R.id.StorageConditionFilterButton0);
+        filterButton1 = findViewById(R.id.StorageConditionFilterButton1);
+        filterButton2 = findViewById(R.id.StorageConditionFilterButton2);
+
+        // Inizializza la search bar
+        searchBar.addTextChangedListener(new SearchBarWatcher());
+
+        // Setta il filtro prodotti iniziale
+        currentFilter = 1; // TODO leggere valore filtro da impostazioni
+        highlightButton(filterButton1);
+
+        // Inizializza la lista leggendo dal DB
+        retrieveProductsFromDB(null);
+
+        // Setta il comportamento al click di un elemento
+        initializeItemBehaviour();
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -75,16 +98,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilteredProducts(View v){
+        highlightButton((Button)v); // Cambia il colore del filtro attuale
+        setFilteredProducts(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
+    }
+
+    private void highlightButton(Button b){
+        if(b==null){
+            if(currentFilter==0)
+                b = filterButton0;
+            else if(currentFilter==1)
+                b = filterButton1;
+            else if(currentFilter==2)
+                b = filterButton2;
+        }
+
         // Resetta i colori dei filtri
-        findViewById(R.id.StorageConditionFilterButton0).setBackgroundColor(Color.parseColor("#d6d8d7"));
-        findViewById(R.id.StorageConditionFilterButton1).setBackgroundColor(Color.parseColor("#d6d8d7"));
-        findViewById(R.id.StorageConditionFilterButton2).setBackgroundColor(Color.parseColor("#d6d8d7"));
-
+        filterButton0.setBackgroundColor(Color.parseColor("#d6d8d7"));
+        filterButton1.setBackgroundColor(Color.parseColor("#d6d8d7"));
+        filterButton2.setBackgroundColor(Color.parseColor("#d6d8d7"));
         // Cambia il colore del filtro attuale
-        v.setBackgroundColor(Color.parseColor("#bcbebd"));
-
-        // Filtra la lista dei prodotti in base al filtro selezionato
-        setFilteredProducts(Integer.valueOf(v.getTag().toString()));
+        b.setBackgroundColor(Color.parseColor("#bcbebd"));
     }
 
     @Override
@@ -111,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         if(currentPackage!=null) {
             resetSearchBar();
             setFilteredProducts(currentFilter);
+            setTitle("MyFridge");
         } else
             super.onBackPressed();
     }
@@ -119,31 +153,6 @@ public class MainActivity extends AppCompatActivity {
         searchBar.setText(""); // Svuota la barra di ricerca
         searchBar.clearFocus(); // Togli il focus alla barra di ricerca
         ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Ottieni un riferimento al db
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DATABASE_NAME).build();
-
-        // Ottieni riferimenti alle view
-        listView = findViewById(R.id.mylistview);
-        searchBar = findViewById(R.id.searchBar);
-
-        // Inizializza la search bar
-        searchBar.addTextChangedListener(new SearchBarWatcher());
-
-        // Setta il filtro prodotti iniziale
-        currentFilter = 1; // TODO leggere valore da impostazioni
-
-        // Inizializza la lista leggendo dal DB
-        retrieveProductsFromDB(null);
-
-        // Setta il comportamento al click di un elemento
-        initializeItemBehaviour();
     }
 
     // Specifica cosa fare quando l'utente tocca un item della lista
@@ -227,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 products.addAll(singleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
                 if(pack==null)
-                    setFilteredProducts(findViewById(R.id.StorageConditionFilterButton1)); // TODO controlla prima quale filtro utilizzare !
+                    setFilteredProducts(currentFilter);
                 else
                     setPackageView(pack);
             });
@@ -239,10 +248,8 @@ public class MainActivity extends AppCompatActivity {
         List<Pack> packs = new ArrayList<>();
 
         for(int i=0; i<singleProducts.size(); i++){                                     // Per ogni prodotto
-            System.out.println("prodotto n." + i);
             Pack p = new Pack();                                                        // Crea un nuovo pack
             for(int j=0; j<singleProducts.size(); j++){                                 // Cerca tra tutti i prodotti
-                System.out.println("Confrontabile con prodotto n." + j + ": " + singleProducts.get(i).packEquals(singleProducts.get(j)));
                 if(j!=i && singleProducts.get(i).packEquals(singleProducts.get(j))){    // .. se i due prodotti sono raggruppabili
                     p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
                     singleProducts.remove(j);
@@ -300,7 +307,10 @@ public class MainActivity extends AppCompatActivity {
     // Metodo utilizzato da setPackageView(Pack pack)
     private void showPackageProducts(Pack pack){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
-        setTitle(pack.getName());
+        if(pack.getBrand()!=null)
+            setTitle(pack.getName() + " " + pack.getBrand());
+        else
+            setTitle(pack.getName());
         currentPackage = pack;
         packProducts = new ArrayList<>();
         for(int i=0; i<pack.getProducts().size(); i++){
@@ -473,20 +483,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                currentFilter = data.getIntExtra("filter", 1);
-                if(data.getBooleanExtra("addedPack", false))
-                    retrieveProductsFromDB(null); // Se è stata aggiunta una confezione mostra e aggiorna la lista generale dei prodotti
-                else {
-                    // TODO mostra la view dell'eventuale gruppo d'appartenenza del prodotto aggiunto
-                    // retrieveProductsFromDB(data.getLongExtra("packId", 0)); // Se è stato aggiunto un prodotto mostra e aggiorna l'eventuale confezione che lo contiene
-                }
+                currentFilter = data.getIntExtra("filter", currentFilter);
+                retrieveProductsFromDB(null);
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                if(!data.getBooleanExtra("delete", false)) // Se il prodotto è stato modificato e non cancellato
-                    currentFilter = data.getIntExtra("filter", 1);
-                // TODO mostra la view dell'eventuale gruppo d'appartenenza del prodotto modificato
-                // retrieveProductsFromDB(data.getLongExtra("packId", 0));
+                if(!data.getBooleanExtra("delete", false)) { // Se il prodotto è stato modificato
+                    currentFilter = data.getIntExtra("filter", currentFilter);
+                    highlightButton(null);
+                }
+                retrieveProductsFromDB(null);
             }
         }
     }
