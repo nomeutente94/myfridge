@@ -72,7 +72,7 @@
         android:layout_height="match_parent">
         <Button
             android:layout_margin="20dp"
-            android:onClick="deleteProduct"
+            android:onClick="consumeProduct"
             android:focusable="false"
             android:id="@+id/deleteButton"
             android:focusableInTouchMode="false"

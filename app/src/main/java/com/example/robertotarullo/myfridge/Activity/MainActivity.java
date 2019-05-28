@@ -393,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Mostra dialog per la consumazione di un singleProduct
-    public void deleteProduct(View view){
+    public void consumeProduct(View view){
         int position = Integer.parseInt(view.getTag().toString());
         Product p = productsListAdapter.getItem(position);
 
@@ -402,14 +402,22 @@ public class MainActivity extends AppCompatActivity {
                 case DialogInterface.BUTTON_POSITIVE:
                     new Thread(() -> {
                         if(p instanceof Pack) {
-                            // TODO elimina tutto il contenuto del gruppo
                             /*
-                            if (productDatabase.productDao().updatePackConsumption(p.getPackageId(), true) > 0) {
-                                runOnUiThread(() -> {
+                            // rendere operazione atomica
+                            boolean deleteOk = true;
+                            for(int i=0; i<((Pack)p).getProducts().size(); i++){
+                                if (productDatabase.productDao().updateConsumption(((Pack)p).getProducts().get(i).getId(), true) <= 0)
+                                    deleteOk = false;
+                            }
+
+                            runOnUiThread(() -> {
+                                if(deleteOk)
+                                    Toast.makeText(getApplicationContext(), "Errore nella consumazione di uno o più prodotti", Toast.LENGTH_LONG).show();
+                                else
                                     Toast.makeText(getApplicationContext(), "Confezione settata come consumata", Toast.LENGTH_LONG).show();
-                                    retrieveProductsFromDB(0); // aggiorna lista
-                                });
-                            }*/
+                                retrieveProductsFromDB(null); // aggiorna lista
+                            });
+                            */
                         } else {
                             if (productDatabase.productDao().updateConsumption(((SingleProduct) p).getId(), true) > 0){
                                 runOnUiThread(() -> {

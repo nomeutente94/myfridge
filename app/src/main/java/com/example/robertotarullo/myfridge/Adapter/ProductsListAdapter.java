@@ -53,12 +53,16 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             nameTextView.setText(nameTextView.getText() + " " + p.getBrand());
 
         if(p instanceof SingleProduct) {
+            deleteButton.setVisibility(View.VISIBLE);
+
             if(p.isPackaged())
                 typeTextView.setText("Prodotto confezionato");
             else
                 typeTextView.setText("Prodotto fresco");
-        } else
-            typeTextView.setText(((Pack)p).getProducts().size() + " prodotti");
+        } else {
+            deleteButton.setVisibility(View.INVISIBLE);
+            typeTextView.setText(((Pack) p).getProducts().size() + " prodotti");
+        }
 
         int consumedQuantity;
         if(p.isConsumed()) {
