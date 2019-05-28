@@ -279,13 +279,13 @@ public class SingleProduct implements Product{
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct==null)
             return false;
-        else if(    !singleProduct.isPackaged()==packaged ||                            // packaged
-                    !singleProduct.getName().equalsIgnoreCase(name) ||                  // name
-                    !singleProduct.getBrand().equalsIgnoreCase(brand) ||                // brand
-                    singleProduct.getWeight()!=weight ||                                // weight
-                    singleProduct.getPieces()!=pieces ||                                // pieces
-                    singleProduct.getStorageCondition()!=storageCondition ||            // storageCondition
-                    singleProduct.getOpenedStorageCondition()!=openedStorageCondition   // openedStorageCondition
+        else if(    singleProduct.isPackaged() != packaged ||                                                       // packaged
+                    (singleProduct.getName() !=name || !singleProduct.getName().equalsIgnoreCase(name)) ||          // name
+                    (singleProduct.getBrand() != brand || !singleProduct.getBrand().equalsIgnoreCase(brand)) ||     // brand
+                    singleProduct.getWeight() != weight ||                                                          // weight
+                    singleProduct.getPieces() != pieces ||                                                          // pieces
+                    singleProduct.getStorageCondition() != storageCondition ||                                      // storageCondition
+                    singleProduct.getOpenedStorageCondition() != openedStorageCondition                             // openedStorageCondition
             )
         {
             return false;
@@ -300,8 +300,8 @@ public class SingleProduct implements Product{
             SingleProduct singleProductObj = (SingleProduct)obj;
             if(     singleProductObj.getId()==id &&
                     singleProductObj.isPackaged()==packaged &&
-                   (singleProductObj.getName()==name || singleProductObj.getName().equals(name)) &&
-                   (singleProductObj.getBrand()==brand || singleProductObj.getBrand().equals(brand)) &&
+                    (singleProductObj.getName()==name || singleProductObj.getName().equals(name)) &&
+                    (singleProductObj.getBrand()==brand || singleProductObj.getBrand().equals(brand)) &&
                     singleProductObj.getPrice()==price &&
                     singleProductObj.getPricePerKilo()==pricePerKilo &&
                     singleProductObj.getWeight()==weight &&
@@ -310,13 +310,13 @@ public class SingleProduct implements Product{
                     singleProductObj.getPieces()==pieces &&
                     singleProductObj.getCurrentPieces()==currentPieces &&
                     singleProductObj.getExpiringDaysAfterOpening()==expiringDaysAfterOpening &&
-                   (singleProductObj.getPurchaseDate()==purchaseDate || singleProductObj.getPurchaseDate().equals(purchaseDate)) &&
+                    (singleProductObj.getPurchaseDate()==purchaseDate || singleProductObj.getPurchaseDate().equals(purchaseDate)) &&
                     singleProductObj.getStorageCondition()==storageCondition &&
                     singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
                     singleProductObj.isConsumed()==consumed &&
                     singleProductObj.isOpened()==opened &&
-                   (singleProductObj.getOpeningDate()==openingDate || singleProductObj.getOpeningDate().equals(openingDate)) &&
-                   (singleProductObj.getExpiryDate()==expiryDate || singleProductObj.getExpiryDate().equals(expiryDate)) &&
+                    (singleProductObj.getOpeningDate()==openingDate || singleProductObj.getOpeningDate().equals(openingDate)) &&
+                    (singleProductObj.getExpiryDate()==expiryDate || singleProductObj.getExpiryDate().equals(expiryDate)) &&
                     singleProductObj.getOpenedStorageCondition()==openedStorageCondition)
                 return true;
         }
