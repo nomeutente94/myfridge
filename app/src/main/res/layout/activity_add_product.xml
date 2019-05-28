@@ -554,6 +554,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
                     </Spinner>
+                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        android:id="@+id/expiryDateField"
+                        android:layout_width="280dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:cursorVisible="false"
+                        android:focusable="false"
+                        android:hint="Data non impostata"
+                        android:onClick="showDatePickerDialog"
+                        android:tag="expiryDate" />
                     <CheckBox
                         android:id="@+id/noExpiryCheckbox"
                         android:layout_width="wrap_content"

@@ -1,6 +1,7 @@
 package com.example.robertotarullo.myfridge.Activity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,7 @@ import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
+import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.Listener.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.Listener.DateSpinnerListener;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
@@ -46,6 +48,7 @@ import com.example.robertotarullo.myfridge.Listener.StorageConditionSpinnerListe
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class AddProduct extends AppCompatActivity {
@@ -63,7 +66,7 @@ public class AddProduct extends AppCompatActivity {
 
     // views
     private ScrollView listScrollView;
-    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
+    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner, expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner;
     private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
@@ -77,6 +80,112 @@ public class AddProduct extends AppCompatActivity {
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add_product);
+
+        // Ottieni un riferimento al db
+        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
+
+        // Riferimenti ai campi
+        packagedCheckBox = findViewById(R.id.packagedCheckBox);
+        nameField = findViewById(R.id.nameField);
+        brandField = findViewById(R.id.brandField);
+        pricePerKiloField = findViewById(R.id.pricePerKiloField);
+        currentWeightField = findViewById(R.id.currentWeightField);
+        priceField = findViewById(R.id.priceField);
+        weightField = findViewById(R.id.weightField);
+        storageConditionSpinner = findViewById(R.id.storageConditionSpinner);
+        openedStorageConditionSpinner = findViewById(R.id.openedStorageConditionSpinner);
+        pointOfPurchaseSpinner = findViewById(R.id.pointOfPurchaseSpinner);
+        purchaseDateField = findViewById(R.id.purchaseDateField);
+        openingDateField = findViewById(R.id.openingDateField);
+        expiryDateField = findViewById(R.id.expiryDateField);
+        expiryDateDaySpinner = findViewById(R.id.expiryDateDaySpinner);
+        expiryDateMonthSpinner = findViewById(R.id.expiryDateMonthSpinner);
+        expiryDateYearSpinner = findViewById(R.id.expiryDateYearSpinner);
+        expiryDaysAfterOpeningField = findViewById(R.id.expiryDaysAfterOpeningField);
+        openedCheckBox = findViewById(R.id.openedCheckBox);
+        currentWeightSlider = findViewById(R.id.currentWeightSlider);
+        differentStorageConditionAfterOpeningCheckBox = findViewById(R.id.differentStorageConditionAfterOpeningCheckBox);
+        quantityField = findViewById(R.id.quantityField);
+        piecesField = findViewById(R.id.piecesField);
+        currentPiecesField = findViewById(R.id.currentPiecesField);
+        expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
+        illegalExpiryDateTextView = findViewById(R.id.illegalExpiryDateTextView);
+        noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
+        changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
+        changeToExpiryDaysButton = findViewById(R.id.changeToExpiryDays);
+
+        // riferimenti ad altre view
+        listScrollView = findViewById(R.id.listScrollView);
+        storageConditionSpinnerLabel = findViewById(R.id.storageConditionSpinnerLabel);
+        confirmButton = findViewById(R.id.addButton);
+
+        // riferimenti ai blocchi che hanno regole per la visibilità
+        currentPiecesBlock = findViewById(R.id.currentPiecesBlock);
+        openingDateBlock = findViewById(R.id.openingDateBlock);
+        expiryDateBlock = findViewById(R.id.expiryDateBlock);
+        openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);
+        openedStorageConditionBlock = findViewById(R.id.openedStorageConditionBlock);
+        currentWeightBlock = findViewById(R.id.currentWeightBlock);
+        differentStorageConditionAfterOpeningCheckBoxBlock = findViewById(R.id.differentStorageConditionAfterOpeningCheckBoxBlock);
+        quantityBlock = findViewById(R.id.quantityBlock);
+        expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
+
+        // riferimenti ai pulsanti clear di campi coinvolti in relazioni
+        priceClearButton = findViewById(R.id.priceClearButton);
+        pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
+        weightClearButton = findViewById(R.id.weightClearButton);
+
+        // Popola spinners
+        initializeStorageSpinners();
+        initializePointsOfPurchaseSpinner();
+        initializeExpiryDateSpinner();
+
+        // Comportamenti delle checkbox
+        initializeDifferentStorageConditionAfterOpeningCheckBox(true);
+        initializeOpenedCheckBox(true);
+        initializePackagedCheckBox(true);
+        initializeNoExpiryCheckBox(true);
+
+        // Validazione e comportamento
+        currentWeightSlider.setTag(R.id.percentageValue, "100");
+        priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, currentWeightField, currentWeightSlider));
+        pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, currentWeightField, currentWeightSlider));
+        weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, currentWeightField, currentWeightSlider));
+        purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField));
+        openingDateField.addTextChangedListener(new DateWatcher(openingDateField));
+        expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
+        currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
+
+        // InputFilters
+        expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});
+        priceField.setFilters(new InputFilter[]{new PriceInputFilter()});
+        pricePerKiloField.setFilters(new InputFilter[]{new PriceInputFilter()});
+        weightField.setFilters(new InputFilter[]{new WeightInputFilter()});
+        currentWeightField.setFilters(new InputFilter[]{new WeightInputFilter()});
+
+        // Comportamento alla perdita del focus
+        weightField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onWeightFocusLost(); });
+        priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
+        pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
+
+        action = getIntent().getStringExtra("action");
+        if(action.equals("add")) {
+            setTitle("Aggiungi prodotto");
+            confirmButton.setText("Aggiungi prodotto");
+            startingForm = getCurrentForm();
+        } else if(action.equals("edit")) {
+            setTitle("Modifica prodotto");
+            productToModifyId = getIntent().getLongExtra("id", 0);
+            confirmButton.setText("Modifica prodotto");
+            quantityBlock.setVisibility(View.GONE);
+            fillForm();
+        }
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -150,114 +259,9 @@ public class AddProduct extends AppCompatActivity {
 
     private ProductForm getCurrentForm(){
         return new ProductForm( createProductFromFields(),
-                                TextUtils.getInt(quantityField),
-                                DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner),
-                                TextUtils.getInt(expiryDaysAfterOpeningField));
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_product);
-
-        // Ottieni un riferimento al db
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
-
-        // Riferimenti ai campi
-        packagedCheckBox = findViewById(R.id.packagedCheckBox);
-        nameField = findViewById(R.id.nameField);
-        brandField = findViewById(R.id.brandField);
-        pricePerKiloField = findViewById(R.id.pricePerKiloField);
-        currentWeightField = findViewById(R.id.currentWeightField);
-        priceField = findViewById(R.id.priceField);
-        weightField = findViewById(R.id.weightField);
-        storageConditionSpinner = findViewById(R.id.storageConditionSpinner);
-        openedStorageConditionSpinner = findViewById(R.id.openedStorageConditionSpinner);
-        pointOfPurchaseSpinner = findViewById(R.id.pointOfPurchaseSpinner);
-        purchaseDateField = findViewById(R.id.purchaseDateField);
-        openingDateField = findViewById(R.id.openingDateField);
-        expiryDateDaySpinner = findViewById(R.id.expiryDateDaySpinner);
-        expiryDateMonthSpinner = findViewById(R.id.expiryDateMonthSpinner);
-        expiryDateYearSpinner = findViewById(R.id.expiryDateYearSpinner);
-        expiryDaysAfterOpeningField = findViewById(R.id.expiryDaysAfterOpeningField);
-        openedCheckBox = findViewById(R.id.openedCheckBox);
-        currentWeightSlider = findViewById(R.id.currentWeightSlider);
-        differentStorageConditionAfterOpeningCheckBox = findViewById(R.id.differentStorageConditionAfterOpeningCheckBox);
-        quantityField = findViewById(R.id.quantityField);
-        piecesField = findViewById(R.id.piecesField);
-        currentPiecesField = findViewById(R.id.currentPiecesField);
-        expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
-        illegalExpiryDateTextView = findViewById(R.id.illegalExpiryDateTextView);
-        noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
-        changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
-        changeToExpiryDaysButton = findViewById(R.id.changeToExpiryDays);
-
-        // riferimenti ad altre view
-        listScrollView = findViewById(R.id.listScrollView);
-        storageConditionSpinnerLabel = findViewById(R.id.storageConditionSpinnerLabel);
-        confirmButton = findViewById(R.id.addButton);
-
-        // riferimenti ai blocchi che hanno regole per la visibilità
-        currentPiecesBlock = findViewById(R.id.currentPiecesBlock);
-        openingDateBlock = findViewById(R.id.openingDateBlock);
-        expiryDateBlock = findViewById(R.id.expiryDateBlock);
-        openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);
-        openedStorageConditionBlock = findViewById(R.id.openedStorageConditionBlock);
-        currentWeightBlock = findViewById(R.id.currentWeightBlock);
-        differentStorageConditionAfterOpeningCheckBoxBlock = findViewById(R.id.differentStorageConditionAfterOpeningCheckBoxBlock);
-        quantityBlock = findViewById(R.id.quantityBlock);
-        expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
-
-        // riferimenti ai pulsanti clear di campi coinvolti in relazioni
-        priceClearButton = findViewById(R.id.priceClearButton);
-        pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
-        weightClearButton = findViewById(R.id.weightClearButton);
-
-        // Popola spinners
-        initializeStorageSpinners();
-        initializePointsOfPurchaseSpinner();
-        initializeExpiryDateSpinner();
-
-        // Comportamenti delle checkbox
-        initializeDifferentStorageConditionAfterOpeningCheckBox(true);
-        initializeOpenedCheckBox(true);
-        initializePackagedCheckBox(true);
-        initializeNoExpiryCheckBox(true);
-
-        // Validazione e comportamento
-        currentWeightSlider.setTag(R.id.percentageValue, "100");
-        priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, currentWeightField, currentWeightSlider));
-        pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, currentWeightField, currentWeightSlider));
-        weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, currentWeightField, currentWeightSlider));
-        purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField));
-        openingDateField.addTextChangedListener(new DateWatcher(openingDateField));
-        //expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
-        currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
-
-        // InputFilters
-        expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});
-        priceField.setFilters(new InputFilter[]{new PriceInputFilter()});
-        pricePerKiloField.setFilters(new InputFilter[]{new PriceInputFilter()});
-        weightField.setFilters(new InputFilter[]{new WeightInputFilter()});
-        currentWeightField.setFilters(new InputFilter[]{new WeightInputFilter()});
-
-        // Comportamento alla perdita del focus
-        weightField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onWeightFocusLost(); });
-        priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
-        pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
-
-        action = getIntent().getStringExtra("action");
-        if(action.equals("add")) {
-            setTitle("Aggiungi prodotto");
-            confirmButton.setText("Aggiungi prodotto");
-            startingForm = getCurrentForm();
-        } else if(action.equals("edit")) {
-            setTitle("Modifica prodotto");
-            productToModifyId = getIntent().getLongExtra("id", 0);
-            confirmButton.setText("Modifica prodotto");
-            quantityBlock.setVisibility(View.GONE);
-            fillForm();
-        }
+                TextUtils.getInt(quantityField),
+                DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner),
+                TextUtils.getInt(expiryDaysAfterOpeningField));
     }
 
     private void initializeExpiryDateSpinner() {
@@ -762,11 +766,19 @@ public class AddProduct extends AppCompatActivity {
 
     // Modifica il corrispondente campo data
     public void showDatePickerDialog(View v) {
-        DialogFragment f = new DatePickerFragment();
-        Bundle args = new Bundle();
-        args.putString("tag", v.getTag().toString());
-        f.setArguments(args);
-        f.show(getSupportFragmentManager(), "datePicker");
+        if(v == expiryDateField){                                   // immissione data con spinner date picker
+            DialogFragment f = new SpinnerDatePickerFragment();
+            Bundle args = new Bundle();
+            args.putString("tag", v.getTag().toString());
+            f.setArguments(args);
+            f.show(getSupportFragmentManager(), "spinnerDatePicker");
+        } else {                                                    // immissione data con datepicker android
+            DialogFragment f = new DatePickerFragment();
+            Bundle args = new Bundle();
+            args.putString("tag", v.getTag().toString());
+            f.setArguments(args);
+            f.show(getSupportFragmentManager(), "datePicker");
+        }
     }
 
     // Modifica i pezzi tramite i relativi pulsanti
@@ -922,14 +934,14 @@ public class AddProduct extends AppCompatActivity {
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             // TODO Riabilitare i controlli sulle date, sia per quelle con input Spinner che quelle con EditText
-            /*
+
             if(dateField.getTag().toString().equals("purchaseDate") && !DateUtils.isDateEmpty(purchaseDateField) && purchaseDateField.getTag(R.id.warningEdit)==null){ // purchaseDate
                 if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(purchaseDateField).after(TextUtils.getDate(expiryDateField)))
                     showDateWarning(previousDate, purchaseDateField,"La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-            } else if(dateField.getTag().toString().equals("openingDate") && !DateUtils.isDateEmpty(openingDateField) && openingDateField.getTag(R.id.warningEdit)==null){
+            } else if(dateField.getTag().toString().equals("openingDate") && !DateUtils.isDateEmpty(openingDateField) && openingDateField.getTag(R.id.warningEdit)==null){ // openingDate
                 if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(openingDateField).after(TextUtils.getDate(expiryDateField)))
                     showDateWarning(previousDate, openingDateField,"La data di apertura selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-            } else if(dateField.getTag().toString().equals("expiryDate") && !DateUtils.isDateEmpty(expiryDateField) && expiryDateField.getTag(R.id.warningEdit)==null){
+            } else if(dateField.getTag().toString().equals("expiryDate") && !DateUtils.isDateEmpty(expiryDateField) && expiryDateField.getTag(R.id.warningEdit)==null){ // expiryDate
                 if(TextUtils.getDate(expiryDateField).before(Calendar.getInstance().getTime()))
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data odierna, continuare comunque aggiungendo un prodotto già scaduto?");
                 else if(!DateUtils.isDateEmpty(openingDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(openingDateField)))
@@ -937,7 +949,6 @@ public class AddProduct extends AppCompatActivity {
                 else if(!DateUtils.isDateEmpty(purchaseDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(purchaseDateField)))
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
             }
-            */
         }
     }
 }
