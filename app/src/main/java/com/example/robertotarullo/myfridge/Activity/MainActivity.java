@@ -467,7 +467,7 @@ public class MainActivity extends AppCompatActivity {
     // ordina dalla data più recente alla più lontana, con i valori null alla fine
     private void sortByAscendingDate(List<Product> products){
 
-        // Ordine: non specificata > data crescente > mai
+        // Ordine: non specificata > data crescente > mai > consumati
 
         Collections.sort(products, (p1, p2) -> {
 
@@ -478,7 +478,13 @@ public class MainActivity extends AppCompatActivity {
             // 1 mette in alto p2
             // 0 mantiene l'ordine di default
 
-            if(date1==null && date2==null)                      // entrambe non specificate
+            if(p1.isConsumed() && !p2.isConsumed())             // dai precedenza a non consumato
+                return 1;
+            else if(!p1.isConsumed() && p2.isConsumed())
+                return -1;
+            else if(p1.isConsumed() && p2.isConsumed())         // entrambi consumati
+                return 0; // TODO ordina per data di consumazione crescente
+            else if(date1==null && date2==null)                 // entrambe non specificate
                 return 0;
             else if(date1==null)                                // dai precedenza a non specificata
                 return -1;

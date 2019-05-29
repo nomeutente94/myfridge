@@ -780,7 +780,6 @@ public class AddProduct extends AppCompatActivity {
                 currentWeightSlider.setMax(100);
                 currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
             }
-
             currentPiecesBlock.setVisibility(View.GONE);
         }
     }
@@ -886,8 +885,6 @@ public class AddProduct extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            // TODO Riabilitare i controlli sulle date, sia per quelle con input Spinner che quelle con EditText
-
             if(dateField.getTag().toString().equals("purchaseDate") && !DateUtils.isDateEmpty(purchaseDateField) && purchaseDateField.getTag(R.id.warningEdit)==null){ // purchaseDate
                 if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(purchaseDateField).after(TextUtils.getDate(expiryDateField)))
                     showDateWarning(previousDate, purchaseDateField,"La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
