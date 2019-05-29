@@ -72,6 +72,9 @@ public class AddProduct extends AppCompatActivity {
     private List<String> openedStorageList;
     private StorageSpinnerArrayAdapter storageSpinnerAdapter;
 
+    // variabili di controllo del form
+    private boolean expiryDateMode;
+
     // dichiarazione dei blocchi che hanno regole per la visibilità
     private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
 
@@ -136,6 +139,9 @@ public class AddProduct extends AppCompatActivity {
         // Popola spinners
         initializeStorageSpinners();
         initializePointsOfPurchaseSpinner();
+
+        // variabili di controllo del form
+        expiryDateMode = false; // TODO configurabile: valore iniziale a preferenza dell'utente
 
         // Comportamenti delle checkbox
         initializeDifferentStorageConditionAfterOpeningCheckBox(true);
@@ -578,17 +584,15 @@ public class AddProduct extends AppCompatActivity {
                 openedCheckBox.setChecked(false);
         } else {
             // TODO decidi se mostrare expiryDaysAfterOpeningBlock oppure expiryDateBlock
-
-            // Se nessuno dei due è compilato o se entrambi sono compilati mostra l'ultimo visualizzato
-            // Se uno dei due è compilato e l'altro no mostra quello compilato
+            // Mostra l'ultimo visualizzato
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
-
             enableNoExpiryCheckBoxBehaviour(false);
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
             changeToExpiryDaysButton.setVisibility(View.VISIBLE);
             noExpiryCheckbox.setVisibility(View.GONE);
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
+
             openedCheckBoxBlock.setVisibility(View.GONE);
             openingDateBlock.setVisibility(View.GONE);
             openedStorageConditionBlock.setVisibility(View.GONE);
@@ -602,6 +606,9 @@ public class AddProduct extends AppCompatActivity {
                 currentWeightSlider.setProgress(currentWeightSlider.getMax());
                 currentWeightSlider.setTag(R.id.percentageValue, 100);
             }
+
+            if(expiryDateMode)
+                changeExpiryMode(null);
         }
 
         if(addListener)
@@ -846,6 +853,11 @@ public class AddProduct extends AppCompatActivity {
     }
 
     public void changeExpiryMode(View view) {
+        if(view==changeToExpiryDateButton)
+            expiryDateMode = true;
+        else if(view==changeToExpiryDaysButton)
+            expiryDateMode = false;
+
         changeToExpiringDateMode(expiryDateBlock.getVisibility()==View.GONE && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE);
     }
 
