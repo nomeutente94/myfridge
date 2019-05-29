@@ -40,13 +40,13 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-        if(s.length()==0){              // Se si è svuotato un campo
+        if(s.length()==0){ // Se si è svuotato un campo
             Log.d("RelationWatcher", "Il campo " + type + " è stato svuotato");
 
             if(type.equals(WEIGHT_TAG)) // Campo peso
-                unsetWeight();
+                setWeight(0);
 
-            // Controlla se c'è un campo è calcolato/oscurato
+            // Controlla e trova se c'è un campo calcolato/oscurato
             EditText disabledEditText = null;
             Button disabledClearButton = null;
             if(!editText1.isEnabled()) {
@@ -57,12 +57,13 @@ public class PriceWeightRelationWatcher implements TextWatcher {
                 disabledClearButton = clearButton2;
             }
 
-            if(disabledEditText!=null){ // se c'è un campo è calcolato/oscurato riattivalo e svuotalo
+            // se c'è un campo calcolato/oscurato riattivalo e svuotalo
+            if(disabledEditText!=null){
                 disabledEditText.setEnabled(true);
                 disabledClearButton.setEnabled(true);
                 disabledEditText.setText("");
                 if(disabledEditText.getTag().equals(WEIGHT_TAG))
-                    unsetWeight();
+                    setWeight(0);
 
                 Log.d("RelationWatcher", "E' stato sbloccato il campo " +  disabledEditText.getTag());
             }
@@ -71,32 +72,19 @@ public class PriceWeightRelationWatcher implements TextWatcher {
             Log.d("RelationWatcher", "Il campo " + type + " ha assunto il valore '" + s + "'");
 
             if(type.equals(WEIGHT_TAG)) // Se si tratta del campo peso modificalo
-                setWeight(s);
+                setWeight(TextUtils.getInt(s));
 
-            if( (!TextUtils.isEmpty(editText1) && TextUtils.isEmpty(editText2)) ||  // Se si hanno due campi non vuoti e il terzo vuoto
-                (!TextUtils.isEmpty(editText2) && TextUtils.isEmpty(editText1)))
-            {
-                EditText nonEmptyField;
-                EditText emptyField;
-                Button emptyFieldClearButton;
-
-                // Trova quale campo è da calcolare
-                if(editText1.getText().length()>0 && editText2.getText().length()==0) {
-                    nonEmptyField = editText1;
-                    emptyField = editText2;
-                    emptyFieldClearButton = clearButton2;
-                } else {
-                    nonEmptyField = editText2;
-                    emptyField = editText1;
-                    emptyFieldClearButton = clearButton1;
-                }
-
-                Log.d("RelationWatcher", "Calcolo e blocco " +  emptyField.getTag());
-                reflectToField(s, nonEmptyField, emptyField); // calcola il terzo campo
-
-                // oscura il campo appena calcolato
-                emptyField.setEnabled(false);
-                emptyFieldClearButton.setEnabled(false);
+            // Se si ha un campo non vuoto e abilitato e uno o non vuoto o disabilitato
+            if(((!TextUtils.isEmpty(editText1) && editText1.isEnabled()) && (TextUtils.isEmpty(editText2) || !editText2.isEnabled()))){
+                reflectToField(s, editText1, editText2); // calcola il terzo campo
+                clearButton2.setEnabled(false);
+                editText2.setEnabled(false);
+                Log.d("RelationWatcher", "Calcolo e blocco " +  editText2.getTag() + "... Valore calcolato: " + editText2.getText());
+            } else if(((!TextUtils.isEmpty(editText2) && editText2.isEnabled()) && (TextUtils.isEmpty(editText1) || !editText1.isEnabled()))){
+                reflectToField(s, editText2, editText1); // calcola il terzo campo
+                clearButton1.setEnabled(false);
+                editText1.setEnabled(false);
+                Log.d("RelationWatcher", "Calcolo e blocco " +  editText1.getTag() + "... Valore calcolato: " + editText1.getText());
             }
         }
     }
@@ -109,7 +97,7 @@ public class PriceWeightRelationWatcher implements TextWatcher {
     private void reflectToField(Editable s, EditText editText1, EditText editText2){
         float value = 0;
 
-        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){                 // Se si calcola il peso...
+        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){                 // Se si calcola weight...
             if(type.equals(PRICE_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))           // price e pricePerKilo
                 value = (TextUtils.getFloat(s) * 1000) / TextUtils.getFloat(editText1);         // -> weight
             else if(type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(PRICE_TAG))      // pricePerKilo e price
@@ -117,7 +105,7 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
             if(!PriceUtils.getFormattedWeight(value).equals(PriceUtils.getFormattedWeight(TextUtils.getFloat(editText2)))) { // Cambia solo se il valore è diverso dal precedente, per evitare loop nel textwatcher
                 editText2.setText(PriceUtils.getFormattedWeight(value));
-                setWeight(s);
+                setWeight(Math.round(value));
             }
         } else {                                                                                // Se si calcola prezzo o prezzo/kg
             if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))         // weight e pricePerKilo
@@ -134,31 +122,30 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         }
     }
 
-    // Gestisce le conseguenze dello svuotare il campo peso sul peso attuale e il relativo slider
-    private void unsetWeight(){
-        currentWeightField.setText("");
-        if(currentWeightSlider.getTag().toString().equals("currentWeight")){
-            // ripristina lo slide rispetto al valore percentuale
-            currentWeightSlider.setTag("percentage");
-            currentWeightSlider.setMax(100);
-            currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
-        }
-    }
-
     // Gestisce le conseguenze del modificare con un valore il campo peso sul peso attuale e il relativo slider
-    private void setWeight(Editable weight){
-        if(currentWeightSlider.getTag().toString().equals("percentage"))
-            currentWeightSlider.setTag("currentWeight");
+    private void setWeight(int weight){
+        if(weight==0){
+            currentWeightField.setText("");
+            if(currentWeightSlider.getTag().toString().equals("currentWeight")){
+                // ripristina lo slide rispetto al valore percentuale
+                currentWeightSlider.setTag("percentage");
+                currentWeightSlider.setMax(100);
+                currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
+            }
+        } else {
+            if(currentWeightSlider.getTag().toString().equals("percentage"))
+                currentWeightSlider.setTag("currentWeight");
 
-        // calcola il nuovo currentWeight rispetto al valore percentuale
-        float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * TextUtils.getInt(weight)) / (float)100;
-        int currentWeight = (int) Math.ceil(currentWeightAsFloat);
+            // calcola il nuovo currentWeight rispetto al valore percentuale
+            float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * weight) / (float)100;
 
-        if(currentWeightSlider.getTag().toString().equals("currentWeight")) {
-            currentWeightSlider.setMax(TextUtils.getInt(weight));
-            currentWeightSlider.setProgress(currentWeight);
+            if(currentWeightSlider.getTag().toString().equals("currentWeight")) {
+                currentWeightSlider.setMax(weight);
+                int currentWeight = (int) Math.ceil(currentWeightAsFloat);
+                currentWeightSlider.setProgress(currentWeight);
+            }
+
+            currentWeightField.setText(String.valueOf(currentWeightAsFloat));
         }
-
-        currentWeightField.setText(String.valueOf(currentWeightAsFloat));
     }
 }

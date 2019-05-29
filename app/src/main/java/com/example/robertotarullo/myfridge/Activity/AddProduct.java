@@ -582,8 +582,6 @@ public class AddProduct extends AppCompatActivity {
             else
                 openedCheckBox.setChecked(false);
         } else {
-            // TODO decidi se mostrare expiryDaysAfterOpeningBlock oppure expiryDateBlock
-            // Mostra l'ultimo visualizzato
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             enableNoExpiryCheckBoxBehaviour(false);
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
@@ -606,6 +604,7 @@ public class AddProduct extends AppCompatActivity {
                 currentWeightSlider.setTag(R.id.percentageValue, 100);
             }
 
+            // Mostra l'ultimo visualizzato
             if(expiryDateMode)
                 changeExpiryMode(null);
         }

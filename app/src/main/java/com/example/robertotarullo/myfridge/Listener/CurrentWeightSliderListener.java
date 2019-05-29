@@ -45,7 +45,6 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
             if(fromUser)
                 seekBar.setTag(R.id.percentageValue, String.valueOf(currentPercentage));
         } else {
-            // chiedi all'utente se vuole che il prodotto venga segnato come consumato
             seekBar.setProgress(1);
         }
 
