@@ -523,37 +523,11 @@
                     android:layout_height="wrap_content"
                     android:text="Data di scadenza" />
 
-                <TextView
-                    android:id="@+id/illegalExpiryDateTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:textColor="#FF0000"
-                    android:text="La data di scadenza immessa non è valida."/>
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
 
-                    <Spinner
-                        android:id="@+id/expiryDateDaySpinner"
-                        android:tag="expiryDateDaySpinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                    </Spinner>
-                    <Spinner
-                        android:id="@+id/expiryDateMonthSpinner"
-                        android:tag="expiryDateMonthSpinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                    </Spinner>
-                    <Spinner
-                        android:id="@+id/expiryDateYearSpinner"
-                        android:tag="expiryDateYearSpinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                    </Spinner>
                     <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
                         android:id="@+id/expiryDateField"
                         android:layout_width="280dp"

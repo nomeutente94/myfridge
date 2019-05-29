@@ -24,7 +24,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.robertotarullo.myfridge.Adapter.DateSpinnerAdapter;
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
@@ -34,7 +33,6 @@ import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.Listener.CurrentWeightSliderListener;
-import com.example.robertotarullo.myfridge.Listener.DateSpinnerListener;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 import com.example.robertotarullo.myfridge.Fragment.DatePickerFragment;
@@ -46,7 +44,6 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.TextWatcher.PriceWeightRelationWatcher;
 import com.example.robertotarullo.myfridge.Listener.StorageConditionSpinnerListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -67,11 +64,11 @@ public class AddProduct extends AppCompatActivity {
     // views
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
-    private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner, expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner;
+    private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
     private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
     private SeekBar currentWeightSlider;
-    private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel, illegalExpiryDateTextView;
+    private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
     private List<String> openedStorageList;
     private StorageSpinnerArrayAdapter storageSpinnerAdapter;
 
@@ -103,9 +100,6 @@ public class AddProduct extends AppCompatActivity {
         purchaseDateField = findViewById(R.id.purchaseDateField);
         openingDateField = findViewById(R.id.openingDateField);
         expiryDateField = findViewById(R.id.expiryDateField);
-        expiryDateDaySpinner = findViewById(R.id.expiryDateDaySpinner);
-        expiryDateMonthSpinner = findViewById(R.id.expiryDateMonthSpinner);
-        expiryDateYearSpinner = findViewById(R.id.expiryDateYearSpinner);
         expiryDaysAfterOpeningField = findViewById(R.id.expiryDaysAfterOpeningField);
         openedCheckBox = findViewById(R.id.openedCheckBox);
         currentWeightSlider = findViewById(R.id.currentWeightSlider);
@@ -114,7 +108,6 @@ public class AddProduct extends AppCompatActivity {
         piecesField = findViewById(R.id.piecesField);
         currentPiecesField = findViewById(R.id.currentPiecesField);
         expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
-        illegalExpiryDateTextView = findViewById(R.id.illegalExpiryDateTextView);
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
         changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
         changeToExpiryDaysButton = findViewById(R.id.changeToExpiryDays);
@@ -143,7 +136,6 @@ public class AddProduct extends AppCompatActivity {
         // Popola spinners
         initializeStorageSpinners();
         initializePointsOfPurchaseSpinner();
-        initializeExpiryDateSpinner();
 
         // Comportamenti delle checkbox
         initializeDifferentStorageConditionAfterOpeningCheckBox(true);
@@ -260,40 +252,8 @@ public class AddProduct extends AppCompatActivity {
     private ProductForm getCurrentForm(){
         return new ProductForm( createProductFromFields(),
                 TextUtils.getInt(quantityField),
-                DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner),
+                TextUtils.getDate(expiryDateField),
                 TextUtils.getInt(expiryDaysAfterOpeningField));
-    }
-
-    private void initializeExpiryDateSpinner() {
-        List<String> days = new ArrayList<>();
-        List<String> months = new ArrayList<>();
-        List<String> years = new ArrayList<>();
-
-        days.add("DD");
-        months.add("MM");
-        years.add("YYYY");
-        for(int i=1; i<=31; i++){
-            if(String.valueOf(i).length()==1)
-                days.add("0" + String.valueOf(i));
-            else
-                days.add(String.valueOf(i));
-        }
-
-        for(int i=1; i<=12; i++)
-            if(String.valueOf(i).length()==1)
-                months.add("0" + String.valueOf(i));
-            else
-                months.add(String.valueOf(i));
-        for(int i=2019; i<=2099; i++)
-            years.add(String.valueOf(i));
-
-        expiryDateDaySpinner.setAdapter(new DateSpinnerAdapter(this, R.layout.date_spinner_item, days));
-        expiryDateMonthSpinner.setAdapter(new DateSpinnerAdapter(this, R.layout.date_spinner_item, months));
-        expiryDateYearSpinner.setAdapter(new DateSpinnerAdapter(this, R.layout.date_spinner_item, years));
-
-        expiryDateDaySpinner.setOnItemSelectedListener(new DateSpinnerListener(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, findViewById(R.id.illegalExpiryDateTextView)));
-        expiryDateMonthSpinner.setOnItemSelectedListener(new DateSpinnerListener(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, findViewById(R.id.illegalExpiryDateTextView)));
-        expiryDateYearSpinner.setOnItemSelectedListener(new DateSpinnerListener(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, findViewById(R.id.illegalExpiryDateTextView)));
     }
 
     public void editFieldNotFromUser(EditText dateField, String text){
@@ -343,7 +303,7 @@ public class AddProduct extends AppCompatActivity {
                         noExpiryCheckbox.setChecked(true);
                         editFieldNotFromUser(expiryDaysAfterOpeningField, "");
                     } else {
-                        DateUtils.setDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, p.getExpiryDate());
+                        editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
                         if(!p.isPackaged())
                             changeToExpiringDateMode(true); // Mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
                     }
@@ -409,20 +369,6 @@ public class AddProduct extends AppCompatActivity {
         if (TextUtils.isEmpty(nameField)) {
             Toast.makeText(getApplicationContext(), "Il campo nome non può essere vuoto", Toast.LENGTH_LONG).show();
             setFocusAndScrollToView(findViewById(R.id.nameBlock));
-        } else if(expiryDateDaySpinner.getSelectedItemPosition()>0 && expiryDateMonthSpinner.getSelectedItemPosition()==0 && expiryDateYearSpinner.getSelectedItemPosition()==0){ // Se è stato compilato solo il giorno di scadenza
-            illegalExpiryDateTextView.setVisibility(View.VISIBLE);
-            //setFocusAndScrollToView(illegalExpiryDateTextView);
-        } else if(expiryDateDaySpinner.getSelectedItemPosition()==0 && expiryDateMonthSpinner.getSelectedItemPosition()>0 && expiryDateYearSpinner.getSelectedItemPosition()==0) { // Se è stato compilato solo il mese di scadenza
-            illegalExpiryDateTextView.setVisibility(View.VISIBLE);
-            //setFocusAndScrollToView(illegalExpiryDateTextView);
-        } else if(expiryDateDaySpinner.getSelectedItemPosition()>0 && expiryDateMonthSpinner.getSelectedItemPosition()>0 && expiryDateYearSpinner.getSelectedItemPosition()==0){ // se è stato compilato 29/02 mentre l'anno corrente non è bisestile
-            if(!DateUtils.isDateValid(expiryDateDaySpinner.getSelectedItem().toString(), expiryDateMonthSpinner.getSelectedItem().toString(), "2019")){ // TODO settare anno corrente
-                illegalExpiryDateTextView.setVisibility(View.VISIBLE);
-                //setFocusAndScrollToView(illegalExpiryDateTextView);
-            }
-        } else if (illegalExpiryDateTextView.getVisibility() == View.VISIBLE) { // TODO Non far dipendere questo controllo dalla visibilità del messaggio di errore, il metodo di avviso potrebbe cambiare in futuro!
-            Toast.makeText(getApplicationContext(), "La data di scadenza immessa non è valida", Toast.LENGTH_LONG).show();
-            //setFocusAndScrollToView(illegalExpiryDateTextView);
         } else {
             SingleProduct newProduct = createProductFromFields();
 
@@ -517,9 +463,9 @@ public class AddProduct extends AppCompatActivity {
             p.setPackaged(true);
 
             if(noExpiryCheckbox.isChecked())
-                p.setExpiryDate(DateUtils.getNoExpiryDate()); // TODO rappresentare il dato "mai" in modo appropriato
+                p.setExpiryDate(DateUtils.getNoExpiryDate());
             else
-                p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
+                p.setExpiryDate(TextUtils.getDate(expiryDateField));
 
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
@@ -540,7 +486,7 @@ public class AddProduct extends AppCompatActivity {
             p.setOpened(true);
             p.setOpeningDate(p.getPurchaseDate());
             if(expiryDateBlock.getVisibility()==View.VISIBLE)
-                p.setExpiryDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner));
+                p.setExpiryDate(TextUtils.getDate(expiryDateField));
             p.setOpenedStorageCondition(p.getStorageCondition());
         }
 
@@ -670,9 +616,7 @@ public class AddProduct extends AppCompatActivity {
     }
 
     private void enableNoExpiryCheckBoxBehaviour(boolean enable){
-        expiryDateDaySpinner.setEnabled(!enable);
-        expiryDateMonthSpinner.setEnabled(!enable);
-        expiryDateYearSpinner.setEnabled(!enable);
+        expiryDateField.setEnabled(!enable);
         findViewById(R.id.expiryDateClearButton).setEnabled(!enable);
         expiryDaysAfterOpeningField.setEnabled(!enable);
         findViewById(R.id.expiryDaysAfterOpeningClearButton).setEnabled(!enable);
@@ -769,9 +713,10 @@ public class AddProduct extends AppCompatActivity {
         if(v == expiryDateField){                                   // immissione data con spinner date picker
             DialogFragment f = new SpinnerDatePickerFragment();
             Bundle args = new Bundle();
-            args.putString("tag", v.getTag().toString());
+            //args.putString("tag", v.getTag().toString());
             f.setArguments(args);
             f.show(getSupportFragmentManager(), "spinnerDatePicker");
+
         } else {                                                    // immissione data con datepicker android
             DialogFragment f = new DatePickerFragment();
             Bundle args = new Bundle();
@@ -878,9 +823,8 @@ public class AddProduct extends AppCompatActivity {
             currentWeightField.setText("");
             currentWeightField.requestFocus();
         } else if(view.getTag().toString().equals("expiryDate")) {
-            expiryDateDaySpinner.setSelection(0);
-            expiryDateMonthSpinner.setSelection(0);
-            expiryDateYearSpinner.setSelection(0);
+            expiryDateField.setText("");
+            expiryDateField.requestFocus();
         } else if(view.getTag().toString().equals("purchaseDate")) {
             purchaseDateField.setText("");
             purchaseDateField.requestFocus();

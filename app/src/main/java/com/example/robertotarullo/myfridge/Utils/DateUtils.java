@@ -64,7 +64,7 @@ public abstract class DateUtils {
         }
     }
 
-    // Ritorna false se la combinazione giorno-mese è illegale (es. 31/04)
+    // Ritorna false se la combinazione giorno-mese non esiste (es. 31/04)
     public static boolean isDateValid(String day, String month, String year){
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String dateAsString = day + "/" + month + "/" + year; // TODO Permettere di settare il formato della data
@@ -214,9 +214,12 @@ public abstract class DateUtils {
 
     // ottieni una stringa formattata da un oggetto Date
     public static String getFormattedDate(Date date){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return getFormattedDate(cal);
+        if(date!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            return getFormattedDate(cal);
+        }
+        return null;
     }
 
     // ottieni una stringa formattata da un oggetto Date
