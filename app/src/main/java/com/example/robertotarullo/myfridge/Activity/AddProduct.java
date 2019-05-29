@@ -1,7 +1,6 @@
 package com.example.robertotarullo.myfridge.Activity;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -869,7 +868,6 @@ public class AddProduct extends AppCompatActivity {
             expiryDateBlock.setVisibility(View.GONE);
             findViewById(R.id.expiryDaysAfterOpeningBlock).setVisibility(View.VISIBLE);
         }
-
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico

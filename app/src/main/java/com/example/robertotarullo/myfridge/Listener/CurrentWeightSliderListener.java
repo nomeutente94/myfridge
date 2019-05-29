@@ -50,8 +50,8 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
         }
 
 
-        System.out.println("Tipo di slider: " + seekBar.getTag().toString());
-        System.out.println("Percentuale interna dello slider: " + seekBar.getTag(R.id.percentageValue).toString());
+        //System.out.println("Tipo di slider: " + seekBar.getTag().toString());
+        //System.out.println("Percentuale interna dello slider: " + seekBar.getTag(R.id.percentageValue).toString());
     }
 
     @Override

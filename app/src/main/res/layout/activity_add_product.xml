@@ -248,7 +248,6 @@
                         android:id="@+id/pricePerKiloClearButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
                         android:layout_weight="0"
                         android:onClick="eraseField"
                         android:tag="pricePerKilo"
@@ -268,7 +267,7 @@
                     android:id="@+id/weightFieldLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Peso (grammi)" />
+                    android:text="Peso totale (grammi)" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -288,7 +287,6 @@
                         android:id="@+id/weightClearButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
                         android:layout_weight="0"
                         android:onClick="eraseField"
                         android:tag="weight"
