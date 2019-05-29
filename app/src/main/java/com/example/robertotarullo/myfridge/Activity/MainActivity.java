@@ -279,31 +279,29 @@ public class MainActivity extends AppCompatActivity {
 
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilteredProducts(int storageCondition){
-        if(storageCondition!=currentFilter){
-            findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
-            currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
-            setTitle("MyFridge");
-            currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
+        findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
+        currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
+        setTitle("MyFridge");
+        currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
-            filteredProducts = new ArrayList<>();
-            for(int i=0; i<products.size(); i++){
-                if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
+        filteredProducts = new ArrayList<>();
+        for(int i=0; i<products.size(); i++){
+            if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
 
-                    // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
-                    if (products.get(i) instanceof SingleProduct) {
-                        if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
-                            filteredProducts.add(products.get(i));
-                    } else {
-                        if ((products.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
-                            filteredProducts.add(products.get(i));
-                    }
+                // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
+                if (products.get(i) instanceof SingleProduct) {
+                    if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
+                        filteredProducts.add(products.get(i));
+                } else {
+                    if ((products.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
+                        filteredProducts.add(products.get(i));
                 }
             }
-            sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
-            productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
-            setAdapter(productsListAdapter);
-            filterBySearchBar();
         }
+        sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
+        setAdapter(productsListAdapter);
+        filterBySearchBar();
     }
 
     private void updateNoProductsWarning(){
@@ -520,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        resetSearchBar();
+        //resetSearchBar();
 
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {

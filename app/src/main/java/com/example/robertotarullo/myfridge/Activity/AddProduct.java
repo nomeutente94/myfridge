@@ -13,6 +13,8 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -24,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
+import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapter;
@@ -73,6 +76,7 @@ public class AddProduct extends AppCompatActivity {
 
     // variabili di controllo del form
     private boolean expiryDateMode;
+    private List<SingleProduct> products;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
     private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
@@ -134,6 +138,9 @@ public class AddProduct extends AppCompatActivity {
         priceClearButton = findViewById(R.id.priceClearButton);
         pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
         weightClearButton = findViewById(R.id.weightClearButton);
+
+        // inizializza gli array per i suggerimenti
+        initializeSuggestions();
 
         // Popola spinners
         initializeStorageSpinners();
@@ -265,6 +272,29 @@ public class AddProduct extends AppCompatActivity {
         dateField.setTag(R.id.warningEdit, "lock");
         dateField.setText(text);
         dateField.setTag(R.id.warningEdit, null);
+    }
+
+    private void initializeSuggestions(){
+        new Thread(() -> {
+            products = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
+            ArrayList<String> nameList = new ArrayList<>();
+            ArrayList<String> brandList = new ArrayList<>();
+            for(int i=0; i<products.size(); i++){
+                // Aggiungi solo valori non duplicati e non null
+                if(products.get(i).getName()!=null && !nameList.contains(products.get(i).getName()))
+                    nameList.add(products.get(i).getName());
+                if(products.get(i).getBrand()!=null && !brandList.contains(products.get(i).getBrand()))
+                    brandList.add(products.get(i).getBrand());
+            }
+
+            ArrayAdapter<String> nameAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameList);
+            ArrayAdapter<String> brandAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandList);
+
+            runOnUiThread(() -> {
+                ((AutoCompleteTextView)nameField).setAdapter(nameAdapter);
+                ((AutoCompleteTextView)brandField).setAdapter(brandAdapter);
+            });
+        }).start();
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
