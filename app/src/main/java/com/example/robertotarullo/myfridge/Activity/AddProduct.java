@@ -26,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
-import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapter;
@@ -67,7 +66,7 @@ public class AddProduct extends AppCompatActivity {
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
-    private CheckBox openedCheckBox, differentStorageConditionAfterOpeningCheckBox, packagedCheckBox, noExpiryCheckbox;
+    private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
@@ -79,7 +78,7 @@ public class AddProduct extends AppCompatActivity {
     private List<SingleProduct> products;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, differentStorageConditionAfterOpeningCheckBoxBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
+    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -109,7 +108,6 @@ public class AddProduct extends AppCompatActivity {
         expiryDaysAfterOpeningField = findViewById(R.id.expiryDaysAfterOpeningField);
         openedCheckBox = findViewById(R.id.openedCheckBox);
         currentWeightSlider = findViewById(R.id.currentWeightSlider);
-        differentStorageConditionAfterOpeningCheckBox = findViewById(R.id.differentStorageConditionAfterOpeningCheckBox);
         quantityField = findViewById(R.id.quantityField);
         piecesField = findViewById(R.id.piecesField);
         currentPiecesField = findViewById(R.id.currentPiecesField);
@@ -130,7 +128,6 @@ public class AddProduct extends AppCompatActivity {
         openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);
         openedStorageConditionBlock = findViewById(R.id.openedStorageConditionBlock);
         currentWeightBlock = findViewById(R.id.currentWeightBlock);
-        differentStorageConditionAfterOpeningCheckBoxBlock = findViewById(R.id.differentStorageConditionAfterOpeningCheckBoxBlock);
         quantityBlock = findViewById(R.id.quantityBlock);
         expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
 
@@ -150,7 +147,6 @@ public class AddProduct extends AppCompatActivity {
         expiryDateMode = false; // TODO configurabile: valore iniziale a preferenza dell'utente
 
         // Comportamenti delle checkbox
-        initializeDifferentStorageConditionAfterOpeningCheckBox(true);
         initializeOpenedCheckBox(true);
         initializePackagedCheckBox(true);
         initializeNoExpiryCheckBox(true);
@@ -355,21 +351,25 @@ public class AddProduct extends AppCompatActivity {
                             editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
                     }
 
-                    if(p.getStorageCondition()!=p.getOpenedStorageCondition()) {
-                        differentStorageConditionAfterOpeningCheckBox.setChecked(true);
-                        String openedStorageCondition;
-                        if(p.getOpenedStorageCondition()==0)
-                            openedStorageCondition = "Temperatura ambiente";
-                        else if(p.getOpenedStorageCondition()==1)
-                            openedStorageCondition = "Frigorifero";
-                        else
-                            openedStorageCondition = "Congelatore";
-                        if(openedStorageConditionSpinner.getItemAtPosition(0).equals(openedStorageCondition))
-                            openedStorageConditionSpinner.setSelection(0);
-                        else
-                            openedStorageConditionSpinner.setSelection(1);
-                    } else {
-                        openedStorageConditionSpinner.setSelection(p.getStorageCondition());
+                    if(p.getOpenedStorageCondition()==p.getStorageCondition())
+                        openedStorageConditionSpinner.setSelection(0);
+                    else {
+                        if(p.getStorageCondition()==0){ // Temperatura ambiente
+                            if(p.getOpenedStorageCondition()==1)
+                                openedStorageConditionSpinner.setSelection(1);
+                            else
+                                openedStorageConditionSpinner.setSelection(2);
+                        } else if(p.getStorageCondition()==1){ // Frigorifero
+                            if(p.getOpenedStorageCondition()==0)
+                                openedStorageConditionSpinner.setSelection(1);
+                            else
+                                openedStorageConditionSpinner.setSelection(2);
+                        } else { // Congelatore
+                            if(p.getOpenedStorageCondition()==0)
+                                openedStorageConditionSpinner.setSelection(1);
+                            else
+                                openedStorageConditionSpinner.setSelection(2);
+                        }
                     }
                 }
 
@@ -510,7 +510,9 @@ public class AddProduct extends AppCompatActivity {
             } else
                 p.setOpened(false);
 
-            if(openedStorageConditionSpinner.getSelectedItem().equals("Temperatura ambiente"))
+            if(openedStorageConditionSpinner.getSelectedItem().equals("Stessa modalità di conservazione"))
+                p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
+            else if(openedStorageConditionSpinner.getSelectedItem().equals("Temperatura ambiente"))
                 p.setOpenedStorageCondition(0);
             else if(openedStorageConditionSpinner.getSelectedItem().equals("Frigorifero"))
                 p.setOpenedStorageCondition(1);
@@ -540,6 +542,7 @@ public class AddProduct extends AppCompatActivity {
                 p.setCurrentWeight(p.getWeight());
         }
 
+        System.out.println("Prodotto ha openedStorageCondition = " + p.getOpenedStorageCondition());
         return p;
     }
 
@@ -558,37 +561,6 @@ public class AddProduct extends AppCompatActivity {
             openedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeOpenedCheckBox(false));
     }
 
-    private void initializeDifferentStorageConditionAfterOpeningCheckBox(boolean addListener){
-        if(differentStorageConditionAfterOpeningCheckBox.isChecked()) {
-            openedStorageConditionSpinner.setEnabled(true);
-            storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
-
-            // cancella la nuova voce
-            if(storageConditionSpinner.getSelectedItemPosition()==0)
-                openedStorageList.remove(0);
-            else if(storageConditionSpinner.getSelectedItemPosition()==1)
-                openedStorageList.remove(1);
-            else if(storageConditionSpinner.getSelectedItemPosition()==2)
-                openedStorageList.remove(2);
-            storageSpinnerAdapter.notifyDataSetChanged();
-            //openedStorageConditionSpinner.setSelection(0);
-        } else {
-            openedStorageConditionSpinner.setEnabled(false);
-            storageConditionSpinnerLabel.setText("Modalità di conservazione");
-
-            // ripristina la voce
-            openedStorageList.clear();
-            openedStorageList.add("Temperatura ambiente");
-            openedStorageList.add("Frigorifero");
-            openedStorageList.add("Congelatore");
-            storageSpinnerAdapter.notifyDataSetChanged();
-            openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
-        }
-
-        if(addListener)
-            differentStorageConditionAfterOpeningCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeDifferentStorageConditionAfterOpeningCheckBox(false));
-    }
-
     private void initializePackagedCheckBox(boolean addListener) {
         if(packagedCheckBox.isChecked()){
             enableNoExpiryCheckBoxBehaviour(noExpiryCheckbox.isChecked());
@@ -596,12 +568,11 @@ public class AddProduct extends AppCompatActivity {
             changeToExpiryDaysButton.setVisibility(View.GONE);
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             noExpiryCheckbox.setVisibility(View.VISIBLE);
+            storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
             expiryDateBlock.setVisibility(View.VISIBLE);
             openedCheckBoxBlock.setVisibility(View.VISIBLE);
             openedStorageConditionBlock.setVisibility(View.VISIBLE);
-            storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
-            differentStorageConditionAfterOpeningCheckBoxBlock.setVisibility(View.VISIBLE);
             if(!openedCheckBox.isChecked())
                 currentWeightBlock.setVisibility(View.GONE);
             else
@@ -617,14 +588,13 @@ public class AddProduct extends AppCompatActivity {
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
             changeToExpiryDaysButton.setVisibility(View.VISIBLE);
             noExpiryCheckbox.setVisibility(View.GONE);
+            storageConditionSpinnerLabel.setText("Modalità di conservazione");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
 
             openedCheckBoxBlock.setVisibility(View.GONE);
             openingDateBlock.setVisibility(View.GONE);
             openedStorageConditionBlock.setVisibility(View.GONE);
-            storageConditionSpinnerLabel.setText("Modalità di conservazione");
-            differentStorageConditionAfterOpeningCheckBoxBlock.setVisibility(View.GONE);
             currentWeightSlider.setEnabled(true);
             currentWeightBlock.setVisibility(View.VISIBLE);
             currentWeightSlider.setVisibility(View.VISIBLE);
@@ -667,10 +637,11 @@ public class AddProduct extends AppCompatActivity {
         storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
 
         openedStorageList = new ArrayList();
+        openedStorageList.add("Stessa modalità di conservazione");
         openedStorageList.addAll(storageList);
         storageSpinnerAdapter = new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, openedStorageList);
         openedStorageConditionSpinner.setAdapter(storageSpinnerAdapter);
-        storageConditionSpinner.setOnItemSelectedListener(new StorageConditionSpinnerListener(storageSpinnerAdapter, openedStorageList, openedStorageConditionSpinner));
+        storageConditionSpinner.setOnItemSelectedListener(new StorageConditionSpinnerListener(storageSpinnerAdapter, openedStorageList));
     }
 
     private void initializePointsOfPurchaseSpinner() {
@@ -690,7 +661,6 @@ public class AddProduct extends AppCompatActivity {
         }).start();
     }
 
-    // TODO riabilitare avviso
     private void showDateWarning(String previousValue, EditText dateField, String message) {
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
