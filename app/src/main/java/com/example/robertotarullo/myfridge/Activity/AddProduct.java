@@ -43,7 +43,6 @@ import com.example.robertotarullo.myfridge.InputFilter.WeightInputFilter;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.TextWatcher.PriceWeightRelationWatcher;
-import com.example.robertotarullo.myfridge.Listener.StorageConditionSpinnerListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -351,26 +350,7 @@ public class AddProduct extends AppCompatActivity {
                             editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
                     }
 
-                    if(p.getOpenedStorageCondition()==p.getStorageCondition())
-                        openedStorageConditionSpinner.setSelection(0);
-                    else {
-                        if(p.getStorageCondition()==0){ // Temperatura ambiente
-                            if(p.getOpenedStorageCondition()==1)
-                                openedStorageConditionSpinner.setSelection(1);
-                            else
-                                openedStorageConditionSpinner.setSelection(2);
-                        } else if(p.getStorageCondition()==1){ // Frigorifero
-                            if(p.getOpenedStorageCondition()==0)
-                                openedStorageConditionSpinner.setSelection(1);
-                            else
-                                openedStorageConditionSpinner.setSelection(2);
-                        } else { // Congelatore
-                            if(p.getOpenedStorageCondition()==0)
-                                openedStorageConditionSpinner.setSelection(1);
-                            else
-                                openedStorageConditionSpinner.setSelection(2);
-                        }
-                    }
+                    openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
                 }
 
                 // Se si tratta di un prodotto fresco o confezione aperta
@@ -510,14 +490,7 @@ public class AddProduct extends AppCompatActivity {
             } else
                 p.setOpened(false);
 
-            if(openedStorageConditionSpinner.getSelectedItem().equals("Stessa modalità di conservazione"))
-                p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
-            else if(openedStorageConditionSpinner.getSelectedItem().equals("Temperatura ambiente"))
-                p.setOpenedStorageCondition(0);
-            else if(openedStorageConditionSpinner.getSelectedItem().equals("Frigorifero"))
-                p.setOpenedStorageCondition(1);
-            else if(openedStorageConditionSpinner.getSelectedItem().equals("Congelatore"))
-                p.setOpenedStorageCondition(2);
+            p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
 
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
             p.setOpened(true);
@@ -542,7 +515,6 @@ public class AddProduct extends AppCompatActivity {
                 p.setCurrentWeight(p.getWeight());
         }
 
-        System.out.println("Prodotto ha openedStorageCondition = " + p.getOpenedStorageCondition());
         return p;
     }
 
@@ -634,14 +606,10 @@ public class AddProduct extends AppCompatActivity {
         storageList.add("Congelatore");
 
         storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
-        storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
+        openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
 
-        openedStorageList = new ArrayList();
-        openedStorageList.add("Stessa modalità di conservazione");
-        openedStorageList.addAll(storageList);
-        storageSpinnerAdapter = new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, openedStorageList);
-        openedStorageConditionSpinner.setAdapter(storageSpinnerAdapter);
-        storageConditionSpinner.setOnItemSelectedListener(new StorageConditionSpinnerListener(storageSpinnerAdapter, openedStorageList));
+        storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
+        openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
     }
 
     private void initializePointsOfPurchaseSpinner() {
