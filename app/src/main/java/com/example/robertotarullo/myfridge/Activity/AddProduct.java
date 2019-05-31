@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class AddProduct extends AppCompatActivity {
 
     // variabili statiche
@@ -69,15 +70,13 @@ public class AddProduct extends AppCompatActivity {
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
-    private List<String> openedStorageList;
-    private StorageSpinnerArrayAdapter storageSpinnerAdapter;
 
     // variabili di controllo del form
     private boolean expiryDateMode;
     private List<SingleProduct> products;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock;
+    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -129,11 +128,15 @@ public class AddProduct extends AppCompatActivity {
         currentWeightBlock = findViewById(R.id.currentWeightBlock);
         quantityBlock = findViewById(R.id.quantityBlock);
         expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
+        pointOfPurchaseBlock = findViewById(R.id.pointOfPurchaseBlock);
+        purchaseDateBlock = findViewById(R.id.purchaseDateBlock);
 
         // riferimenti ai pulsanti clear di campi coinvolti in relazioni
         priceClearButton = findViewById(R.id.priceClearButton);
         pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
         weightClearButton = findViewById(R.id.weightClearButton);
+
+        action = getIntent().getStringExtra("action");
 
         // inizializza gli array per i suggerimenti
         initializeSuggestions();
@@ -172,11 +175,24 @@ public class AddProduct extends AppCompatActivity {
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
 
-        action = getIntent().getStringExtra("action");
-        if(action.equals("add")) {
+        if(action.equals("add") || action.equals("shopping")) {
             setTitle("Aggiungi prodotto");
             confirmButton.setText("Aggiungi prodotto");
+
+            if(action.equals("shopping")) {
+                // Nascondi i campi precompilati
+                findViewById(R.id.addButton).setVisibility(View.GONE);
+                findViewById(R.id.shoppingModeButtonsBlock).setVisibility(View.VISIBLE);
+
+                pointOfPurchaseBlock.setVisibility(View.GONE);
+                purchaseDateBlock.setVisibility(View.GONE);
+                openedCheckBoxBlock.setVisibility(View.GONE);
+                currentWeightBlock.setVisibility(View.GONE);
+            }
+
+            // compilare qui i campi
             startingForm = getCurrentForm();
+
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
@@ -238,7 +254,10 @@ public class AddProduct extends AppCompatActivity {
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        super.onBackPressed();
+                        if(action.equals("shopping"))
+                            endShopping(null);
+                        else
+                            super.onBackPressed();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         break;
@@ -252,15 +271,16 @@ public class AddProduct extends AppCompatActivity {
                     .setNegativeButton("Annulla", dialogClickListener)
                     .show();
 
-        } else
-            super.onBackPressed();
+        } else {
+            if(action.equals("shopping"))
+                endShopping(null);
+            else
+                super.onBackPressed();
+        }
     }
 
     private ProductForm getCurrentForm(){
-        return new ProductForm( createProductFromFields(),
-                TextUtils.getInt(quantityField),
-                TextUtils.getDate(expiryDateField),
-                TextUtils.getInt(expiryDaysAfterOpeningField));
+        return new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), TextUtils.getDate(expiryDateField), TextUtils.getInt(expiryDaysAfterOpeningField));
     }
 
     public void editFieldNotFromUser(EditText dateField, String text){
@@ -391,8 +411,6 @@ public class AddProduct extends AppCompatActivity {
                 int insertCount = 0; // counter inserimenti
                 Intent resultIntent = new Intent();
 
-                //printProductOnConsole(newProduct);
-
                 // Se si tratta di una modifica
                 if(action.equals("edit")) {
                     newProduct.setId(productToModifyId);
@@ -414,7 +432,10 @@ public class AddProduct extends AppCompatActivity {
                 }
 
                 if(insertCount>0){
-                    resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
+                    if(action.equals("shopping"))
+                        resultIntent.putExtra("continueShopping", true);
+                    else
+                        resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }
@@ -422,7 +443,7 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
-    /*
+    // metodo usato per il debug
     private void printProductOnConsole(SingleProduct p){
         System.out.println("id: " + p.getId());
         System.out.println("packaged: " + p.isPackaged());
@@ -446,31 +467,45 @@ public class AddProduct extends AppCompatActivity {
         System.out.println("expirydate: " + p.getExpiryDate());
         System.out.println("openedstoragecondition: " + p.getOpenedStorageCondition());
     }
-    */
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields(){
         SingleProduct p = new SingleProduct();
 
         p.setName(nameField.getText().toString());
+
         if(!TextUtils.isEmpty(brandField))
             p.setBrand(brandField.getText().toString());
+
         if(!TextUtils.isEmpty(priceField) && priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
+
         if(!TextUtils.isEmpty(weightField) && weightField.isEnabled())
             p.setWeight(TextUtils.getFloat(weightField));
+
         if(!TextUtils.isEmpty(currentWeightField))
             p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
+
         if (!TextUtils.isEmpty(pricePerKiloField) && pricePerKiloField.isEnabled())
             p.setPricePerKilo(TextUtils.getFloat(pricePerKiloField));
+
         p.setPieces(TextUtils.getInt(piecesField));
-        if(TextUtils.getDate(purchaseDateField)!=null)
+
+        if(action.equals("shopping"))
+            p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
+        else if(TextUtils.getDate(purchaseDateField)!=null)
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
-        if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
+
+        if(action.equals("shopping"))
+            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0)); // settare pointofpurchase dall'intent
+        else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
             p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
+
         if(!TextUtils.isEmpty(expiryDaysAfterOpeningField) && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));
+
         p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
 
         // campi che dipendono dal tipo e dall'apertura del prodotto confezionato
@@ -488,13 +523,15 @@ public class AddProduct extends AppCompatActivity {
                 if(TextUtils.getDate(openingDateField)!=null)
                     p.setOpeningDate(TextUtils.getDate(openingDateField));
             } else
-                p.setOpened(false);
+                p.setOpened(false); // non rimuovere
 
             p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
 
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
             p.setOpened(true);
+
             p.setOpeningDate(p.getPurchaseDate());
+
             if(expiryDateBlock.getVisibility()==View.VISIBLE)
                 p.setExpiryDate(TextUtils.getDate(expiryDateField));
             p.setOpenedStorageCondition(p.getStorageCondition());
@@ -515,6 +552,7 @@ public class AddProduct extends AppCompatActivity {
                 p.setCurrentWeight(p.getWeight());
         }
 
+        printProductOnConsole(p);
         return p;
     }
 
@@ -543,11 +581,14 @@ public class AddProduct extends AppCompatActivity {
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
             expiryDateBlock.setVisibility(View.VISIBLE);
-            openedCheckBoxBlock.setVisibility(View.VISIBLE);
+
+            if(!action.equals("shopping"))
+                openedCheckBoxBlock.setVisibility(View.VISIBLE);
+
             openedStorageConditionBlock.setVisibility(View.VISIBLE);
-            if(!openedCheckBox.isChecked())
+            if(!openedCheckBox.isChecked() && !action.equals("shopping"))
                 currentWeightBlock.setVisibility(View.GONE);
-            else
+            else if(!action.equals("shopping"))
                 openingDateBlock.setVisibility(View.VISIBLE);
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax())
@@ -564,12 +605,16 @@ public class AddProduct extends AppCompatActivity {
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
 
-            openedCheckBoxBlock.setVisibility(View.GONE);
-            openingDateBlock.setVisibility(View.GONE);
+            if(!action.equals("shopping"))
+                openedCheckBoxBlock.setVisibility(View.GONE);
+            if(!action.equals("shopping"))
+                openingDateBlock.setVisibility(View.GONE);
             openedStorageConditionBlock.setVisibility(View.GONE);
-            currentWeightSlider.setEnabled(true);
-            currentWeightBlock.setVisibility(View.VISIBLE);
-            currentWeightSlider.setVisibility(View.VISIBLE);
+            currentWeightSlider.setEnabled(true); // TODO ?
+
+            if(!action.equals("shopping"))
+                currentWeightBlock.setVisibility(View.VISIBLE);
+            currentWeightSlider.setVisibility(View.VISIBLE); // TODO ?
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax() && !openedCheckBox.isChecked()) {
                 currentWeightSlider.setProgress(currentWeightSlider.getMax());
@@ -811,8 +856,8 @@ public class AddProduct extends AppCompatActivity {
 
     // Sposta il focus su una determinata view
     private final void setFocusAndScrollToView(final View view){
-        findViewById(R.id.listScrollView).post(() -> {
-            findViewById(R.id.listScrollView).scrollTo(0, view.getTop());
+        listScrollView.post(() -> {
+            listScrollView.scrollTo(0, view.getTop());
             view.requestFocus();
         });
     }
@@ -834,6 +879,12 @@ public class AddProduct extends AppCompatActivity {
             expiryDateBlock.setVisibility(View.GONE);
             findViewById(R.id.expiryDaysAfterOpeningBlock).setVisibility(View.VISIBLE);
         }
+    }
+
+    public void endShopping(View view) {
+        Intent resultIntent = new Intent();
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico

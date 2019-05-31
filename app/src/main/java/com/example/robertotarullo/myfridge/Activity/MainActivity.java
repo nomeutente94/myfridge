@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     // Variabili per intent
     private static final int ADD_PRODUCT_REQUEST = 1;
     private static final int EDIT_PRODUCT_REQUEST = 2;
+    private static final int SHOPPING_REQUEST = 3;
 
     // Variabili di stato
     private int currentFilter; // Determina la modalità di conservazione corrente
@@ -409,6 +410,11 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 
+    public void startShoppingMode(View view) {
+        Intent intent = new Intent(this, ShoppingForm.class);
+        startActivityForResult(intent, SHOPPING_REQUEST);
+    }
+
     // Mostra dialog per la consumazione di un singleProduct
     public void consumeProduct(View view){
         int position = Integer.parseInt(view.getTag().toString());
@@ -531,6 +537,10 @@ public class MainActivity extends AppCompatActivity {
                     currentFilter = data.getIntExtra("filter", currentFilter);
                     highlightButton(null);
                 }
+                retrieveProductsFromDB(null);
+            }
+        } else if(requestCode == SHOPPING_REQUEST){
+            if (resultCode == RESULT_OK) {
                 retrieveProductsFromDB(null);
             }
         }

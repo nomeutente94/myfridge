@@ -671,10 +671,35 @@
 
     <Button
         android:layout_alignParentBottom="true"
-        android:layout_marginTop="20dp"
         android:id="@+id/addButton"
         android:onClick="onConfirmButtonClick"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Aggiungi"/>
+
+    <LinearLayout
+        android:id="@+id/shoppingModeButtonsBlock"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:weightSum="2"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_weight="1"
+            android:onClick="endShopping"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Termina Spesa"/>
+
+        <Button
+            android:layout_weight="1"
+            android:onClick="onConfirmButtonClick"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Aggiungi Prodotto"/>
+
+    </LinearLayout>
+
 </RelativeLayout>

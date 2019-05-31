@@ -107,29 +107,37 @@
                         </ListView>
                     </LinearLayout>
 
-                    <Button
-                        android:onClick="addProduct"
+                    <LinearLayout
+                        android:weightSum="3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Aggiungi prodotto"/>
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:visibility="gone"
-                        android:onClick="exportDB"
-                        android:layout_alignParentTop="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Esporta db"/>
+                        <Button
+                            android:layout_weight="1"
+                            android:onClick="addPointOfPurchase"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Punti di acquisto"/>
 
-                    <Button
-                        android:onClick="addPointOfPurchase"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignParentLeft="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Aggiungi negozio"/>
+                        <Button
+                            android:layout_weight="1"
+                            android:visibility="visible"
+                            android:onClick="startShoppingMode"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Modalità Spesa"/>
+
+                        <Button
+                            android:layout_weight="1"
+                            android:onClick="addProduct"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Aggiungi nuovo"/>
+                    </LinearLayout>
+
+
                 </RelativeLayout>
             </LinearLayout>
         </RelativeLayout>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.ShoppingForm">
+
+    <LinearLayout
+        android:id="@+id/pointOfPurchaseBlock"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="11dp">
+
+        <TextView
+            android:id="@+id/pointOfPurchaseSpinnerLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Punto di acquisto" />
+
+        <Spinner
+            android:id="@+id/pointOfPurchaseSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <Button
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/addButton"
+        android:onClick="onConfirmButtonClick"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Continua"/>
+
+</RelativeLayout>

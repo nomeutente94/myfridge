@@ -110,9 +110,31 @@ public abstract class DateUtils {
         return getDate("01", "01", "1970");
     }
 
+    public static Date getCurrentDate(){
+        return new Date();
+    }
+
+    public static Date getCurrentDateWithoutTime(){
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    public static Date getDate(int day, int month, int year){
+        String date = day + "/" + month + "/" + year;
+        return getDate(date);
+    }
+
     // Restituisce un oggetto data a partire dalle stringhe giorno, mese e anno, ritorna null se qualche valore non valido
     public static Date getDate(String day, String month, String year){
         String date = day + "/" + month + "/" + year;
+        return getDate(date);
+    }
+
+    public static Date getDate(String date){
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // TODO Permettere di settare il formato della data
 
         try {
