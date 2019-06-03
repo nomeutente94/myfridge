@@ -66,6 +66,10 @@ public class AddProduct extends AppCompatActivity {
     private long productToModifyId;
     private ArrayList<SingleProduct> shoppingCart;
 
+    // Variabili per i suggerimenti dei campi
+    private ArrayList<String> nameSuggestionsList, brandSuggestionsList;
+    private ArrayAdapter<String> nameSuggestionsAdapter, brandSuggestionsAdapter;
+
     // views
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
@@ -86,6 +90,7 @@ public class AddProduct extends AppCompatActivity {
     private ProductDatabase productDatabase;
 
     // resetta lo stato dell'activity come al lancio
+    // TODO Testare il buon funzionamento del risultato finale
     private void resetActivityStatus(){
         packagedCheckBox.setChecked(false); // TODO leggere da un valore delle impostazioni
         nameField.setText("");
@@ -106,8 +111,6 @@ public class AddProduct extends AppCompatActivity {
         piecesField.setText(String.valueOf(MIN_PIECES));
         currentPiecesField.setText(String.valueOf(MIN_PIECES));
         noExpiryCheckbox.setChecked(false);
-
-        initializeSuggestions(); // Includi nei suggerimenti anche i prodotti appena inseriti
     }
 
     @Override
@@ -334,26 +337,51 @@ public class AddProduct extends AppCompatActivity {
     }
 
     private void initializeSuggestions(){
+        nameSuggestionsList = new ArrayList<>();
+        brandSuggestionsList = new ArrayList<>();
+
         new Thread(() -> {
             products = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
-            ArrayList<String> nameList = new ArrayList<>();
-            ArrayList<String> brandList = new ArrayList<>();
             for(int i=0; i<products.size(); i++){
                 // Aggiungi solo valori non duplicati e non null
-                if(products.get(i).getName()!=null && !nameList.contains(products.get(i).getName()))
-                    nameList.add(products.get(i).getName());
-                if(products.get(i).getBrand()!=null && !brandList.contains(products.get(i).getBrand()))
-                    brandList.add(products.get(i).getBrand());
+                if(products.get(i).getName()!=null && !nameSuggestionsList.contains(products.get(i).getName()))
+                    nameSuggestionsList.add(products.get(i).getName());
+                if(products.get(i).getBrand()!=null && !brandSuggestionsList.contains(products.get(i).getBrand()))
+                    brandSuggestionsList.add(products.get(i).getBrand());
             }
 
-            ArrayAdapter<String> nameAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameList);
-            ArrayAdapter<String> brandAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandList);
+            nameSuggestionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameSuggestionsList);
+            brandSuggestionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandSuggestionsList);
 
             runOnUiThread(() -> {
-                ((AutoCompleteTextView)nameField).setAdapter(nameAdapter);
-                ((AutoCompleteTextView)brandField).setAdapter(brandAdapter);
+                ((AutoCompleteTextView)nameField).setAdapter(nameSuggestionsAdapter);
+                ((AutoCompleteTextView)brandField).setAdapter(brandSuggestionsAdapter);
             });
         }).start();
+    }
+
+
+    // Aggiunge ai suggerimenti le informazioni contenute nei prodotti aggiunte nella modalità spesa corrente
+    private void updateSuggestionsFromShoppingCart(){
+
+        System.out.println("shoppingCart.size(): " + shoppingCart.size());
+
+        if(shoppingCart.size()>0){
+            String name, brand;
+
+            name = shoppingCart.get(shoppingCart.size()-1).getName();
+            if(name!=null && !nameSuggestionsList.contains(name))
+                nameSuggestionsList.add(name);
+
+            System.out.println("!nameSuggestionsList.contains(name) " + !nameSuggestionsList.contains(name)); // TODO !nameSuggestionsList.contains(name) sempre false
+
+            brand = shoppingCart.get(shoppingCart.size()-1).getBrand();
+            if(brand!=null && !brandSuggestionsList.contains(brand))
+                brandSuggestionsList.add(brand);
+
+            nameSuggestionsAdapter.notifyDataSetChanged();
+            brandSuggestionsAdapter.notifyDataSetChanged();
+        }
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
@@ -471,8 +499,10 @@ public class AddProduct extends AppCompatActivity {
                 } else if(action.equals("shopping")) { // Se si tratta di un'aggiunta
                     for(int i=0; i<TextUtils.getInt(quantityField); i++)
                         shoppingCart.add(newProduct);
+
                     runOnUiThread(() -> {
                         Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
+                        updateSuggestionsFromShoppingCart(); // Includi nei suggerimenti anche i prodotti appena inseriti
                         resetActivityStatus();
                     });
                 }
