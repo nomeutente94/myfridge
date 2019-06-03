@@ -29,6 +29,10 @@ public interface SingleProductDao {
     @Insert
     List<Long> insertAll(SingleProduct... fps);
 
+    // Insert list
+    @Insert
+    List<Long> insertAll(List<SingleProduct> fps);
+
     // Insert single
     @Insert
     long insert(SingleProduct fp);

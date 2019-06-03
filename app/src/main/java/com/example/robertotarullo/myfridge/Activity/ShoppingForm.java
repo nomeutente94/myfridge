@@ -68,13 +68,9 @@ public class ShoppingForm extends AppCompatActivity {
 
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-                if(data.getBooleanExtra("continueShopping", false)){
-                    onConfirmButtonClick(null);
-                } else {
-                    Intent resultIntent = new Intent();
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
-                }
+                Intent resultIntent = new Intent();
+                setResult(RESULT_OK, resultIntent);
+                finish();
             }
         }
     }

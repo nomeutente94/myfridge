@@ -48,6 +48,7 @@ import com.example.robertotarullo.myfridge.TextWatcher.PriceWeightRelationWatche
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -63,6 +64,7 @@ public class AddProduct extends AppCompatActivity {
     private String action;
     private ProductForm startingForm;
     private long productToModifyId;
+    private ArrayList<SingleProduct> shoppingCart;
 
     // views
     private ScrollView listScrollView;
@@ -93,15 +95,19 @@ public class AddProduct extends AppCompatActivity {
         priceField.setText("");
         weightField.setText("");
         storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO leggere da un valore delle impostazioni
-        openedStorageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO leggere da un valore delle impostazioni
+        openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
         pointOfPurchaseSpinner.setSelection(0);
         purchaseDateField.setText("");
         openingDateField.setText("");
         expiryDateField.setText("");
         expiryDaysAfterOpeningField.setText("");
         openedCheckBox.setChecked(false);
-        quantityField.setText("1");
-        //...
+        quantityField.setText(String.valueOf(MIN_QUANTITY));
+        piecesField.setText(String.valueOf(MIN_PIECES));
+        currentPiecesField.setText(String.valueOf(MIN_PIECES));
+        noExpiryCheckbox.setChecked(false);
+
+        initializeSuggestions(); // Includi nei suggerimenti anche i prodotti appena inseriti
     }
 
     @Override
@@ -132,18 +138,18 @@ public class AddProduct extends AppCompatActivity {
         quantityField = findViewById(R.id.quantityField);
         piecesField = findViewById(R.id.piecesField);
         currentPiecesField = findViewById(R.id.currentPiecesField);
-        expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
+
+        // View di controllo del form
         changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
         changeToExpiryDaysButton = findViewById(R.id.changeToExpiryDays);
         addQuantityButton = findViewById(R.id.quantityAddButton);
         subtractQuantityButton = findViewById(R.id.quantitySubtractButton);
         addPieceButton = findViewById(R.id.piecesAddButton);
         subtractPieceButton = findViewById(R.id.piecesSubtractButton);
-
-        // riferimenti ad altre view
         listScrollView = findViewById(R.id.listScrollView);
         storageConditionSpinnerLabel = findViewById(R.id.storageConditionSpinnerLabel);
+        expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
         confirmButton = findViewById(R.id.addButton);
 
         // riferimenti ai blocchi che hanno regole per la visibilità
@@ -209,6 +215,8 @@ public class AddProduct extends AppCompatActivity {
             confirmButton.setText("Aggiungi prodotto");
 
             if(action.equals("shopping")) {
+                shoppingCart = new ArrayList<>(); // Inizializza il carrello
+
                 // Nascondi i campi precompilati
                 findViewById(R.id.addButton).setVisibility(View.GONE);
                 findViewById(R.id.shoppingModeButtonsBlock).setVisibility(View.VISIBLE);
@@ -217,10 +225,8 @@ public class AddProduct extends AppCompatActivity {
                 purchaseDateBlock.setVisibility(View.GONE);
                 openedCheckBoxBlock.setVisibility(View.GONE);
                 currentWeightBlock.setVisibility(View.GONE);
-            }
-
-            // compilare qui i campi
-            startingForm = getCurrentForm();
+            } else
+                startingForm = getCurrentForm();
 
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
@@ -278,32 +284,41 @@ public class AddProduct extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
-        if(!startingForm.equals(getCurrentForm())){
+        if(action.equals("shopping")) {
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        if(action.equals("shopping"))
-                            endShopping(null);
-                        else
-                            super.onBackPressed();
+                        endShopping(null);
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         break;
                 }
             };
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?")
+            builder.setMessage("E' in corso la modalità spesa, sei sicuro di voler uscire senza salvare? Tutti gli eventuali prodotti aggiunti andranno persi.")
                     .setTitle("Attenzione")
                     .setPositiveButton("Esci", dialogClickListener)
                     .setNegativeButton("Annulla", dialogClickListener)
                     .show();
-
         } else {
-            if(action.equals("shopping"))
-                endShopping(null);
-            else
+            // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
+            if(!startingForm.equals(getCurrentForm())){
+                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            super.onBackPressed();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?")
+                        .setTitle("Attenzione")
+                        .setPositiveButton("Esci", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+            } else
                 super.onBackPressed();
         }
     }
@@ -440,36 +455,45 @@ public class AddProduct extends AppCompatActivity {
                 int insertCount = 0; // counter inserimenti
                 Intent resultIntent = new Intent();
 
-                // Se si tratta di una modifica
-                if(action.equals("edit")) {
+                if(action.equals("edit")) { // Se si tratta di una modifica
                     newProduct.setId(productToModifyId);
 
                     if(productDatabase.productDao().update(newProduct)>0) {
-                        insertCount++;
+                        insertCount = 1;
                         String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
                         runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                     }
-                } else {
-                    // inserisci uno o più prodotti
-                    for(int i=0; i<TextUtils.getInt(quantityField); i++){
-                        if(productDatabase.productDao().insert(newProduct)!=-1)  // se l'inserimento è andato a buon fine
-                            insertCount++;  // incrementa counter inserimenti
-                    }
-
-                    String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + (TextUtils.getInt(quantityField)-insertCount);
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                } else if(action.equals("add")){ // Se si tratta di un'aggiunta
+                    List<SingleProduct> productsToAdd = new ArrayList<>();
+                    for(int i=0; i<TextUtils.getInt(quantityField); i++)
+                        productsToAdd.add(newProduct);
+                    insertCount = addProducts(productsToAdd);
+                } else if(action.equals("shopping")) { // Se si tratta di un'aggiunta
+                    for(int i=0; i<TextUtils.getInt(quantityField); i++)
+                        shoppingCart.add(newProduct);
+                    runOnUiThread(() -> {
+                        Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
+                        resetActivityStatus();
+                    });
                 }
 
                 if(insertCount>0){
-                    if(action.equals("shopping")) {
-                        resultIntent.putExtra("continueShopping", true);
-                    } else
-                        resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
+                    resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }
             }).start();
         }
+    }
+
+    private int addProducts(List<SingleProduct> productsToAdd){
+        int nonAddedProductsCount = Collections.frequency(productDatabase.productDao().insertAll(productsToAdd), -1);
+        int insertCount = productsToAdd.size() - nonAddedProductsCount;
+
+        String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + nonAddedProductsCount;
+        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+
+        return insertCount;
     }
 
     // metodo usato per il debug
@@ -682,7 +706,10 @@ public class AddProduct extends AppCompatActivity {
         storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
         openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
 
-        storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
+        if(!action.equals("shopping"))
+            storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
+        else
+            storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO permettere di selezionare il valore di default
         openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
     }
 
@@ -846,9 +873,37 @@ public class AddProduct extends AppCompatActivity {
     }
 
     public void endShopping(View view) {
-        Intent resultIntent = new Intent();
-        setResult(RESULT_OK, resultIntent);
-        finish();
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    new Thread(() -> {
+                        addProducts(shoppingCart);
+
+                        Intent resultIntent = new Intent();
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }).start();
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    break;
+            }
+        };
+
+        StringBuilder msg = new StringBuilder("Vuoi aggiungere i seguenti prodotti?\n\n");
+
+        for(int i=0; i<shoppingCart.size(); i++){
+            msg.append("- ").append(shoppingCart.get(i).getName());
+            if(shoppingCart.get(i).getBrand()!=null)
+                msg.append(" ").append(shoppingCart.get(i).getBrand());
+            msg.append("\n");
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(msg.toString())
+                .setTitle("Carrello")
+                .setPositiveButton("Aggiungi", dialogClickListener)
+                .setNegativeButton("Annulla", dialogClickListener)
+                .show();
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico

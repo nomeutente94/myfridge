@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
@@ -15,12 +15,12 @@ import com.example.robertotarullo.myfridge.Utils.TextUtils;
 public class PiecesWatcher implements TextWatcher {
     private Button addButton, subtractButton;
     private int min, max;
-    private ProgressBar currentWeightSlider;
+    private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
     private EditText weightField, currentWeightField;
     private LinearLayout currentPiecesBlock;
 
-    public PiecesWatcher(Button addButton, Button subtractButton, int min, int max, ProgressBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField, LinearLayout currentPiecesBlock){
+    public PiecesWatcher(Button addButton, Button subtractButton, int min, int max, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField, LinearLayout currentPiecesBlock){
        this.addButton = addButton;
        this.subtractButton = subtractButton;
        this.min = min;
