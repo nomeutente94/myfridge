@@ -41,7 +41,6 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:enabled="false"
-                        android:layout_alignParentRight="true"
                         android:onClick="editQuantity"
                         android:tag="subtract"
                         android:text="-" />
@@ -59,7 +58,6 @@
                         android:id="@+id/quantityAddButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
                         android:onClick="editQuantity"
                         android:tag="add"
                         android:text="+" />
@@ -412,7 +410,6 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:enabled="false"
-                        android:layout_alignParentRight="true"
                         android:onClick="editPieces"
                         android:tag="subtract"
                         android:text="-" />
@@ -430,7 +427,6 @@
                         android:id="@+id/piecesAddButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
                         android:onClick="editPieces"
                         android:tag="add"
                         android:text="+" />

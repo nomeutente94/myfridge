@@ -34,6 +34,8 @@ import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.Listener.CurrentWeightSliderListener;
+import com.example.robertotarullo.myfridge.TextWatcher.PiecesWatcher;
+import com.example.robertotarullo.myfridge.TextWatcher.QuantityWatcher;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 import com.example.robertotarullo.myfridge.Fragment.DatePickerFragment;
@@ -55,7 +57,7 @@ public class AddProduct extends AppCompatActivity {
     public static final int FREEZER_MAX_CELSIUS = 0, FRIDGE_MIN_CELSIUS = 3, FRIDGE_MAX_CELSIUS = 6;
     public static final int FRIDGE_DEFAULT_CELSIUS = 5, FREEZER_DEFAULT_CELSIUS = -18, ROOM_DEFAULT_CELSIUS = 20;  // ideale (4-6) per frigo
     public static final int ROOM_SELECTION = 0, FRIDGE_SELECTION = 1, FREEZER_SELECTION = 2;
-    private static final int MAX_QUANTITY = 99, MIN_QUANTITY = 1, MAX_PIECES = 99, MIN_PIECES = 1;
+    public static final int MAX_QUANTITY = 99, MIN_QUANTITY = 1, MAX_PIECES = 99, MIN_PIECES = 1;
 
     // intent
     private String action;
@@ -67,7 +69,7 @@ public class AddProduct extends AppCompatActivity {
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
     private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox;
-    private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton;
+    private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton, addQuantityButton, subtractQuantityButton, addPieceButton, subtractPieceButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
 
@@ -80,6 +82,27 @@ public class AddProduct extends AppCompatActivity {
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
+
+    // resetta lo stato dell'activity come al lancio
+    private void resetActivityStatus(){
+        packagedCheckBox.setChecked(false); // TODO leggere da un valore delle impostazioni
+        nameField.setText("");
+        brandField.setText("");
+        pricePerKiloField.setText("");
+        currentWeightField.setText("");
+        priceField.setText("");
+        weightField.setText("");
+        storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO leggere da un valore delle impostazioni
+        openedStorageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO leggere da un valore delle impostazioni
+        pointOfPurchaseSpinner.setSelection(0);
+        purchaseDateField.setText("");
+        openingDateField.setText("");
+        expiryDateField.setText("");
+        expiryDaysAfterOpeningField.setText("");
+        openedCheckBox.setChecked(false);
+        quantityField.setText("1");
+        //...
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +136,10 @@ public class AddProduct extends AppCompatActivity {
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
         changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
         changeToExpiryDaysButton = findViewById(R.id.changeToExpiryDays);
+        addQuantityButton = findViewById(R.id.quantityAddButton);
+        subtractQuantityButton = findViewById(R.id.quantitySubtractButton);
+        addPieceButton = findViewById(R.id.piecesAddButton);
+        subtractPieceButton = findViewById(R.id.piecesSubtractButton);
 
         // riferimenti ad altre view
         listScrollView = findViewById(R.id.listScrollView);
@@ -162,6 +189,8 @@ public class AddProduct extends AppCompatActivity {
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
+        quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
+        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField, currentPiecesBlock));
 
         // InputFilters
         expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});
@@ -344,8 +373,8 @@ public class AddProduct extends AppCompatActivity {
                             pointOfPurchaseSpinner.setSelection(i);
                     }
                 }
-                for(int i=1; i<p.getPieces(); i++)
-                    editPieces(true);
+
+                piecesField.setText(String.valueOf(p.getPieces()));
                 currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
                 if(p.getExpiryDate()!=null) {
@@ -432,9 +461,9 @@ public class AddProduct extends AppCompatActivity {
                 }
 
                 if(insertCount>0){
-                    if(action.equals("shopping"))
+                    if(action.equals("shopping")) {
                         resultIntent.putExtra("continueShopping", true);
-                    else
+                    } else
                         resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
                     setResult(RESULT_OK, resultIntent);
                     finish();
@@ -645,7 +674,7 @@ public class AddProduct extends AppCompatActivity {
     }
 
     private void initializeStorageSpinners() {
-        List<String> storageList = new ArrayList();
+        ArrayList<String> storageList = new ArrayList<>();
         storageList.add("Temperatura ambiente");
         storageList.add("Frigorifero");
         storageList.add("Congelatore");
@@ -745,78 +774,13 @@ public class AddProduct extends AppCompatActivity {
     }
 
     // Modifica i pezzi tramite i relativi pulsanti
-    public void editPieces(boolean add) {
-        Button addButton = findViewById(R.id.piecesAddButton);
-        Button subtractButton = findViewById(R.id.piecesSubtractButton);
-        TextView field = piecesField;
-        int min = MIN_PIECES;
-        int max = MAX_PIECES;
-
-        if(add)
-            TextUtils.editQuantityByButtons(addButton, subtractButton, field, min, max);
-        else
-            TextUtils.editQuantityByButtons(subtractButton, addButton, field, min, max);
-
-        if(TextUtils.getInt(piecesField)>1){
-            // setta lo slider in base al numero di pezzi
-            currentWeightSlider.setTag("pieces");
-
-            // calcola il numero di pezzi rimanenti rispetto al valore percentuale
-            float currentPiecesAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * TextUtils.getInt(piecesField)) / (float)100;
-            int currentPieces = (int) Math.ceil(currentPiecesAsFloat);
-            currentWeightSlider.setMax(TextUtils.getInt(piecesField));
-            currentWeightSlider.setProgress(currentPieces);
-            currentPiecesField.setText(String.valueOf(currentPieces));
-
-            if(!TextUtils.isEmpty(weightField)){
-                // calcola il nuovo currentWeight rispetto ai pezzi
-                float currentWeightAsFloat = (TextUtils.getInt(weightField) * currentWeightSlider.getProgress()) / (float)TextUtils.getInt(piecesField);
-                int currentWeight = (int) Math.ceil(currentWeightAsFloat);
-                currentWeightField.setText(String.valueOf(currentWeightAsFloat));
-            }
-
-            currentPiecesBlock.setVisibility(View.VISIBLE);
-
-        } else { // setta lo slider in base al peso, se non compilato in percentuale generica
-            currentPiecesField.setText(piecesField.getText());
-            if(!TextUtils.isEmpty(weightField)){
-                // ripristina lo slide rispetto al peso attuale
-                currentWeightSlider.setTag("currentWeight");
-                // calcola il nuovo currentWeight rispetto al valore percentuale
-                float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * TextUtils.getInt(weightField)) / (float)100;
-                int currentWeight = (int) Math.ceil(currentWeightAsFloat);
-                currentWeightSlider.setMax(TextUtils.getInt(weightField));
-                currentWeightSlider.setProgress(currentWeight);
-            } else {
-                // ripristina lo slide rispetto al valore percentuale
-                currentWeightSlider.setTag("percentage");
-                currentWeightSlider.setMax(100);
-                currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
-            }
-            currentPiecesBlock.setVisibility(View.GONE);
-        }
-    }
-
-    // Modifica i pezzi tramite i relativi pulsanti
     public void editPieces(View view) {
-        if(view.getTag().toString().equals("add"))
-            editPieces(true);
-        else if(view.getTag().toString().equals("subtract"))
-            editPieces(false);
+        TextUtils.editQuantityByButtons((Button)view, piecesField, MIN_PIECES, MAX_PIECES);
     }
 
     // Modifica la quantità tramite i relativi pulsanti
     public void editQuantity(View view) {
-        Button addButton = findViewById(R.id.quantityAddButton);
-        Button subtractButton = findViewById(R.id.quantitySubtractButton);
-        TextView field = quantityField;
-        int min = MIN_QUANTITY;
-        int max = MAX_QUANTITY;
-
-        if(view.getTag().toString().equals("add"))
-            TextUtils.editQuantityByButtons(addButton, subtractButton, field, min, max);
-        else if(view.getTag().toString().equals("subtract"))
-            TextUtils.editQuantityByButtons(subtractButton, addButton, field, min, max);
+        TextUtils.editQuantityByButtons((Button)view, quantityField, MIN_QUANTITY, MAX_QUANTITY);
     }
 
     // Svuota il contenuto del campo corrispondente al pulsante premuto

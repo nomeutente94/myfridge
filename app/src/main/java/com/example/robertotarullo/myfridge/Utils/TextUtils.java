@@ -8,6 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.robertotarullo.myfridge.Activity.AddProduct;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -103,7 +105,7 @@ public abstract class TextUtils {
         }
     }
 
-    public static void editQuantityByButtons(Button button, Button otherButton, TextView field, int min, int max){
+    public static void editQuantityByButtons(Button button, TextView field, int min, int max){
         int value = TextUtils.getInt(field);
         int newValue = -1;
 
@@ -112,15 +114,19 @@ public abstract class TextUtils {
         else if(button.getTag().toString().equals("subtract") && value>min)
             newValue = value - 1;
 
-        if(newValue!=-1){
+        if(newValue!=-1)
             field.setText(String.valueOf(newValue));
-            if(TextUtils.getInt(field)==min)
-                button.setEnabled(false);
-            else
-                button.setEnabled(true);
-            otherButton.setEnabled(true);
-        }
     }
 
+    public static void updateQuantityButtonsView(Button addButton, Button subtractButton, Editable s, int min, int max){
+        if(getInt(s)==min)
+            subtractButton.setEnabled(false);
+        else
+            subtractButton.setEnabled(true);
 
+        if(getInt(s)==max)
+            addButton.setEnabled(false);
+        else
+            addButton.setEnabled(true);
+    }
 }

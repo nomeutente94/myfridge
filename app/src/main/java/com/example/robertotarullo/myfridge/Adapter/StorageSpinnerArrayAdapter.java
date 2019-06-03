@@ -10,11 +10,9 @@ import android.widget.TextView;
 import java.util.List;
 
 public class StorageSpinnerArrayAdapter extends ArrayAdapter<String> {
-    private List<String> storageConditions;
 
     public StorageSpinnerArrayAdapter(Context context, int resourceId, List<String> storageConditions) {
         super(context, resourceId, storageConditions);
-        this.storageConditions = storageConditions;
     }
 
     @Override
