@@ -68,7 +68,6 @@ public class AddProduct extends AppCompatActivity {
 
     // Variabili per i suggerimenti dei campi
     private ArrayList<String> nameSuggestionsList, brandSuggestionsList;
-    private ArrayAdapter<String> nameSuggestionsAdapter, brandSuggestionsAdapter;
 
     // views
     private ScrollView listScrollView;
@@ -215,7 +214,7 @@ public class AddProduct extends AppCompatActivity {
 
         if(action.equals("add") || action.equals("shopping")) {
             setTitle("Aggiungi prodotto");
-            confirmButton.setText("Aggiungi prodotto");
+            confirmButton.setText("Aggiungi");
 
             if(action.equals("shopping")) {
                 shoppingCart = new ArrayList<>(); // Inizializza il carrello
@@ -234,7 +233,7 @@ public class AddProduct extends AppCompatActivity {
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
-            confirmButton.setText("Modifica prodotto");
+            confirmButton.setText("Salva");
             quantityBlock.setVisibility(View.GONE);
             fillForm();
         }
@@ -288,21 +287,29 @@ public class AddProduct extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if(action.equals("shopping")) {
-            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        endShopping(null);
-                        break;
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                }
-            };
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("E' in corso la modalità spesa, sei sicuro di voler uscire senza salvare? Tutti gli eventuali prodotti aggiunti andranno persi.")
-                    .setTitle("Attenzione")
-                    .setPositiveButton("Esci", dialogClickListener)
-                    .setNegativeButton("Annulla", dialogClickListener)
-                    .show();
+            if(shoppingCart.size()>0){
+                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            Intent resultIntent = new Intent();
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("E' in corso la modalità spesa, sei sicuro di voler uscire senza salvare? Tutti gli eventuali prodotti aggiunti andranno persi.")
+                        .setTitle("Attenzione")
+                        .setPositiveButton("Esci", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+            } else {
+                Intent resultIntent = new Intent();
+                setResult(RESULT_OK, resultIntent);
+                finish();
+            }
         } else {
             // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
             if(!startingForm.equals(getCurrentForm())){
@@ -341,47 +348,35 @@ public class AddProduct extends AppCompatActivity {
         brandSuggestionsList = new ArrayList<>();
 
         new Thread(() -> {
-            products = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
-            for(int i=0; i<products.size(); i++){
-                // Aggiungi solo valori non duplicati e non null
-                if(products.get(i).getName()!=null && !nameSuggestionsList.contains(products.get(i).getName()))
-                    nameSuggestionsList.add(products.get(i).getName());
-                if(products.get(i).getBrand()!=null && !brandSuggestionsList.contains(products.get(i).getBrand()))
-                    brandSuggestionsList.add(products.get(i).getBrand());
-            }
-
-            nameSuggestionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameSuggestionsList);
-            brandSuggestionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandSuggestionsList);
-
-            runOnUiThread(() -> {
-                ((AutoCompleteTextView)nameField).setAdapter(nameSuggestionsAdapter);
-                ((AutoCompleteTextView)brandField).setAdapter(brandSuggestionsAdapter);
-            });
+            products = productDatabase.productDao().getAll(); // TODO Prendi tutti i prodotti non uguali
+            runOnUiThread(() -> addSuggestions(products));
         }).start();
     }
 
+    private void addSuggestions(SingleProduct suggestion){
+        List<SingleProduct> suggestions = new ArrayList<>();
+        suggestions.add(suggestion);
+        addSuggestions(suggestions);
+    }
 
-    // Aggiunge ai suggerimenti le informazioni contenute nei prodotti aggiunte nella modalità spesa corrente
-    private void updateSuggestionsFromShoppingCart(){
+    private void addSuggestions(List<SingleProduct> suggestions){
+        List<String> lowerCaseNameSuggestionsList = new ArrayList<>(nameSuggestionsList);
+        lowerCaseNameSuggestionsList.replaceAll(String::toLowerCase);
 
-        System.out.println("shoppingCart.size(): " + shoppingCart.size());
+        List<String> lowerCaseBrandSuggestionsList = new ArrayList<>(nameSuggestionsList);
+        lowerCaseBrandSuggestionsList.replaceAll(String::toLowerCase);
 
-        if(shoppingCart.size()>0){
-            String name, brand;
+        // Aggiungi solo valori non duplicati e non null
+        for(int i=0; i<suggestions.size(); i++){
+            if(suggestions.get(i).getName()!=null && !lowerCaseNameSuggestionsList.contains(suggestions.get(i).getName().toLowerCase()))
+                nameSuggestionsList.add(suggestions.get(i).getName());
 
-            name = shoppingCart.get(shoppingCart.size()-1).getName();
-            if(name!=null && !nameSuggestionsList.contains(name))
-                nameSuggestionsList.add(name);
-
-            System.out.println("!nameSuggestionsList.contains(name) " + !nameSuggestionsList.contains(name)); // TODO !nameSuggestionsList.contains(name) sempre false
-
-            brand = shoppingCart.get(shoppingCart.size()-1).getBrand();
-            if(brand!=null && !brandSuggestionsList.contains(brand))
-                brandSuggestionsList.add(brand);
-
-            nameSuggestionsAdapter.notifyDataSetChanged();
-            brandSuggestionsAdapter.notifyDataSetChanged();
+            if(suggestions.get(i).getBrand()!=null && !lowerCaseBrandSuggestionsList.contains(suggestions.get(i).getBrand().toLowerCase()))
+                brandSuggestionsList.add(suggestions.get(i).getBrand());
         }
+
+        ((AutoCompleteTextView)nameField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameSuggestionsList));
+        ((AutoCompleteTextView)brandField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandSuggestionsList));
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
@@ -502,7 +497,10 @@ public class AddProduct extends AppCompatActivity {
 
                     runOnUiThread(() -> {
                         Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
-                        updateSuggestionsFromShoppingCart(); // Includi nei suggerimenti anche i prodotti appena inseriti
+
+                        // Aggiorna i suggerimenti con l'ultimo prodotto inserito
+                        addSuggestions(newProduct);
+
                         resetActivityStatus();
                     });
                 }
@@ -903,37 +901,43 @@ public class AddProduct extends AppCompatActivity {
     }
 
     public void endShopping(View view) {
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which){
-                case DialogInterface.BUTTON_POSITIVE:
-                    new Thread(() -> {
-                        addProducts(shoppingCart);
+        if(shoppingCart.size()>0){
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        new Thread(() -> {
+                            addProducts(shoppingCart);
 
-                        Intent resultIntent = new Intent();
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
-                    }).start();
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    break;
+                            Intent resultIntent = new Intent();
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                        }).start();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+
+            StringBuilder msg = new StringBuilder("Vuoi aggiungere i seguenti prodotti?\n\n");
+
+            for(int i=0; i<shoppingCart.size(); i++){
+                msg.append("- ").append(shoppingCart.get(i).getName());
+                if(shoppingCart.get(i).getBrand()!=null)
+                    msg.append(" ").append(shoppingCart.get(i).getBrand());
+                msg.append("\n");
             }
-        };
 
-        StringBuilder msg = new StringBuilder("Vuoi aggiungere i seguenti prodotti?\n\n");
-
-        for(int i=0; i<shoppingCart.size(); i++){
-            msg.append("- ").append(shoppingCart.get(i).getName());
-            if(shoppingCart.get(i).getBrand()!=null)
-                msg.append(" ").append(shoppingCart.get(i).getBrand());
-            msg.append("\n");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(msg.toString())
+                    .setTitle("Carrello")
+                    .setPositiveButton("Aggiungi", dialogClickListener)
+                    .setNegativeButton("Annulla", dialogClickListener)
+                    .show();
+        } else {
+            Intent resultIntent = new Intent();
+            setResult(RESULT_OK, resultIntent);
+            finish();
         }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg.toString())
-                .setTitle("Carrello")
-                .setPositiveButton("Aggiungi", dialogClickListener)
-                .setNegativeButton("Annulla", dialogClickListener)
-                .show();
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico

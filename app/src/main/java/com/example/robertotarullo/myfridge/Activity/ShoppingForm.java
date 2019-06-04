@@ -26,6 +26,7 @@ public class ShoppingForm extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_form);
+        setTitle("Seleziona punto d'acquisto");
 
         productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
         pointOfPurchaseSpinner = findViewById(R.id.pointOfPurchaseSpinner);
