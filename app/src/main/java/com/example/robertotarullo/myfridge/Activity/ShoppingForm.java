@@ -68,11 +68,11 @@ public class ShoppingForm extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
+            //if (resultCode == RESULT_OK) {
                 Intent resultIntent = new Intent();
                 setResult(RESULT_OK, resultIntent);
                 finish();
-            }
+            //}
         }
     }
 }

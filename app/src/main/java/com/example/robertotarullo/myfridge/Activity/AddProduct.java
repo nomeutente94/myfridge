@@ -227,8 +227,9 @@ public class AddProduct extends AppCompatActivity {
                 purchaseDateBlock.setVisibility(View.GONE);
                 openedCheckBoxBlock.setVisibility(View.GONE);
                 currentWeightBlock.setVisibility(View.GONE);
-            } else
-                startingForm = getCurrentForm();
+            }
+
+            startingForm = getCurrentForm();
 
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
@@ -286,51 +287,31 @@ public class AddProduct extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(action.equals("shopping")) {
-            if(shoppingCart.size()>0){
-                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            Intent resultIntent = new Intent();
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("E' in corso la modalità spesa, sei sicuro di voler uscire senza salvare? Tutti gli eventuali prodotti aggiunti andranno persi.")
-                        .setTitle("Attenzione")
-                        .setPositiveButton("Esci", dialogClickListener)
-                        .setNegativeButton("Annulla", dialogClickListener)
-                        .show();
-            } else {
-                Intent resultIntent = new Intent();
-                setResult(RESULT_OK, resultIntent);
-                finish();
-            }
-        } else {
-            // chiedere conferma all'utente se tornare all'attività chiamante nel caso qualche campo sia stato modificato
-            if(!startingForm.equals(getCurrentForm())){
-                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            super.onBackPressed();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?")
-                        .setTitle("Attenzione")
-                        .setPositiveButton("Esci", dialogClickListener)
-                        .setNegativeButton("Annulla", dialogClickListener)
-                        .show();
-            } else
-                super.onBackPressed();
-        }
+        String msg = null;
+
+        if(action.equals("shopping") && shoppingCart.size()>0)
+            msg = "Sono presenti uno o più prodotti nel tuo carrello, sei sicuro di voler uscire senza salvare?";
+        else if(!startingForm.equals(getCurrentForm()))
+            msg = "Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?";
+
+        if(msg!=null){
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        super.onBackPressed();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(msg)
+                    .setTitle("Attenzione")
+                    .setPositiveButton("Esci", dialogClickListener)
+                    .setNegativeButton("Annulla", dialogClickListener)
+                    .show();
+        } else
+            super.onBackPressed();
     }
 
     private ProductForm getCurrentForm(){
