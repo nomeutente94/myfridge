@@ -30,6 +30,19 @@ public class Pack implements Product{
         products.add(singleProduct);
     }
 
+    public int getSize(boolean showConsumed){
+        if(showConsumed)
+            return getProducts().size();
+        else {
+            int size = 0;
+            for(int i=0; i<getProducts().size(); i++){
+                if(!getProducts().get(i).isConsumed())
+                    size++;
+            }
+            return size;
+        }
+    }
+
     @Override
     public String getName() {
         if(getProducts().size()>0)
@@ -69,8 +82,9 @@ public class Pack implements Product{
             getProducts().get(i).setWeight(weight);
     }
 
+    /*
     @Override
-    // Ritorna una media da tutti i prodotti
+    // Ritorna una media da tutti i prodotti, compresi quelli consumati
     public int getPercentageQuantity() {
         if(getProducts().size()>0){
             int sum = 0;
@@ -81,7 +95,7 @@ public class Pack implements Product{
             return (int) Math.ceil(sum/(float)getProducts().size());
         } else
             return 0;
-    }
+    }*/
 
     @Override
     // Ritorna true se tutti i pezzi sono stati consumati, false se almeno uno non è consumato

@@ -28,10 +28,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     private TextView quantityTextView, nameTextView, dataTextView, typeTextView;
     private LinearLayout consumptionBar, nonConsumptionBar;
     private Button deleteButton;
+    private Boolean showConsumed;
 
-    public ProductsListAdapter(Context context, int resourceId, List<Product> products) {
+    public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
+        this.showConsumed = showConsumed;
     }
 
     @Override
@@ -78,33 +80,47 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 typeTextView.setText("Prodotto fresco");
         } else {
             deleteButton.setVisibility(View.INVISIBLE);
-            typeTextView.setText(((Pack) p).getProducts().size() + " prodotti");
+            typeTextView.setText(((Pack) p).getSize(showConsumed) + " prodotti");
+
+            if(p.isPackaged()) {
+                typeTextView.setText(typeTextView.getText() + " confezionati");
+            } else {
+                typeTextView.setText(typeTextView.getText() + " freschi");
+            }
         }
     }
 
     private void setConsumption(){
-        int consumedQuantity;
-        if(p.isConsumed()) {
-            consumedQuantity = 100;
-            deleteButton.setEnabled(false);
+        if(p instanceof SingleProduct){
+            consumptionBar.setVisibility(View.VISIBLE);
+            nonConsumptionBar.setVisibility(View.VISIBLE);
+
+            int consumedQuantity;
+            if(p.isConsumed()) {
+                consumedQuantity = 100;
+                deleteButton.setEnabled(false);
+            } else {
+                consumedQuantity = 100 - ((SingleProduct)p).getPercentageQuantity();
+                deleteButton.setEnabled(true);
+            }
+
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    0,
+                    (consumedQuantity)
+            );
+
+            consumptionBar.setLayoutParams(param);
+            if(((SingleProduct)p).getPercentageQuantity() > HALF_CONSUMPTION)
+                nonConsumptionBar.setBackgroundColor(Color.parseColor(GREEN_BAR));
+            else if(((SingleProduct)p).getPercentageQuantity() > LOW_CONSUMPTION)
+                nonConsumptionBar.setBackgroundColor(Color.parseColor(YELLOW_BAR));
+            else
+                nonConsumptionBar.setBackgroundColor(Color.parseColor(RED_BAR));
         } else {
-            consumedQuantity = 100 - p.getPercentageQuantity();
-            deleteButton.setEnabled(true);
+            consumptionBar.setVisibility(View.INVISIBLE);
+            nonConsumptionBar.setVisibility(View.INVISIBLE);
         }
-
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0,
-                (consumedQuantity)
-        );
-
-        consumptionBar.setLayoutParams(param);
-        if(p.getPercentageQuantity() > HALF_CONSUMPTION)
-            nonConsumptionBar.setBackgroundColor(Color.parseColor(GREEN_BAR));
-        else if(p.getPercentageQuantity() > LOW_CONSUMPTION)
-            nonConsumptionBar.setBackgroundColor(Color.parseColor(YELLOW_BAR));
-        else
-            nonConsumptionBar.setBackgroundColor(Color.parseColor(RED_BAR));
     }
 
     private void setDate(){

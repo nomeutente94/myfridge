@@ -28,7 +28,7 @@ public interface Product {
 
     void setOpenedStorageCondition(int openedStorageCondition);
 
-    int getPercentageQuantity();
+    //int getPercentageQuantity();
 
     boolean isConsumed();
 

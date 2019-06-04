@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean showConsumedProducts; // Determina se mostrare i prodotti consumati
 
     // Dichiarazione delle liste di prodotti
-    private List<Product> products; // Lista di tutti i prodotti della view (pack e singleProduct)
+    private List<SingleProduct> singleProducts; // Lista di tutti i prodotti
+    private List<Product> groupedProducts; // Lista di tutti i prodotti della view (pack e singleProduct)
     private List<Product> filteredProducts; // Lista di prodotti della modalità di conservazione corrente (pack e singleProduct)
     private List<Product> packProducts; // Lista di prodotti della confezione corrente (solo singleProduct)
 
@@ -107,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     public void setFilteredProducts(View v){
         highlightButton((Button)v); // Cambia il colore del filtro attuale
         clearSerchBarFocus();
-        setFilteredProducts(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
+        setFilterView(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
     }
 
     private void highlightButton(Button b){
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 if(currentPackage!=null)
                     setPackageView(currentPackage);
                 else
-                    setFilteredProducts(currentFilter);
+                    groupProducts(null);
                 filterBySearchBar();
                 return true;
             default:
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(currentPackage!=null) {
             resetSearchBar();
-            setFilteredProducts(currentFilter);
+            setFilterView(currentFilter);
         } else
             super.onBackPressed();
     }
@@ -224,9 +225,9 @@ public class MainActivity extends AppCompatActivity {
                         searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
             }
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults);
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts);
         } else // Se la barra di ricerca è vuota resetta la view
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts());
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts(), showConsumedProducts);
 
         setAdapter(productsListAdapter);
     }
@@ -235,43 +236,46 @@ public class MainActivity extends AppCompatActivity {
     // Se non si vuole visualizzare il contenuto di un gruppo passare null
     // .. altrimenti passare il riferimento all'oggetto pack
     private void retrieveProductsFromDB(Pack pack){
-        System.out.println("Aggiorno la lista dei prodotti...");
-        products = new ArrayList<>(); // Svuoto la lista precedente
-
         new Thread(() -> {
-            List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
-
-            runOnUiThread(() -> {
-                // Aggiungi packs e singleProducts alla lista globale
-                products.addAll(groupProducts(singleProducts)); // Passa gli eventuali raggruppamenti di prodotti
-                products.addAll(singleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
-
-                if(pack==null)
-                    setFilteredProducts(currentFilter);
-                else
-                    setPackageView(pack);
-            });
+            singleProducts = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
+            runOnUiThread(() -> groupProducts(pack));
         }).start();
     }
 
-    // Raggruppa prodotti in base a caratteristiche comuni spostandoli dall'array di SingleProduct ricevuto
-    private List<Pack> groupProducts(List<SingleProduct> singleProducts){
+    private void groupProducts(Pack pack){
+        List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
+        groupedProducts = new ArrayList<>();
+        groupedProducts.addAll(getPacks(groupedSingleProducts));      // Passa gli eventuali raggruppamenti di prodotti
+        groupedProducts.addAll(groupedSingleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
+
+        if(pack==null)
+            setFilterView(currentFilter);
+        else
+            setPackageView(pack);
+    }
+
+    // Raggruppa prodotti in base a caratteristiche comuni spostandoli dall'array ricevuto
+    private List<Pack> getPacks(List<SingleProduct> singleProducts){
         List<Pack> packs = new ArrayList<>();
 
-        for(int i=0; i<singleProducts.size(); i++){                                     // Per ogni prodotto
-            Pack p = new Pack();                                                        // Crea un nuovo pack
-            for(int j=0; j<singleProducts.size(); j++){                                 // Cerca tra tutti i prodotti
-                if(j!=i && singleProducts.get(i).packEquals(singleProducts.get(j))){    // .. se i due prodotti sono raggruppabili
-                    p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
-                    singleProducts.remove(j);
-                    j--;
+        for(int i=0; i<singleProducts.size(); i++){                                             // Per ogni prodotto
+            if(showConsumedProducts || !singleProducts.get(i).isConsumed()){
+                Pack p = new Pack();                                                            // Crea un nuovo pack
+                for(int j=0; j<singleProducts.size(); j++){                                     // Cerca tra tutti i prodotti
+                    if(showConsumedProducts || !singleProducts.get(j).isConsumed()){
+                        if(j!=i && singleProducts.get(i).packEquals(singleProducts.get(j))){    // .. se i due prodotti sono raggruppabili
+                            p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
+                            singleProducts.remove(j);
+                            j--;
+                        }
+                    }
                 }
-            }
-            if(!p.getProducts().isEmpty()){                                             // Se è stato raggruppato con almeno un altro prodotto
-                p.addProduct(singleProducts.get(i));                                    // .. sposta il prodotto nel pack
-                singleProducts.remove(i);
-                i--;
-                packs.add(p);                                                           // .. aggiungi il pack alla lista
+                if(!p.getProducts().isEmpty()){                                                 // Se è stato raggruppato con almeno un altro prodotto
+                    p.addProduct(singleProducts.get(i));                                        // .. sposta il prodotto nel pack
+                    singleProducts.remove(i);
+                    i--;
+                    packs.add(p);                                                               // .. aggiungi il pack alla lista
+                }
             }
         }
 
@@ -279,28 +283,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
-    private void setFilteredProducts(int storageCondition){
+    private void setFilterView(int storageCondition){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
-        setTitle("MyFridge");
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
         filteredProducts = new ArrayList<>();
-        for(int i=0; i<products.size(); i++){
-            if(showConsumedProducts || !products.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
-
+        for(int i=0; i<groupedProducts.size(); i++){
+            if(showConsumedProducts || !groupedProducts.get(i).isConsumed()){ // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
                 // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
-                if (products.get(i) instanceof SingleProduct) {
-                    if (((SingleProduct) products.get(i)).getActualStorageCondition() == currentFilter)
-                        filteredProducts.add(products.get(i));
+                if (groupedProducts.get(i) instanceof SingleProduct) {
+                    if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
+                        filteredProducts.add(groupedProducts.get(i));
                 } else {
-                    if ((products.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
-                        filteredProducts.add(products.get(i));
+                    if ((groupedProducts.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
+                        filteredProducts.add(groupedProducts.get(i));
                 }
             }
         }
         sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts, showConsumedProducts);
         setAdapter(productsListAdapter);
         filterBySearchBar();
     }
@@ -331,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts, showConsumedProducts);
         setAdapter(productsListAdapter);
         // TODO comunica tramite un textview il caso in cui non ci sia nessun prodotto da visualizzare, sia nel gruppo che non
     }
