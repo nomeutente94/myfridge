@@ -1,0 +1,48 @@
+package com.example.robertotarullo.myfridge.Adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.example.robertotarullo.myfridge.Bean.SingleProduct;
+import com.example.robertotarullo.myfridge.R;
+
+import java.util.List;
+
+public class CartListAdapter extends ArrayAdapter<SingleProduct> {
+    private LayoutInflater inflater;
+    private SingleProduct p;
+    private TextView nameTextView, priceTextView;
+    private Button deleteButton;
+
+    public CartListAdapter(Context context, int resourceId, List<SingleProduct> products) {
+        super(context, resourceId, products);
+        this.inflater = LayoutInflater.from(context);
+    }
+
+    @Override
+    public View getView(int position, View v, ViewGroup parent) {
+        if (v == null)
+            v = inflater.inflate(R.layout.list_cart_element, null);
+
+        p = getItem(position);
+
+        nameTextView = v.findViewById(R.id.elem_lista_nome);
+        priceTextView = v.findViewById(R.id.elem_lista_prezzo);
+        deleteButton = v.findViewById(R.id.deleteButton);
+
+        if (p.getBrand() != null)
+            nameTextView.setText(p.getName() + " " + p.getBrand());
+        else
+            nameTextView.setText(p.getName());
+
+        deleteButton.setTag(position);
+
+        return v;
+    }
+}
+

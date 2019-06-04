@@ -684,10 +684,10 @@
 
         <Button
             android:layout_weight="1"
-            android:onClick="endShopping"
+            android:onClick="showCart"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Termina Spesa"/>
+            android:text="Carrello"/>
 
         <Button
             android:layout_weight="1"

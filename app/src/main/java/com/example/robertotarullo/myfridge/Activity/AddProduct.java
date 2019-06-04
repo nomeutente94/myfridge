@@ -881,8 +881,9 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
-    public void endShopping(View view) {
-        if(shoppingCart.size()>0){
+    public void showCart(View view) {
+        /*if(shoppingCart.size()>0){
+
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
@@ -914,11 +915,13 @@ public class AddProduct extends AppCompatActivity {
                     .setPositiveButton("Aggiungi", dialogClickListener)
                     .setNegativeButton("Annulla", dialogClickListener)
                     .show();
-        } else {
-            Intent resultIntent = new Intent();
-            setResult(RESULT_OK, resultIntent);
-            finish();
-        }
+        } else
+            onBackPressed();
+        */
+
+        Intent intent = new Intent(this, CartSummary.class);
+        startActivityForResult(intent, 1);
+
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
