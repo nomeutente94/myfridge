@@ -17,10 +17,14 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Cart extends AppCompatActivity {
 
     private ArrayList<SingleProduct> cartProducts;
+
+    private ArrayList<Integer> quantities;
+    private ArrayList<SingleProduct> listToDisplay;
 
     // Riferimenti a elementi della view
     private ListView listView;
@@ -62,18 +66,19 @@ public class Cart extends AppCompatActivity {
         Intent intent = new Intent(this, AddProduct.class);
         intent.putExtra("action", "shopping");
         intent.putExtra("position", position);
+        intent.putExtra("quantity", quantities.get(position));
         intent.putExtra("productToEdit", (SingleProduct)listView.getItemAtPosition(position));
         startActivityForResult(intent, 1);
     }
 
     public void deleteProduct(View view){
         int position = Integer.parseInt(view.getTag().toString());
-        Product p = productsListAdapter.getItem(position);
+        SingleProduct p = productsListAdapter.getItem(position);
 
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
-                    cartProducts.remove(p);
+                    cartProducts.removeAll(Collections.singleton(p));
                     updateList();
                     Toast.makeText(getApplicationContext(), "Prodotto rimosso", Toast.LENGTH_LONG).show();
                     break;
@@ -82,9 +87,16 @@ public class Cart extends AppCompatActivity {
             }
         };
 
+        String msg = null;
+
+        if(Collections.frequency(cartProducts, p)==1)
+            msg = "Rimuovere il prodotto dal carrello?";
+        else if(Collections.frequency(cartProducts, p)>1)
+            msg = "Rimuovere " +Collections.frequency(cartProducts, p)+ " prodotti dal carrello?";
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Rimuovere il prodotto dal carrello?")
-                .setTitle("Conferma eliminazione")
+        builder.setMessage(msg)
+                .setTitle("Attenzione")
                 .setPositiveButton("Rimuovi", dialogClickListener)
                 .setNegativeButton("Annulla", dialogClickListener)
                 .show();
@@ -120,7 +132,24 @@ public class Cart extends AppCompatActivity {
     }
 
     private void updateList(){
-        productsListAdapter = new CartListAdapter(this, R.layout.list_element, cartProducts);
+        for(int i=0; i<cartProducts.size(); i++)
+            System.out.println("cartProducts[" + i + "] = " + cartProducts.get(i).getName());
+
+        listToDisplay = new ArrayList<>(cartProducts);
+        quantities = new ArrayList<>();
+        for(int i=0; i<listToDisplay.size(); i++){
+            int occurences = 1;
+            for(int j=0; j<listToDisplay.size(); j++){
+                if(i!=j && listToDisplay.get(i).equals(listToDisplay.get(j))){
+                    occurences++;
+                    listToDisplay.remove(j);
+                    j--;
+                }
+            }
+            quantities.add(occurences);
+        }
+
+        productsListAdapter = new CartListAdapter(this, R.layout.list_element, listToDisplay, quantities);
         listView.setAdapter(productsListAdapter);
 
         int total = 0;
@@ -144,9 +173,24 @@ public class Cart extends AppCompatActivity {
 
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-                int index = data.getIntExtra("position", 0);
-                cartProducts.remove(index);
-                cartProducts.add(index, (SingleProduct)data.getSerializableExtra("editedProduct"));
+                int newQuantity = data.getIntExtra("quantity", 1);
+                int position = data.getIntExtra("position", 0);
+
+                if(newQuantity > quantities.get(position)){
+                    for(int i=0; i<newQuantity-quantities.get(position); i++)
+                        cartProducts.add(cartProducts.indexOf(listToDisplay.get(position)), listToDisplay.get(position));
+                } else if(newQuantity < quantities.get(position)){
+                    for(int i=0; i<quantities.get(position) - newQuantity; i++)
+                        cartProducts.remove(listToDisplay.get(position));
+                } // else if(newQuantity == quantities.get(position)) non fare niente
+
+                for(int i=0; i<cartProducts.size(); i++){
+                    if(cartProducts.get(i).equals(listToDisplay.get(position))){
+                        cartProducts.remove(i);
+                        cartProducts.add(i, (SingleProduct)data.getSerializableExtra("editedProduct"));
+                    }
+                }
+
                 updateList();
             }
         }

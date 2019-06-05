@@ -19,10 +19,12 @@ public class CartListAdapter extends ArrayAdapter<SingleProduct> {
     private SingleProduct p;
     private TextView nameTextView, priceTextView;
     private Button deleteButton;
+    private List<Integer> quantities;
 
-    public CartListAdapter(Context context, int resourceId, List<SingleProduct> products) {
+    public CartListAdapter(Context context, int resourceId, List<SingleProduct> products, List<Integer> quantities) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
+        this.quantities = quantities;
     }
 
     @Override
@@ -40,6 +42,8 @@ public class CartListAdapter extends ArrayAdapter<SingleProduct> {
             nameTextView.setText(p.getName() + " " + p.getBrand());
         else
             nameTextView.setText(p.getName());
+
+        nameTextView.setText(nameTextView.getText() + " (x" + quantities.get(position) + ")");
 
         if(p.getPrice()>0) {
             priceTextView.setVisibility(View.VISIBLE);

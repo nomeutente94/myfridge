@@ -233,6 +233,7 @@ public class AddProduct extends AppCompatActivity {
             if(getIntent().getSerializableExtra("productToEdit")!=null){
                 setTitle("Modifica prodotto");
                 confirmButton.setText("Salva");
+                quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
                 fillForm((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
             } else {
                 setTitle("Aggiungi prodotto");
@@ -478,9 +479,9 @@ public class AddProduct extends AppCompatActivity {
                     insertCount = addProducts(productsToAdd);
                 } else if(action.equals("shopping")) { // Se si tratta della modalità spesa
                     if(getIntent().getSerializableExtra("productToEdit")!=null){
+                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
                         resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
                         resultIntent.putExtra("editedProduct", newProduct);
-
                         setResult(RESULT_OK, resultIntent);
                         finish();
                     } else {
