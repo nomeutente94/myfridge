@@ -212,31 +212,42 @@ public class AddProduct extends AppCompatActivity {
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
 
-        if(action.equals("add") || action.equals("shopping")) {
+        if(action.equals("add")) {
             setTitle("Aggiungi prodotto");
             confirmButton.setText("Aggiungi");
-
-            if(action.equals("shopping")) {
-                shoppingCart = new ArrayList<>(); // Inizializza il carrello
-
-                // Nascondi i campi precompilati
-                findViewById(R.id.addButton).setVisibility(View.GONE);
-                findViewById(R.id.shoppingModeButtonsBlock).setVisibility(View.VISIBLE);
-
-                pointOfPurchaseBlock.setVisibility(View.GONE);
-                purchaseDateBlock.setVisibility(View.GONE);
-                openedCheckBoxBlock.setVisibility(View.GONE);
-                currentWeightBlock.setVisibility(View.GONE);
-            }
-
             startingForm = getCurrentForm();
-
         } else if(action.equals("edit")) {
             setTitle("Modifica prodotto");
             productToModifyId = getIntent().getLongExtra("id", 0);
             confirmButton.setText("Salva");
-            quantityBlock.setVisibility(View.GONE);
-            fillForm();
+
+            new Thread(() -> {
+                SingleProduct p = productDatabase.productDao().get(productToModifyId);
+                runOnUiThread(() -> {
+                    fillForm(p);
+                    startingForm = getCurrentForm();
+                });
+            }).start();
+
+        } else if(action.equals("shopping")){
+            if(getIntent().getSerializableExtra("productToEdit")!=null){
+                setTitle("Modifica prodotto");
+                confirmButton.setText("Salva");
+                fillForm((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+            } else {
+                setTitle("Aggiungi prodotto");
+                shoppingCart = new ArrayList<>(); // Inizializza il carrello
+                confirmButton.setVisibility(View.GONE);
+                findViewById(R.id.shoppingModeButtonsBlock).setVisibility(View.VISIBLE);
+            }
+
+            // Nascondi i campi precompilati
+            pointOfPurchaseBlock.setVisibility(View.GONE);
+            purchaseDateBlock.setVisibility(View.GONE);
+            openedCheckBoxBlock.setVisibility(View.GONE);
+            currentWeightBlock.setVisibility(View.GONE);
+
+            startingForm = getCurrentForm();
         }
     }
 
@@ -289,7 +300,7 @@ public class AddProduct extends AppCompatActivity {
     public void onBackPressed() {
         String msg = null;
 
-        if(action.equals("shopping") && shoppingCart.size()>0)
+        if(action.equals("shopping") && (shoppingCart!=null && shoppingCart.size()>0))
             msg = "Sono presenti uno o più prodotti nel tuo carrello, sei sicuro di voler uscire senza salvare?";
         else if(!startingForm.equals(getCurrentForm()))
             msg = "Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?";
@@ -361,84 +372,77 @@ public class AddProduct extends AppCompatActivity {
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
-    private void fillForm() {
-        new Thread(() -> {
-            SingleProduct p = productDatabase.productDao().get(productToModifyId);
+    private void fillForm(SingleProduct p) {
 
-            // printProductOnConsole(p);
+        // printProductOnConsole(p);
 
-            runOnUiThread(() -> {
-                nameField.setText(p.getName());
-                if(p.getBrand()!=null)
-                    brandField.setText(p.getBrand());
-                if(p.getPrice()>0)
-                    priceField.setText(PriceUtils.getFormattedPrice(p.getPrice()));
-                if(p.getPricePerKilo()>0)
-                    pricePerKiloField.setText(String.valueOf(p.getPricePerKilo()));
-                if(p.getWeight()>0) {
-                    weightField.setText(PriceUtils.getFormattedWeight(p.getWeight()));
-                    currentWeightField.setText(PriceUtils.getFormattedWeight(p.getCurrentWeight()));
-                }
-                currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
-                if(p.getExpiringDaysAfterOpening()>0)
-                    editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
-                if(p.getPurchaseDate()!=null)
-                    editFieldNotFromUser(purchaseDateField, DateUtils.getFormattedDate(p.getPurchaseDate()));
-                storageConditionSpinner.setSelection(p.getStorageCondition());
+        nameField.setText(p.getName());
+        if(p.getBrand()!=null)
+            brandField.setText(p.getBrand());
+        if(p.getPrice()>0)
+            priceField.setText(PriceUtils.getFormattedPrice(p.getPrice()));
+        if(p.getPricePerKilo()>0)
+            pricePerKiloField.setText(String.valueOf(p.getPricePerKilo()));
+        if(p.getWeight()>0) {
+            weightField.setText(PriceUtils.getFormattedWeight(p.getWeight()));
+            currentWeightField.setText(PriceUtils.getFormattedWeight(p.getCurrentWeight()));
+        }
+        currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
+        if(p.getExpiringDaysAfterOpening()>0)
+            editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
+        if(p.getPurchaseDate()!=null)
+            editFieldNotFromUser(purchaseDateField, DateUtils.getFormattedDate(p.getPurchaseDate()));
+        storageConditionSpinner.setSelection(p.getStorageCondition());
 
-                if(p.getPointOfPurchaseId()>0) {
-                    for(int i=0; i<pointOfPurchaseSpinner.getCount(); i++){
-                        if(((PointOfPurchase)pointOfPurchaseSpinner.getItemAtPosition(i)).getId()==p.getPointOfPurchaseId())
-                            pointOfPurchaseSpinner.setSelection(i);
-                    }
-                }
+        if(p.getPointOfPurchaseId()>0) {
+            for(int i=0; i<pointOfPurchaseSpinner.getCount(); i++){
+                if(((PointOfPurchase)pointOfPurchaseSpinner.getItemAtPosition(i)).getId()==p.getPointOfPurchaseId())
+                    pointOfPurchaseSpinner.setSelection(i);
+            }
+        }
 
-                piecesField.setText(String.valueOf(p.getPieces()));
-                currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
+        piecesField.setText(String.valueOf(p.getPieces()));
+        currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
-                if(p.getExpiryDate()!=null) {
-                    if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {
-                        noExpiryCheckbox.setChecked(true);
-                        editFieldNotFromUser(expiryDaysAfterOpeningField, "");
-                    } else {
-                        editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
-                        if(!p.isPackaged())
-                            changeToExpiringDateMode(true); // Mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
-                    }
-                }
+        if(p.getExpiryDate()!=null) {
+            if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {
+                noExpiryCheckbox.setChecked(true);
+                editFieldNotFromUser(expiryDaysAfterOpeningField, "");
+            } else {
+                editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
+                if(!p.isPackaged())
+                    changeToExpiringDateMode(true); // Mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
+            }
+        }
 
-                // Se si tratta di un prodotto confezionato
-                if(p.isPackaged()){
-                    packagedCheckBox.setChecked(true);
+        // Se si tratta di un prodotto confezionato
+        if(p.isPackaged()){
+            packagedCheckBox.setChecked(true);
 
-                    // Se si tratta di un prodotto chiuso confezionato
-                    if(p.isOpened()) {
-                        openedCheckBox.setChecked(true);
-                        if(p.getOpeningDate()!=null)
-                            editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
-                    }
+            // Se si tratta di un prodotto chiuso confezionato
+            if(p.isOpened()) {
+                openedCheckBox.setChecked(true);
+                if(p.getOpeningDate()!=null)
+                    editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
+            }
 
-                    openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
-                }
+            openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
+        }
 
-                // Se si tratta di un prodotto fresco o confezione aperta
-                if(p.isOpened()){
-                    if(p.getWeight()==0 && p.getPieces()==1) {
-                        currentWeightSlider.setProgress(p.getPercentageQuantity());
-                    } else if(p.getWeight()>0 && p.getPieces()==1) {
-                        currentWeightSlider.setTag("currentWeight");
-                        currentWeightSlider.setMax(TextUtils.getInt(weightField));
-                        currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
-                    } else {
-                        currentWeightSlider.setTag("pieces");
-                        currentWeightSlider.setMax(p.getPieces());
-                        currentWeightSlider.setProgress(p.getCurrentPieces());
-                    }
-                }
-
-                startingForm = getCurrentForm();
-            });
-        }).start();
+        // Se si tratta di un prodotto fresco o confezione aperta
+        if(p.isOpened()){
+            if(p.getWeight()==0 && p.getPieces()==1) {
+                currentWeightSlider.setProgress(p.getPercentageQuantity());
+            } else if(p.getWeight()>0 && p.getPieces()==1) {
+                currentWeightSlider.setTag("currentWeight");
+                currentWeightSlider.setMax(TextUtils.getInt(weightField));
+                currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
+            } else {
+                currentWeightSlider.setTag("pieces");
+                currentWeightSlider.setMax(p.getPieces());
+                currentWeightSlider.setProgress(p.getCurrentPieces());
+            }
+        }
     }
 
     // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
@@ -472,18 +476,26 @@ public class AddProduct extends AppCompatActivity {
                     for(int i=0; i<TextUtils.getInt(quantityField); i++)
                         productsToAdd.add(newProduct);
                     insertCount = addProducts(productsToAdd);
-                } else if(action.equals("shopping")) { // Se si tratta di un'aggiunta
-                    for(int i=0; i<TextUtils.getInt(quantityField); i++)
-                        shoppingCart.add(newProduct);
+                } else if(action.equals("shopping")) { // Se si tratta della modalità spesa
+                    if(getIntent().getSerializableExtra("productToEdit")!=null){
+                        resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
+                        resultIntent.putExtra("editedProduct", newProduct);
 
-                    runOnUiThread(() -> {
-                        Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    } else {
+                        for(int i=0; i<TextUtils.getInt(quantityField); i++)
+                            shoppingCart.add(newProduct);
 
-                        // Aggiorna i suggerimenti con l'ultimo prodotto inserito
-                        addSuggestions(newProduct);
+                        runOnUiThread(() -> {
+                            Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
 
-                        resetActivityStatus();
-                    });
+                            // Aggiorna i suggerimenti con l'ultimo prodotto inserito
+                            addSuggestions(newProduct);
+
+                            resetActivityStatus();
+                        });
+                    }
                 }
 
                 if(insertCount>0){
@@ -882,46 +894,9 @@ public class AddProduct extends AppCompatActivity {
     }
 
     public void showCart(View view) {
-        /*if(shoppingCart.size()>0){
-
-            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        new Thread(() -> {
-                            addProducts(shoppingCart);
-
-                            Intent resultIntent = new Intent();
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                        }).start();
-                        break;
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                }
-            };
-
-            StringBuilder msg = new StringBuilder("Vuoi aggiungere i seguenti prodotti?\n\n");
-
-            for(int i=0; i<shoppingCart.size(); i++){
-                msg.append("- ").append(shoppingCart.get(i).getName());
-                if(shoppingCart.get(i).getBrand()!=null)
-                    msg.append(" ").append(shoppingCart.get(i).getBrand());
-                msg.append("\n");
-            }
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(msg.toString())
-                    .setTitle("Carrello")
-                    .setPositiveButton("Aggiungi", dialogClickListener)
-                    .setNegativeButton("Annulla", dialogClickListener)
-                    .show();
-        } else
-            onBackPressed();
-        */
-
-        Intent intent = new Intent(this, CartSummary.class);
+        Intent intent = new Intent(this, Cart.class);
+        intent.putExtra("cartProducts", shoppingCart);
         startActivityForResult(intent, 1);
-
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
@@ -954,6 +929,32 @@ public class AddProduct extends AppCompatActivity {
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque aggiungendo un prodotto già scaduto?");
                 else if(!DateUtils.isDateEmpty(purchaseDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(purchaseDateField)))
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                shoppingCart = (ArrayList<SingleProduct>) data.getSerializableExtra("cartProducts");
+                // TODO considerare se rimuovere le suggestions per eventuali prodotti rimossi
+
+                if(data.getBooleanExtra("cartEdit", false)){
+                    new Thread(() -> {
+                        int insertCount = addProducts(shoppingCart);
+
+                        runOnUiThread(() -> {
+                            if(insertCount > 0){
+                                Intent resultIntent = new Intent();
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            }
+                        });
+                    }).start();
+                }
             }
         }
     }

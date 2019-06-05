@@ -1,11 +1,11 @@
 package com.example.robertotarullo.myfridge.Bean;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.PrimaryKey;
 
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity/*(foreignKeys = {
@@ -20,7 +20,7 @@ import java.util.Date;
                 onDelete = ForeignKey.NO_ACTION
         )})*/
 
-public class SingleProduct implements Product{
+public class SingleProduct implements Product, Serializable {
     // Identificatore univoco del prodotto
     // Se non specificato è 0, parte da id 1
     @PrimaryKey(autoGenerate = true)
@@ -321,4 +321,5 @@ public class SingleProduct implements Product{
         }
         return false;
     }
+
 }

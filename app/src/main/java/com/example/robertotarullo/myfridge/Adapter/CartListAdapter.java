@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 
 import java.util.List;
 
@@ -39,6 +40,14 @@ public class CartListAdapter extends ArrayAdapter<SingleProduct> {
             nameTextView.setText(p.getName() + " " + p.getBrand());
         else
             nameTextView.setText(p.getName());
+
+        if(p.getPrice()>0) {
+            priceTextView.setVisibility(View.VISIBLE);
+            priceTextView.setText("€" + PriceUtils.getFormattedPrice(p.getPrice()));
+        } else{
+            priceTextView.setVisibility(View.INVISIBLE);
+        }
+
 
         deleteButton.setTag(position);
 
