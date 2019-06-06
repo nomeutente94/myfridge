@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class AddProduct extends AppCompatActivity {
@@ -66,7 +68,7 @@ public class AddProduct extends AppCompatActivity {
     private long productToModifyId;
 
     // Variabili per i suggerimenti dei campi
-    private ArrayList<String> nameSuggestionsList, brandSuggestionsList;
+    private Set<String> nameSuggestionsList, brandSuggestionsList;
 
     // views
     private ScrollView listScrollView;
@@ -79,7 +81,6 @@ public class AddProduct extends AppCompatActivity {
 
     // variabili di controllo del form
     private boolean expiryDateMode;
-    private List<SingleProduct> products;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
     private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock;
@@ -341,11 +342,15 @@ public class AddProduct extends AppCompatActivity {
     }
 
     private void initializeSuggestions(){
-        nameSuggestionsList = new ArrayList<>();
-        brandSuggestionsList = new ArrayList<>();
+        nameSuggestionsList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        brandSuggestionsList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         new Thread(() -> {
-            products = productDatabase.productDao().getAll(); // TODO Prendi tutti i prodotti non uguali
+            List<SingleProduct> products = productDatabase.productDao().getAll(); // TODO Prendi tutti i prodotti non uguali
+            if(getIntent().getSerializableExtra("suggestions")!=null){ // Se si tratta di un'aggiunta o di una modifica
+                List<SingleProduct> cartProducts = (List<SingleProduct>) getIntent().getSerializableExtra("suggestions");
+                products.addAll(cartProducts);
+            }
             runOnUiThread(() -> addSuggestions(products));
         }).start();
     }
@@ -357,23 +362,15 @@ public class AddProduct extends AppCompatActivity {
     }
 
     private void addSuggestions(List<SingleProduct> suggestions){
-        List<String> lowerCaseNameSuggestionsList = new ArrayList<>(nameSuggestionsList);
-        lowerCaseNameSuggestionsList.replaceAll(String::toLowerCase);
-
-        List<String> lowerCaseBrandSuggestionsList = new ArrayList<>(nameSuggestionsList);
-        lowerCaseBrandSuggestionsList.replaceAll(String::toLowerCase);
-
-        // Aggiungi solo valori non duplicati e non null
         for(int i=0; i<suggestions.size(); i++){
-            if(suggestions.get(i).getName()!=null && !lowerCaseNameSuggestionsList.contains(suggestions.get(i).getName().toLowerCase()))
+            if(suggestions.get(i).getName()!=null)
                 nameSuggestionsList.add(suggestions.get(i).getName());
-
-            if(suggestions.get(i).getBrand()!=null && !lowerCaseBrandSuggestionsList.contains(suggestions.get(i).getBrand().toLowerCase()))
+            if(suggestions.get(i).getBrand()!=null)
                 brandSuggestionsList.add(suggestions.get(i).getBrand());
         }
 
-        ((AutoCompleteTextView)nameField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameSuggestionsList));
-        ((AutoCompleteTextView)brandField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandSuggestionsList));
+        ((AutoCompleteTextView)nameField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, nameSuggestionsList.toArray()));
+        ((AutoCompleteTextView)brandField).setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, brandSuggestionsList.toArray()));
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
