@@ -106,7 +106,7 @@ public class Cart extends AppCompatActivity {
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        // TODO aggiungere qui i prodotti invece di delegare il compito ad AddProduct?
+                        // TODO aggiungere qui i prodotti (o in una classe esterna) invece di delegare il compito ad AddProduct?
                         Intent intent = new Intent(this, AddProduct.class);
                         intent.putExtra("cartProducts", cartProducts);
                         intent.putExtra("action", "shopping");

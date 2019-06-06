@@ -285,6 +285,7 @@ public class MainActivity extends AppCompatActivity {
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilterView(int storageCondition){
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
+        setTitle("MyFridge"); // Risetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
@@ -490,20 +491,13 @@ public class MainActivity extends AppCompatActivity {
                 return 1;
             else if(!p1.isConsumed() && p2.isConsumed())
                 return -1;
-            else if(p1.isConsumed() && p2.isConsumed())         // entrambi consumati
-                return 0; // TODO ordina per data di consumazione crescente
-            else if(date1==null && date2==null) {               // entrambe non specificate
-                if(p1.isPackaged() == p2.isPackaged())          // dai precedenza ai prodotti freschi
-                    return 0;
-                else if(p1.isPackaged())
-                    return 1;
-                else if(p2.isPackaged())
-                    return -1;
-            } else if(date1==null)                              // dai precedenza a non specificata
+            else if(p1.isConsumed() == p2.isConsumed())
+                return 0;
+            else if(date1==null && date2!=null)                 // dai precedenza a non specificata
                 return -1;
-            else if(date2==null)                                // dai precedenza a non specificata
+            else if(date2==null && date1!=null)
                 return 1;
-            else if(date1.equals(date2))                        // date uguali
+            else if(date1==null && date2==null)
                 return 0;
             else if(date1.after(date2)){
                 if(date2.equals(DateUtils.getNoExpiryDate()))   // dai precedenze a data non 'mai'
@@ -515,9 +509,14 @@ public class MainActivity extends AppCompatActivity {
                     return 1;                                   // dai precedenze a data non 'mai'
                 else
                     return -1;                                  // dai precedenza alla data più vecchia
-            }
-
-            return 0;
+            } else if(date1.equals(date2))
+                return 0;
+            else if(p1.getName().compareTo(p2.getName())>0)
+                return 1;
+            else if(p1.getName().compareTo(p2.getName())<0)
+                return -1;
+            else
+                return 0;
         });
     }
 
