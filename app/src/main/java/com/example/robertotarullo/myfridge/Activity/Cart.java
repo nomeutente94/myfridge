@@ -35,9 +35,25 @@ public class Cart extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent resultIntent = new Intent();
-        setResult(RESULT_OK, resultIntent);
-        finish();
+        if(cartProducts.size()>0){
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        super.onBackPressed();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Sono presenti uno o più prodotti nel carrello, sei sicuro di volere uscire?")
+                    .setTitle("Attenzione")
+                    .setPositiveButton("Esci", dialogClickListener)
+                    .setNegativeButton("Annulla", dialogClickListener)
+                    .show();
+        } else
+            super.onBackPressed();
     }
 
     @Override
@@ -126,7 +142,8 @@ public class Cart extends AppCompatActivity {
                     .setPositiveButton("Aggiungi", dialogClickListener)
                     .setNegativeButton("Annulla", dialogClickListener)
                     .show();
-        }
+        } else
+            onBackPressed();
     }
 
     public void addProduct(View view){

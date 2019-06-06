@@ -1,11 +1,15 @@
-package com.example.robertotarullo.myfridge.Listener;
+package com.example.robertotarullo.myfridge.Watcher;
 
+import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
+
+import org.w3c.dom.Text;
 
 public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListener{
 

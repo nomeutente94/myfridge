@@ -1,15 +1,9 @@
-package com.example.robertotarullo.myfridge.TextWatcher;
+package com.example.robertotarullo.myfridge.Watcher;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.SeekBar;
 
-import com.example.robertotarullo.myfridge.Activity.AddProduct;
-import com.example.robertotarullo.myfridge.R;
-import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
 public class QuantityWatcher implements TextWatcher {

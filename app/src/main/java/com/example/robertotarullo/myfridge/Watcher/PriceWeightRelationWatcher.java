@@ -1,4 +1,4 @@
-package com.example.robertotarullo.myfridge.TextWatcher;
+package com.example.robertotarullo.myfridge.Watcher;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -6,13 +6,10 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
-
-import org.w3c.dom.Text;
 
 public class PriceWeightRelationWatcher implements TextWatcher {
     private String type;

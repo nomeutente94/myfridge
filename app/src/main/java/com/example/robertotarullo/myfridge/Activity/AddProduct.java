@@ -33,9 +33,10 @@ import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
-import com.example.robertotarullo.myfridge.Listener.CurrentWeightSliderListener;
-import com.example.robertotarullo.myfridge.TextWatcher.PiecesWatcher;
-import com.example.robertotarullo.myfridge.TextWatcher.QuantityWatcher;
+import com.example.robertotarullo.myfridge.Watcher.CurrentPiecesWatcher;
+import com.example.robertotarullo.myfridge.Watcher.CurrentWeightSliderListener;
+import com.example.robertotarullo.myfridge.Watcher.PiecesWatcher;
+import com.example.robertotarullo.myfridge.Watcher.QuantityWatcher;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 import com.example.robertotarullo.myfridge.Fragment.DatePickerFragment;
@@ -44,7 +45,7 @@ import com.example.robertotarullo.myfridge.InputFilter.PriceInputFilter;
 import com.example.robertotarullo.myfridge.InputFilter.WeightInputFilter;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.R;
-import com.example.robertotarullo.myfridge.TextWatcher.PriceWeightRelationWatcher;
+import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -198,7 +199,8 @@ public class AddProduct extends AppCompatActivity {
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
-        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField, currentPiecesBlock));
+        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
+        currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters
         expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});

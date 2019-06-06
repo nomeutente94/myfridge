@@ -1,4 +1,4 @@
-package com.example.robertotarullo.myfridge.TextWatcher;
+package com.example.robertotarullo.myfridge.Watcher;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,9 +18,8 @@ public class PiecesWatcher implements TextWatcher {
     private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
     private EditText weightField, currentWeightField;
-    private LinearLayout currentPiecesBlock;
 
-    public PiecesWatcher(Button addButton, Button subtractButton, int min, int max, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField, LinearLayout currentPiecesBlock){
+    public PiecesWatcher(Button addButton, Button subtractButton, int min, int max, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField){
        this.addButton = addButton;
        this.subtractButton = subtractButton;
        this.min = min;
@@ -29,7 +28,6 @@ public class PiecesWatcher implements TextWatcher {
        this.currentPiecesField = currentPiecesField;
        this.weightField = weightField;
        this.currentWeightField = currentWeightField;
-       this.currentPiecesBlock = currentPiecesBlock;
     }
 
     @Override
@@ -41,26 +39,25 @@ public class PiecesWatcher implements TextWatcher {
     @Override
     public void afterTextChanged(Editable s) {
         TextUtils.updateQuantityButtonsView(addButton, subtractButton, s, min, max);
+        int pieces = TextUtils.getInt(s);
 
-        if(TextUtils.getInt(s)>1){
+        if(pieces>1){
             // setta lo slider in base al numero di pezzi
             currentWeightSlider.setTag("pieces");
 
             // calcola il numero di pezzi rimanenti rispetto al valore percentuale
-            float currentPiecesAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * TextUtils.getInt(s)) / (float)100;
+            float currentPiecesAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * pieces / (float)100);
             int currentPieces = (int) Math.ceil(currentPiecesAsFloat);
-            currentWeightSlider.setMax(TextUtils.getInt(s));
+            currentWeightSlider.setMax(pieces);
             currentWeightSlider.setProgress(currentPieces);
             currentPiecesField.setText(String.valueOf(currentPieces));
 
             if(!TextUtils.isEmpty(weightField)){
                 // calcola il nuovo currentWeight rispetto ai pezzi
-                float currentWeightAsFloat = (TextUtils.getInt(weightField) * currentWeightSlider.getProgress()) / (float)TextUtils.getInt(s);
+                float currentWeightAsFloat = (TextUtils.getInt(weightField) * currentWeightSlider.getProgress()) / (float)pieces;
                 int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightField.setText(String.valueOf(currentWeightAsFloat));
             }
-
-            currentPiecesBlock.setVisibility(View.VISIBLE);
 
         } else { // setta lo slider in base al peso, se non compilato in percentuale generica
             currentPiecesField.setText(s.toString());
@@ -78,7 +75,6 @@ public class PiecesWatcher implements TextWatcher {
                 currentWeightSlider.setMax(100);
                 currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
             }
-            currentPiecesBlock.setVisibility(View.GONE);
         }
     }
 
