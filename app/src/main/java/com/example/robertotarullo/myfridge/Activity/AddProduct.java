@@ -64,7 +64,6 @@ public class AddProduct extends AppCompatActivity {
     private String action;
     private ProductForm startingForm;
     private long productToModifyId;
-    private ArrayList<SingleProduct> shoppingCart;
 
     // Variabili per i suggerimenti dei campi
     private ArrayList<String> nameSuggestionsList, brandSuggestionsList;
@@ -235,11 +234,18 @@ public class AddProduct extends AppCompatActivity {
                 confirmButton.setText("Salva");
                 quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
                 fillForm((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+            } else if(getIntent().getSerializableExtra("cartProducts")!=null){
+                new Thread(() -> {
+                    if(addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts"))>0){ // TODO spostare new thread in addproducts()?
+                        runOnUiThread(() -> { // TODO è necessario l'ui thread?
+                            Intent resultIntent = new Intent();
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                        });
+                    }
+                }).start();
             } else {
                 setTitle("Aggiungi prodotto");
-                shoppingCart = new ArrayList<>(); // Inizializza il carrello
-                confirmButton.setVisibility(View.GONE);
-                findViewById(R.id.shoppingModeButtonsBlock).setVisibility(View.VISIBLE);
             }
 
             // Nascondi i campi precompilati
@@ -301,9 +307,7 @@ public class AddProduct extends AppCompatActivity {
     public void onBackPressed() {
         String msg = null;
 
-        if(action.equals("shopping") && (shoppingCart!=null && shoppingCart.size()>0))
-            msg = "Sono presenti uno o più prodotti nel tuo carrello, sei sicuro di voler uscire senza salvare?";
-        else if(!startingForm.equals(getCurrentForm()))
+        if(!startingForm.equals(getCurrentForm()))
             msg = "Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?";
 
         if(msg!=null){
@@ -485,17 +489,10 @@ public class AddProduct extends AppCompatActivity {
                         setResult(RESULT_OK, resultIntent);
                         finish();
                     } else {
-                        for(int i=0; i<TextUtils.getInt(quantityField); i++)
-                            shoppingCart.add(newProduct);
-
-                        runOnUiThread(() -> {
-                            Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
-
-                            // Aggiorna i suggerimenti con l'ultimo prodotto inserito
-                            addSuggestions(newProduct);
-
-                            resetActivityStatus();
-                        });
+                        resultIntent.putExtra("newProduct", newProduct);
+                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
                     }
                 }
 
@@ -566,14 +563,14 @@ public class AddProduct extends AppCompatActivity {
 
         p.setPieces(TextUtils.getInt(piecesField));
 
-        if(action.equals("shopping"))
+        if(action.equals("shopping") && getIntent().getSerializableExtra("productToEdit")==null)
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
         else if(TextUtils.getDate(purchaseDateField)!=null)
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
 
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
 
-        if(action.equals("shopping"))
+        if(action.equals("shopping") && getIntent().getSerializableExtra("productToEdit")==null)
             p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0)); // settare pointofpurchase dall'intent
         else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
             p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
@@ -894,12 +891,6 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
-    public void showCart(View view) {
-        Intent intent = new Intent(this, Cart.class);
-        intent.putExtra("cartProducts", shoppingCart);
-        startActivityForResult(intent, 1);
-    }
-
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
     public class DateWatcher implements TextWatcher {
         private EditText dateField;
@@ -930,32 +921,6 @@ public class AddProduct extends AppCompatActivity {
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque aggiungendo un prodotto già scaduto?");
                 else if(!DateUtils.isDateEmpty(purchaseDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(purchaseDateField)))
                     showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                shoppingCart = (ArrayList<SingleProduct>) data.getSerializableExtra("cartProducts");
-                // TODO considerare se rimuovere le suggestions per eventuali prodotti rimossi
-
-                if(data.getBooleanExtra("cartEdit", false)){
-                    new Thread(() -> {
-                        int insertCount = addProducts(shoppingCart);
-
-                        runOnUiThread(() -> {
-                            if(insertCount > 0){
-                                Intent resultIntent = new Intent();
-                                setResult(RESULT_OK, resultIntent);
-                                finish();
-                            }
-                        });
-                    }).start();
-                }
             }
         }
     }

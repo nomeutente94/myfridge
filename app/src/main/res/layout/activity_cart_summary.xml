@@ -99,12 +99,28 @@
                             android:text="€4,00"/>
                     </LinearLayout>
 
-                   <Button
-                        android:visibility="visible"
-                        android:onClick="onConfirmButtonClick"
+                    <LinearLayout
+                        android:id="@+id/shoppingModeButtonsBlock"
                         android:layout_width="match_parent"
+                        android:weightSum="2"
                         android:layout_height="wrap_content"
-                        android:text="Conferma e aggiungi"/>
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:layout_weight="1"
+                            android:onClick="addProduct"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Aggiungi nuovo"/>
+
+                        <Button
+                            android:layout_weight="1"
+                            android:onClick="onConfirmButtonClick"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Termina"/>
+
+                    </LinearLayout>
                 </LinearLayout>
 
             </RelativeLayout>

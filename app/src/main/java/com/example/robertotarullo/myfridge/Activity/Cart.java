@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.CartListAdapter;
-import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
@@ -37,7 +36,6 @@ public class Cart extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("cartProducts", cartProducts);
         setResult(RESULT_OK, resultIntent);
         finish();
     }
@@ -53,7 +51,7 @@ public class Cart extends AppCompatActivity {
         noProductsWarning = findViewById(R.id.noProductsWarning);
         totalPriceText = findViewById(R.id.totalPriceText);
 
-        cartProducts = (ArrayList<SingleProduct>) getIntent().getSerializableExtra("cartProducts");
+        cartProducts = new ArrayList<>();
         updateList();
 
         // Setta il comportamento al click di un elemento
@@ -68,7 +66,7 @@ public class Cart extends AppCompatActivity {
         intent.putExtra("position", position);
         intent.putExtra("quantity", quantities.get(position));
         intent.putExtra("productToEdit", (SingleProduct)listView.getItemAtPosition(position));
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, 2);
     }
 
     public void deleteProduct(View view){
@@ -108,12 +106,11 @@ public class Cart extends AppCompatActivity {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
                         // TODO aggiungere qui i prodotti invece di delegare il compito ad AddProduct?
-                        Intent resultIntent = new Intent();
-                        resultIntent.putExtra("cartProducts", cartProducts);
-                        resultIntent.putExtra("action", "shopping");
-                        resultIntent.putExtra("cartEdit", true);
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
+                        Intent intent = new Intent(this, AddProduct.class);
+                        intent.putExtra("cartProducts", cartProducts);
+                        intent.putExtra("action", "shopping");
+                        startActivityForResult(intent, 3);
+
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         break;
@@ -129,6 +126,13 @@ public class Cart extends AppCompatActivity {
                     .setNegativeButton("Annulla", dialogClickListener)
                     .show();
         }
+    }
+
+    public void addProduct(View view){
+        Intent intent = new Intent(this, AddProduct.class);
+        intent.putExtra("action", "shopping");
+        intent.putExtra("pointOfPurchaseId", getIntent().getIntExtra("pointOfPurchaseId",0));
+        startActivityForResult(intent, 1);
     }
 
     private void updateList(){
@@ -173,6 +177,14 @@ public class Cart extends AppCompatActivity {
 
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
+                for(int i=0; i<data.getIntExtra("quantity", 1); i++)
+                    cartProducts.add((SingleProduct)data.getSerializableExtra("newProduct"));
+
+                updateList();
+                Toast.makeText(getApplicationContext(), "Prodotto aggiunto al carrello", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
                 int newQuantity = data.getIntExtra("quantity", 1);
                 int position = data.getIntExtra("position", 0);
 
@@ -182,7 +194,7 @@ public class Cart extends AppCompatActivity {
                 } else if(newQuantity < quantities.get(position)){
                     for(int i=0; i<quantities.get(position) - newQuantity; i++)
                         cartProducts.remove(listToDisplay.get(position));
-                } // else if(newQuantity == quantities.get(position)) non fare niente
+                }
 
                 for(int i=0; i<cartProducts.size(); i++){
                     if(cartProducts.get(i).equals(listToDisplay.get(position))){
@@ -192,6 +204,12 @@ public class Cart extends AppCompatActivity {
                 }
 
                 updateList();
+            }
+        } else if (requestCode == 3) {
+            if (resultCode == RESULT_OK) {
+                Intent resultIntent = new Intent();
+                setResult(RESULT_OK, resultIntent);
+                finish();
             }
         }
     }

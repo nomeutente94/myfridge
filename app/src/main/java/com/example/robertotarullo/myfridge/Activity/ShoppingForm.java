@@ -55,8 +55,7 @@ public class ShoppingForm extends AppCompatActivity {
         if(pointOfPurchaseSpinner.getSelectedItemPosition()==0){
             Toast.makeText(getApplicationContext(), "Selezionare prima un punto di acquisto", Toast.LENGTH_LONG).show();
         } else {
-            Intent intent = new Intent(this, AddProduct.class);
-            intent.putExtra("action", "shopping");
+            Intent intent = new Intent(this, Cart.class);
             PointOfPurchase currentSelection = (PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem();
             intent.putExtra("pointOfPurchaseId", currentSelection.getId());
             startActivityForResult(intent, 1);
