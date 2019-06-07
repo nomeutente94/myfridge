@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyFridge</string>
+    <string name="app_name">MyFridge Test</string>
     <item name="warningEdit" type="id" />
     <item name="percentageValue" type="id" />
 </resources>

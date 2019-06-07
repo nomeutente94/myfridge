@@ -8,7 +8,7 @@ android {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
-        applicationId "com.example.robertotarullo.myfridge"
+        applicationId "com.example.robertotarullo.myfridgetest"
         minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
