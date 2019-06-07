@@ -7,6 +7,7 @@ import com.example.robertotarullo.myfridge.Utils.DateUtils;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity/*(foreignKeys = {
         @ForeignKey(entity = PointOfPurchase.class,
@@ -281,15 +282,15 @@ public class SingleProduct implements Product, Serializable {
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct!=null){
-            if( singleProduct.isPackaged()==packaged &&                                                                                                         // packaged
-                (singleProduct.getName()==name || (singleProduct.getName()!=null && singleProduct.getName().equalsIgnoreCase(name))) &&                         // name
-                (singleProduct.getBrand()==brand || (singleProduct.getBrand()!=null && singleProduct.getBrand().equalsIgnoreCase(brand))) &&                    // brand
-                singleProduct.getWeight()==weight &&                                                                                                            // weight
-                singleProduct.getPieces()==pieces &&                                                                                                            // pieces
-                singleProduct.getStorageCondition()==storageCondition &&                                                                                        // storageCondition
-                singleProduct.getOpenedStorageCondition()==openedStorageCondition &&                                                                            // openedStorageCondition
-                (singleProduct.getExpiryDate()==expiryDate || (singleProduct.getExpiryDate()!=null && singleProduct.getExpiryDate().equals(expiryDate))) &&     // expiryDate
-                singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening                                                                           // expiringDaysAfterOpening
+            if( singleProduct.isPackaged()==packaged &&                                 // packaged
+                Objects.equals(singleProduct.getName(), name) &&                        // name
+                Objects.equals(singleProduct.getBrand(), brand) &&                      // brand
+                singleProduct.getWeight()==weight &&                                    // weight
+                singleProduct.getPieces()==pieces &&                                    // pieces
+                singleProduct.getStorageCondition()==storageCondition &&                // storageCondition
+                singleProduct.getOpenedStorageCondition()==openedStorageCondition &&    // openedStorageCondition
+                Objects.equals(singleProduct.getExpiryDate(), expiryDate) &&            // expiryDate
+                singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening   // expiringDaysAfterOpening
             ){
                 return true;
             }
@@ -305,8 +306,8 @@ public class SingleProduct implements Product, Serializable {
             SingleProduct singleProductObj = (SingleProduct)obj;
             if( singleProductObj.getId()==id &&
                 singleProductObj.isPackaged()==packaged &&
-                (singleProductObj.getName()==name || (singleProductObj.getName()!=null && singleProductObj.getName().equals(name))) &&
-                (singleProductObj.getBrand()==brand || (singleProductObj.getBrand()!=null && singleProductObj.getBrand().equals(brand))) &&
+                Objects.equals(singleProductObj.getName(), name) &&
+                Objects.equals(singleProductObj.getBrand(), brand) &&
                 singleProductObj.getPrice()==price &&
                 singleProductObj.getPricePerKilo()==pricePerKilo &&
                 singleProductObj.getWeight()==weight &&
@@ -315,13 +316,15 @@ public class SingleProduct implements Product, Serializable {
                 singleProductObj.getPieces()==pieces &&
                 singleProductObj.getCurrentPieces()==currentPieces &&
                 singleProductObj.getExpiringDaysAfterOpening()==expiringDaysAfterOpening &&
-                (singleProductObj.getPurchaseDate()==purchaseDate || (singleProductObj.getPurchaseDate()!=null && singleProductObj.getPurchaseDate().equals(purchaseDate))) &&
+                Objects.equals(singleProductObj.getPurchaseDate(), purchaseDate) &&
+                Objects.equals(singleProductObj.getConsumingDate(), consumingDate) &&
                 singleProductObj.getStorageCondition()==storageCondition &&
                 singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
                 singleProductObj.isConsumed()==consumed &&
+                Objects.equals(singleProductObj.getExpiryDate(), expiryDate) &&
+                Objects.equals(singleProductObj.getPackagingDate(), packagingDate) &&
                 singleProductObj.isOpened()==opened &&
-                (singleProductObj.getOpeningDate()==openingDate || (singleProductObj.getOpeningDate()!=null && singleProductObj.getOpeningDate().equals(openingDate))) &&
-                (singleProductObj.getExpiryDate()==expiryDate || (singleProductObj.getExpiryDate()!=null && singleProductObj.getExpiryDate().equals(expiryDate))) &&
+                Objects.equals(singleProductObj.getOpeningDate(), openingDate) &&
                 singleProductObj.getOpenedStorageCondition()==openedStorageCondition
             ){
                 return true;
