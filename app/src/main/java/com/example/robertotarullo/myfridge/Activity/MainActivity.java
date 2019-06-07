@@ -137,10 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     showConsumedProducts = false;
                 else
                     showConsumedProducts = true;
-                if(currentPackage!=null)
-                    setPackageView(currentPackage);
-                else
-                    groupProducts(null);
+                groupProducts(null);
                 filterBySearchBar();
                 return true;
             default:
