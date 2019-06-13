@@ -83,14 +83,13 @@ public class SingleProduct implements Product, Serializable {
     // Dovrebbe essere null se expiringDaysAfterOpening>0 (e viceversa)
     private Date expiryDate;
 
-    // ATTRIBUTI PROPRI DI UN PRODOTTO FRESCO
-    // IL VALORE DI QUESTE VARIABILI VIENE DEDOTTO SE IL PRODOTTO E' CONFEZIONATO                   // Se prodotto confezionato si assumono sempre i seguenti valori:
-    private Date packagingDate; // Indica la data in cui il prodotto fresco è stato confezionato    (= null)
+    // Indica la data in cui il prodotto è stato confezionato
+    private Date productionDate;
 
     // ATTRIBUTI PROPRI DI UN PRODOTTO CONFEZIONATO
     // IL VALORE DI QUESTE VARIABILI VIENE DEDOTTO SE IL PRODOTTO E' FRESCO                         // Se prodotto fresco (NON confezionato) si assumono sempre i seguenti valori:
     private boolean opened; // Indica se il prodotto è stato aperto                                 (= true)
-    private Date openingDate; // Data di apertura del prodotto                                      (= packagingDate, se null = purchaseDate)
+    private Date openingDate; // Data di apertura del prodotto                                      (= productionDate, se null = purchaseDate)
     private int openedStorageCondition; // Modalità di conservazione a seguito dell'apertura        (= storageCondition)
 
     public SingleProduct(){}
@@ -322,7 +321,7 @@ public class SingleProduct implements Product, Serializable {
                 singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
                 singleProductObj.isConsumed()==consumed &&
                 Objects.equals(singleProductObj.getExpiryDate(), expiryDate) &&
-                Objects.equals(singleProductObj.getPackagingDate(), packagingDate) &&
+                Objects.equals(singleProductObj.getProductionDate(), productionDate) &&
                 singleProductObj.isOpened()==opened &&
                 Objects.equals(singleProductObj.getOpeningDate(), openingDate) &&
                 singleProductObj.getOpenedStorageCondition()==openedStorageCondition
@@ -333,12 +332,12 @@ public class SingleProduct implements Product, Serializable {
         return false;
     }
 
-    public Date getPackagingDate() {
-        return packagingDate;
+    public Date getProductionDate() {
+        return productionDate;
     }
 
-    public void setPackagingDate(Date packagingDate) {
-        this.packagingDate = packagingDate;
+    public void setProductionDate(Date productionDate) {
+        this.productionDate = productionDate;
     }
 
     public Date getConsumingDate() {
