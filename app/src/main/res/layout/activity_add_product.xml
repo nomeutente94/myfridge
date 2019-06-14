@@ -101,7 +101,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentRight="true"
                             android:layout_weight="0"
-                            android:onClick="eraseField"
+                            android:onClick="clearField"
                             android:tag="name"
                             android:text="X" />
                     </LinearLayout>
@@ -141,7 +141,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="brand"
                         android:text="X" />
                 </LinearLayout>
@@ -203,7 +203,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="price"
                         android:text="X" />
                 </LinearLayout>
@@ -244,7 +244,7 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="pricePerKilo"
                         android:text="X" />
                 </LinearLayout>
@@ -283,7 +283,7 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="weight"
                         android:text="X" />
                 </LinearLayout>
@@ -344,7 +344,7 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="openingDate"
                         android:text="X" />
                 </LinearLayout>
@@ -462,14 +462,14 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/productionDateBlock"
+                android:id="@+id/packagingDateBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="11dp">
 
                 <TextView
-                    android:id="@+id/pproductionDateFieldLabel"
+                    android:id="@+id/packagingDateFieldLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Data di produzione/Lotto" />
@@ -480,7 +480,7 @@
                     android:orientation="horizontal">
 
                     <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/productionDateField"
+                        android:id="@+id/packagingDateField"
                         android:layout_width="280dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -488,15 +488,15 @@
                         android:focusable="false"
                         android:hint="Data non impostata"
                         android:onClick="showDatePickerDialog"
-                        android:tag="productionDate" />
+                        android:tag="packagingDate" />
 
                     <Button
-                        android:id="@+id/productionDateClearButton"
+                        android:id="@+id/packagingDateClearButton"
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
-                        android:tag="productionDate"
+                        android:onClick="clearField"
+                        android:tag="packagingDate"
                         android:text="X" />
                 </LinearLayout>
             </LinearLayout>
@@ -535,7 +535,7 @@
                         android:layout_width="50dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="purchaseDate"
                         android:text="X" />
                 </LinearLayout>
@@ -593,7 +593,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="expiryDate"
                         android:text="X" />
                 </LinearLayout>
@@ -636,7 +636,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
                         android:layout_weight="0"
-                        android:onClick="eraseField"
+                        android:onClick="clearField"
                         android:tag="expiryDaysAfterOpening"
                         android:text="X" />
                 </LinearLayout>

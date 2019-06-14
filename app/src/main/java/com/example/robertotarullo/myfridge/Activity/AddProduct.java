@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -46,6 +47,7 @@ import com.example.robertotarullo.myfridge.InputFilter.WeightInputFilter;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
+import com.example.robertotarullo.myfridge.Widget.NoMenuEditText;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -828,38 +830,18 @@ public class AddProduct extends AppCompatActivity {
         TextUtils.editQuantityByButtons((Button)view, quantityField, MIN_QUANTITY, MAX_QUANTITY);
     }
 
-    // Svuota il contenuto del campo corrispondente al pulsante premuto
-    public void eraseField(View view) {
-        if(view.getTag().toString().equals("name")) {
-            nameField.setText("");
-            nameField.requestFocus();
-        } else if(view.getTag().toString().equals("brand")) {
-            brandField.setText("");
-            brandField.requestFocus();
-        } else if(view.getTag().toString().equals("price")) {
-            priceField.setText("");
-            priceField.requestFocus();
-        } else if(view.getTag().toString().equals("pricePerKilo")) {
-            pricePerKiloField.setText("");
-            pricePerKiloField.requestFocus();
-        } else if(view.getTag().toString().equals("weight")) {
-            weightField.setText("");
-            weightField.requestFocus();
-        } else if(view.getTag().toString().equals("currentWeight")) {
-            currentWeightField.setText("");
-            currentWeightField.requestFocus();
-        } else if(view.getTag().toString().equals("expiryDate")) {
-            expiryDateField.setText("");
-            expiryDateField.requestFocus();
-        } else if(view.getTag().toString().equals("purchaseDate")) {
-            purchaseDateField.setText("");
-            purchaseDateField.requestFocus();
-        } else if(view.getTag().toString().equals("openingDate")) {
-            openingDateField.setText("");
-            openingDateField.requestFocus();
-        } else if(view.getTag().toString().equals("expiryDaysAfterOpening")){
-            expiryDaysAfterOpeningField.setText("");
-            expiryDaysAfterOpeningField.requestFocus();
+    // Svuota il contenuto del primo campo di tipo edittext corrispondente al pulsante premuto
+    public void clearField(View view) {
+        boolean found = false;
+        ViewGroup parent = (ViewGroup) view.getParent();
+
+        for(int i=0; i<parent.getChildCount() && !found; i++) {
+            if(parent.getChildAt(i) instanceof EditText){
+                found = true;
+                EditText child = (EditText) parent.getChildAt(i);
+                child.setText("");
+                child.requestFocus();
+            }
         }
     }
 
