@@ -14,7 +14,6 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
-    private String tag;                                                     // Nome del campo data
     private TextView dateField;                                             // Data attuale
     private TextView expiryDateField, purchaseDateField, openingDateField;  // Campi data
 
@@ -22,19 +21,12 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int year, month, day;
 
-        // Nome del campo in uso
-        tag = getArguments().getString("tag");
-
         // inizializza campi data
         //expiryDateField = getActivity().findViewById(R.id.expiryDateField);
         purchaseDateField = getActivity().findViewById(R.id.purchaseDateField);
         openingDateField = getActivity().findViewById(R.id.openingDateField);
-        //if(tag.equalsIgnoreCase("expiryDate"))
-          //  dateField = getActivity().findViewById(R.id.expiryDateField);
-        if(tag.equalsIgnoreCase("purchaseDate"))
-            dateField = getActivity().findViewById(R.id.purchaseDateField);
-        else if(tag.equalsIgnoreCase("openingDate"))
-            dateField = getActivity().findViewById(R.id.openingDateField);
+
+        dateField = getActivity().findViewById(getArguments().getInt("id"));
 
         // inizializza giorno, mese ed anno
         if(DateUtils.isDateEmpty(dateField)){  // STRINGS.XML
@@ -51,7 +43,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         DatePickerDialog dpd = new DatePickerDialog(getActivity(), this, year, month, day);
 
-        if(tag.equalsIgnoreCase("purchaseDate")) {          // purchaseDate <= openingDate && purchaseDate <= now
+        if(dateField == purchaseDateField) {          // purchaseDate <= openingDate && purchaseDate <= now
             Calendar max = Calendar.getInstance();
 
             if(!DateUtils.isDateEmpty(openingDateField)){
@@ -61,7 +53,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             }
 
             dpd.getDatePicker().setMaxDate(max.getTimeInMillis());
-        } else if(tag.equalsIgnoreCase("openingDate")) {    // openingDate <= now && openingDate >= purchaseDate
+        } else if(dateField == openingDateField) {    // openingDate <= now && openingDate >= purchaseDate
             Calendar max = Calendar.getInstance();
 
             if (!DateUtils.isDateEmpty(purchaseDateField)) {

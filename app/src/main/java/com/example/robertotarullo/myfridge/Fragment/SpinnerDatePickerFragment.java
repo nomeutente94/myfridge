@@ -21,10 +21,18 @@ import java.util.List;
 
 public class SpinnerDatePickerFragment extends DialogFragment{
 
-    private Spinner expiryDateDaySpinner;
-    private Spinner expiryDateMonthSpinner;
-    private Spinner expiryDateYearSpinner;
+    private Spinner daySpinner;
+    private Spinner monthSpinner;
+    private Spinner yearSpinner;
     private EditText dateField;
+
+    private int day;
+    private int month;
+    private int year;
+
+    private String dayAsString;
+    private String monthAsString;
+    private String yearAsString;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -33,17 +41,17 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.spinner_date_picker, null);
 
-        dateField = getActivity().findViewById(R.id.expiryDateField);
+        dateField = getActivity().findViewById(getArguments().getInt("id"));
 
-        expiryDateDaySpinner = view.findViewById(R.id.expiryDateDaySpinner);
-        expiryDateMonthSpinner = view.findViewById(R.id.expiryDateMonthSpinner);
-        expiryDateYearSpinner = view.findViewById(R.id.expiryDateYearSpinner);
+        daySpinner = view.findViewById(R.id.expiryDateDaySpinner);
+        monthSpinner = view.findViewById(R.id.expiryDateMonthSpinner);
+        yearSpinner = view.findViewById(R.id.expiryDateYearSpinner);
 
-        initializeExpiryDateSpinner(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner);
-        DateUtils.setDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner, TextUtils.getDate(dateField));
+        initializeExpiryDateSpinner(daySpinner, monthSpinner, yearSpinner); // Popola i campi
+        DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta gli spinner alla data precedente
 
         builder.setView(view)
-            .setTitle("Data di scadenza")
+            .setTitle("Seleziona data")
             .setPositiveButton("Ok", (dialog, id) -> {})
             .setNegativeButton("Annulla", (dialog, id) -> SpinnerDatePickerFragment.this.getDialog().cancel());
         return builder.create();
@@ -55,28 +63,61 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         if(getDialog() != null){
             Button positiveButton = ((AlertDialog)getDialog()).getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {
-                int day = expiryDateDaySpinner.getSelectedItemPosition();
-                int month = expiryDateMonthSpinner.getSelectedItemPosition();
-                int year = expiryDateYearSpinner.getSelectedItemPosition();
+                day = daySpinner.getSelectedItemPosition();
+                month = monthSpinner.getSelectedItemPosition();
+                year = yearSpinner.getSelectedItemPosition();
 
-                String dayAsString = expiryDateDaySpinner.getSelectedItem().toString();
-                String monthAsString = expiryDateMonthSpinner.getSelectedItem().toString();
-                String yearAsString = expiryDateYearSpinner.getSelectedItem().toString();
+                dayAsString = daySpinner.getSelectedItem().toString();
+                monthAsString = monthSpinner.getSelectedItem().toString();
+                yearAsString = yearSpinner.getSelectedItem().toString();
 
-                if(
-                    (day==0 && month==0 && year==0) || // Se non è stato compilato nessun campo
-                    (day>0 && month==0 && year==0) || // Se è stato compilato solo il giorno di scadenza
-                    (day==0 && month>0 && year==0) || // Se è stato compilato solo il mese di scadenza
-                    ((day>0 && month>0 && year==0) && (!DateUtils.isDateValid(dayAsString, monthAsString, "2019"))) || // Se è stato compilato 29/02 ma l'anno corrente non è bisestile // TODO settare anno corrente
-                    ((day>0 && month>0 && year>0) && (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString))) // Se è stato compilato 29/02 ma l'anno non è bisestile
-                ){
-                    Toast.makeText(this.getActivity(), "La data di scadenza immessa non è valida", Toast.LENGTH_LONG).show();
-                } else {
-                    dateField.setText(DateUtils.getFormattedDate(DateUtils.getExpiryDate(expiryDateDaySpinner, expiryDateMonthSpinner, expiryDateYearSpinner)));
+                if(isDateValid()){
+                    dateField.setText(DateUtils.getFormattedDate(DateUtils.getExpiryDate(daySpinner, monthSpinner, yearSpinner)));
                     dismiss();
+                } else{
+                    Toast.makeText(this.getActivity(), "La data di scadenza immessa non è valida", Toast.LENGTH_LONG).show();
                 }
             });
         }
+    }
+
+    private boolean isDateValid(){
+        if(isExpiryDateValid() || isPackagingDateValid())
+            return true;
+        return false;
+    }
+
+    // Validazione per data di produzione
+    private boolean isPackagingDateValid(){
+        if(dateField==getActivity().findViewById(R.id.packagingDateField)){
+            if(
+                (day==0 || month==0 || year==0) || // Se qualche campo non è compilato
+                (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString)) // Se è stato compilato 29/02 ma l'anno non è bisestile
+            ){
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Validazione per data di scadenza
+    private boolean isExpiryDateValid(){
+        if(dateField==getActivity().findViewById(R.id.expiryDateField)){
+            if(
+                (day==0 && month==0 && year==0) || // Se non è stato compilato nessun campo
+                (day>0 && month==0 && year==0) || // Se è stato compilato solo il giorno di scadenza
+                (day==0 && month>0 && year==0) || // Se è stato compilato solo il mese di scadenza
+                ((day>0 && month>0 && year==0) && (!DateUtils.isDateValid(dayAsString, monthAsString, "2019"))) || // Se è stato compilato 29/02 ma l'anno corrente non è bisestile // TODO settare anno corrente
+                ((day>0 && month>0 && year>0) && (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString))) // Se è stato compilato 29/02 ma l'anno non è bisestile
+            ){
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void initializeExpiryDateSpinner(Spinner expiryDateDaySpinner, Spinner expiryDateMonthSpinner, Spinner expiryDateYearSpinner) {
@@ -99,7 +140,7 @@ public class SpinnerDatePickerFragment extends DialogFragment{
                 months.add("0" + String.valueOf(i));
             else
                 months.add(String.valueOf(i));
-        for(int i=2019; i<=2099; i++)
+        for(int i=2019; i<=2099; i++) // TODO settare anno corrente e un range a partire da esso
             years.add(String.valueOf(i));
 
         expiryDateDaySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days));

@@ -13,7 +13,6 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -47,7 +46,8 @@ import com.example.robertotarullo.myfridge.InputFilter.WeightInputFilter;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
-import com.example.robertotarullo.myfridge.Widget.NoMenuEditText;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -75,7 +75,7 @@ public class AddProduct extends AppCompatActivity {
 
     // views
     private ScrollView listScrollView;
-    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField;
+    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
     private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton, addQuantityButton, subtractQuantityButton, addPieceButton, subtractPieceButton;
@@ -91,7 +91,7 @@ public class AddProduct extends AppCompatActivity {
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
-    // resetta lo stato dell'activity come al lancio
+    /*// resetta lo stato dell'activity come al lancio
     // TODO Testare il buon funzionamento del risultato finale
     private void resetActivityStatus(){
         packagedCheckBox.setChecked(false); // TODO leggere da un valore delle impostazioni
@@ -113,7 +113,7 @@ public class AddProduct extends AppCompatActivity {
         piecesField.setText(String.valueOf(MIN_PIECES));
         currentPiecesField.setText(String.valueOf(MIN_PIECES));
         noExpiryCheckbox.setChecked(false);
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +137,7 @@ public class AddProduct extends AppCompatActivity {
         purchaseDateField = findViewById(R.id.purchaseDateField);
         openingDateField = findViewById(R.id.openingDateField);
         expiryDateField = findViewById(R.id.expiryDateField);
+        packagingDateField = findViewById(R.id.packagingDateField);
         expiryDaysAfterOpeningField = findViewById(R.id.expiryDaysAfterOpeningField);
         openedCheckBox = findViewById(R.id.openedCheckBox);
         currentWeightSlider = findViewById(R.id.currentWeightSlider);
@@ -199,6 +200,7 @@ public class AddProduct extends AppCompatActivity {
         purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField));
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
+        packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
         piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
@@ -228,7 +230,7 @@ public class AddProduct extends AppCompatActivity {
             new Thread(() -> {
                 SingleProduct p = productDatabase.productDao().get(productToModifyId);
                 runOnUiThread(() -> {
-                    fillForm(p);
+                    fillFieldsFromProduct(p);
                     startingForm = getCurrentForm();
                 });
             }).start();
@@ -238,7 +240,7 @@ public class AddProduct extends AppCompatActivity {
                 setTitle("Modifica prodotto");
                 confirmButton.setText("Salva");
                 quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
-                fillForm((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+                fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
             } else if(getIntent().getSerializableExtra("cartProducts")!=null){
                 new Thread(() -> {
                     if(addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts"))>0){ // TODO spostare new thread in addproducts()?
@@ -339,12 +341,6 @@ public class AddProduct extends AppCompatActivity {
         return new ProductForm(createProductFromFields(), TextUtils.getInt(quantityField), TextUtils.getDate(expiryDateField), TextUtils.getInt(expiryDaysAfterOpeningField));
     }
 
-    public void editFieldNotFromUser(EditText dateField, String text){
-        dateField.setTag(R.id.warningEdit, "lock");
-        dateField.setText(text);
-        dateField.setTag(R.id.warningEdit, null);
-    }
-
     private void initializeSuggestions(){
         nameSuggestionsList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         brandSuggestionsList = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -378,44 +374,45 @@ public class AddProduct extends AppCompatActivity {
     }
 
     // Compila tutti i campi con i dati del prodotto da modificare
-    private void fillForm(SingleProduct p) {
+    private void fillFieldsFromProduct(SingleProduct p) {
 
         // printProductOnConsole(p);
 
-        nameField.setText(p.getName());
-        if(p.getBrand()!=null)
-            brandField.setText(p.getBrand());
-        if(p.getPrice()>0)
-            priceField.setText(PriceUtils.getFormattedPrice(p.getPrice()));
-        if(p.getPricePerKilo()>0)
-            pricePerKiloField.setText(String.valueOf(p.getPricePerKilo()));
-        if(p.getWeight()>0) {
-            weightField.setText(PriceUtils.getFormattedWeight(p.getWeight()));
-            currentWeightField.setText(PriceUtils.getFormattedWeight(p.getCurrentWeight()));
-        }
+        TextUtils.setText(p.getName(), nameField);
+
+        TextUtils.setText(p.getBrand(), brandField);
+
+        TextUtils.setPrice(p.getPrice(), priceField);
+
+        TextUtils.setPrice(p.getPricePerKilo(), pricePerKiloField);
+
+        TextUtils.setWeight(p.getWeight(), weightField);
+
+        if(p.getWeight()>0)
+            TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
         currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
+
         if(p.getExpiringDaysAfterOpening()>0)
-            editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
-        if(p.getPurchaseDate()!=null)
-            editFieldNotFromUser(purchaseDateField, DateUtils.getFormattedDate(p.getPurchaseDate()));
+            TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
+
+        TextUtils.setDate(p.getPurchaseDate(), purchaseDateField);
+
         storageConditionSpinner.setSelection(p.getStorageCondition());
 
-        if(p.getPointOfPurchaseId()>0) {
-            for(int i=0; i<pointOfPurchaseSpinner.getCount(); i++){
-                if(((PointOfPurchase)pointOfPurchaseSpinner.getItemAtPosition(i)).getId()==p.getPointOfPurchaseId())
-                    pointOfPurchaseSpinner.setSelection(i);
-            }
-        }
+        TextUtils.setDate(p.getPackagingDate(), packagingDateField);
+
+        TextUtils.setPointOfPurchase(p.getPointOfPurchaseId(), pointOfPurchaseSpinner);
 
         piecesField.setText(String.valueOf(p.getPieces()));
+
         currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
         if(p.getExpiryDate()!=null) {
             if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {
                 noExpiryCheckbox.setChecked(true);
-                editFieldNotFromUser(expiryDaysAfterOpeningField, "");
+                TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");
             } else {
-                editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
+                TextUtils.editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
                 if(!p.isPackaged())
                     changeToExpiringDateMode(true); // Mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
             }
@@ -429,7 +426,7 @@ public class AddProduct extends AppCompatActivity {
             if(p.isOpened()) {
                 openedCheckBox.setChecked(true);
                 if(p.getOpeningDate()!=null)
-                    editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
+                    TextUtils.editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
             }
 
             openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
@@ -568,6 +565,8 @@ public class AddProduct extends AppCompatActivity {
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
         else if(TextUtils.getDate(purchaseDateField)!=null)
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+
+        p.setPackagingDate(TextUtils.getDate(packagingDateField));
 
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
 
@@ -802,22 +801,22 @@ public class AddProduct extends AppCompatActivity {
         }
     }
 
-    // Modifica il corrispondente campo data
-    public void showDatePickerDialog(View v) {
-        if(v == expiryDateField){                                   // immissione data con spinner date picker
-            DialogFragment f = new SpinnerDatePickerFragment();
-            Bundle args = new Bundle();
-            //args.putString("tag", v.getTag().toString());
-            f.setArguments(args);
-            f.show(getSupportFragmentManager(), "spinnerDatePicker");
+    // immissione data con spinner date picker
+    public void showSpinnerDatePickerDialog(View v){
+        DialogFragment f = new SpinnerDatePickerFragment();
+        Bundle args = new Bundle();
+        args.putInt("id", v.getId());
+        f.setArguments(args);
+        f.show(getSupportFragmentManager(), "spinnerDatePicker");
+    }
 
-        } else {                                                    // immissione data con datepicker android
-            DialogFragment f = new DatePickerFragment();
-            Bundle args = new Bundle();
-            args.putString("tag", v.getTag().toString());
-            f.setArguments(args);
-            f.show(getSupportFragmentManager(), "datePicker");
-        }
+    // immissione data con datepicker android
+    public void showDatePickerDialog(View v) {
+        DialogFragment f = new DatePickerFragment();
+        Bundle args = new Bundle();
+        args.putInt("id", v.getId());
+        f.setArguments(args);
+        f.show(getSupportFragmentManager(), "datePicker");
     }
 
     // Modifica i pezzi tramite i relativi pulsanti
@@ -863,6 +862,7 @@ public class AddProduct extends AppCompatActivity {
     }
 
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
+    // Mostra eventuale warning alert all'inserimento di una data
     public class DateWatcher implements TextWatcher {
         private EditText dateField;
         String previousDate;

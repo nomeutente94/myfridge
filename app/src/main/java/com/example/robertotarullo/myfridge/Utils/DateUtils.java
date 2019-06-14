@@ -64,6 +64,10 @@ public abstract class DateUtils {
         }
     }
 
+    /*public static boolean isDateValid(int day, int month, int year){
+        return isDateValid()
+    }*/
+
     // Ritorna false se la combinazione giorno-mese non esiste (es. 31/04)
     public static boolean isDateValid(String day, String month, String year){
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");

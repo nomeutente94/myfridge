@@ -11,6 +11,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.Activity.AddProduct;
+import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
+import com.example.robertotarullo.myfridge.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -142,6 +144,42 @@ public abstract class TextUtils {
                 EditText child = (EditText) parent.getChildAt(i);
                 child.setText("");
                 child.requestFocus();
+            }
+        }
+    }
+
+    public static void setText(String text, EditText field){
+        if(text!=null)
+            field.setText(text);
+    }
+
+    public static void setPrice(float price, EditText field){
+        if(price>0)
+            field.setText(PriceUtils.getFormattedPrice(price));
+    }
+
+    public static void setWeight(float weight, EditText field){
+        if(weight>0) {
+            field.setText(PriceUtils.getFormattedWeight(weight));
+        }
+    }
+
+    public static void setDate(Date date, EditText field){
+        if(date!=null)
+            editFieldNotFromUser(field, DateUtils.getFormattedDate(date));
+    }
+
+    public static void editFieldNotFromUser(EditText dateField, String text){
+        dateField.setTag(R.id.warningEdit, "lock");
+        dateField.setText(text);
+        dateField.setTag(R.id.warningEdit, null);
+    }
+
+    public static void setPointOfPurchase(long id, Spinner spinner){
+        if(id>0) {
+            for(int i=0; i<spinner.getCount(); i++){
+                if(((PointOfPurchase)spinner.getItemAtPosition(i)).getId()==id)
+                    spinner.setSelection(i);
             }
         }
     }
