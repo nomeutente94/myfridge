@@ -32,6 +32,7 @@ import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
+import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
 import static com.example.robertotarullo.myfridge.Database.DatabaseUtils.DATABASE_NAME;
 
@@ -178,11 +179,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Svuota il testo contenuto nella search bar
-    public void eraseField(View view) {
-        if(view.getTag().toString().equals("searchBar")) {
-            searchBar.setText("");
-            searchBar.requestFocus();
-        }
+    public void clearField(View view) {
+        TextUtils.clearField(view);
     }
 
     // Setta il comportamento al variare del testo contenuto nella search bar

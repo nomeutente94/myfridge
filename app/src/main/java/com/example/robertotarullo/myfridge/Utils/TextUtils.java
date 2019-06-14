@@ -2,6 +2,8 @@ package com.example.robertotarullo.myfridge.Utils;
 
 import android.text.Editable;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -128,5 +130,19 @@ public abstract class TextUtils {
             addButton.setEnabled(false);
         else
             addButton.setEnabled(true);
+    }
+
+    public static void clearField(View view) {
+        boolean found = false;
+        ViewGroup parent = (ViewGroup) view.getParent();
+
+        for(int i=0; i<parent.getChildCount() && !found; i++) {
+            if(parent.getChildAt(i) instanceof EditText){
+                found = true;
+                EditText child = (EditText) parent.getChildAt(i);
+                child.setText("");
+                child.requestFocus();
+            }
+        }
     }
 }

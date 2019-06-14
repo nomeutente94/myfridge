@@ -12,6 +12,7 @@ import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
 public class AddPointOfPurchase extends AppCompatActivity {
 
@@ -71,15 +72,7 @@ public class AddPointOfPurchase extends AppCompatActivity {
         return true;
     }
 
-    public void eraseField(View view) {
-        EditText field = null;
-        String tag = view.getTag().toString();
-
-        if(tag.equals("name")) {
-            field = nameField;
-            field.setText("");
-        }
-
-        field.requestFocus();
+    public void clearField(View view) {
+        TextUtils.clearField(view);
     }
 }

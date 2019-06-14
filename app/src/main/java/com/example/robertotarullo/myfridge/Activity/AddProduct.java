@@ -832,17 +832,7 @@ public class AddProduct extends AppCompatActivity {
 
     // Svuota il contenuto del primo campo di tipo edittext corrispondente al pulsante premuto
     public void clearField(View view) {
-        boolean found = false;
-        ViewGroup parent = (ViewGroup) view.getParent();
-
-        for(int i=0; i<parent.getChildCount() && !found; i++) {
-            if(parent.getChildAt(i) instanceof EditText){
-                found = true;
-                EditText child = (EditText) parent.getChildAt(i);
-                child.setText("");
-                child.requestFocus();
-            }
-        }
+        TextUtils.clearField(view);
     }
 
     // Sposta il focus su una determinata view
