@@ -6,11 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.robertotarullo.myfridge.Activity.AddProduct;
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.R;
 
@@ -182,5 +180,12 @@ public abstract class TextUtils {
                     spinner.setSelection(i);
             }
         }
+    }
+
+    public static boolean isDateFieldValidable(EditText dateField){
+        if(!DateUtils.isDateEmpty(dateField) && dateField.getTag(R.id.warningEdit)==null)
+            return true;
+        else
+            return false;
     }
 }

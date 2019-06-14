@@ -262,7 +262,7 @@
                     android:id="@+id/weightFieldLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Peso totale (grammi)" />
+                    android:text="Peso (grammi)" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -398,7 +398,7 @@
                     android:id="@+id/piecesFieldLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="N. pezzi totali" />
+                    android:text="N. pezzi" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

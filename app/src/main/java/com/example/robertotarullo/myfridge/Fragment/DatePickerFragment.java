@@ -5,7 +5,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
-import android.widget.TextView;
+import android.widget.EditText;
 
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.R;
@@ -14,17 +14,18 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
-    private TextView dateField;                                             // Data attuale
-    private TextView expiryDateField, purchaseDateField, openingDateField;  // Campi data
+    private EditText dateField; // Data attuale
+    private EditText expiryDateField, purchaseDateField, openingDateField, packagingDate;  // Campi data
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int year, month, day;
 
         // inizializza campi data
-        //expiryDateField = getActivity().findViewById(R.id.expiryDateField);
+        expiryDateField = getActivity().findViewById(R.id.expiryDateField);
         purchaseDateField = getActivity().findViewById(R.id.purchaseDateField);
         openingDateField = getActivity().findViewById(R.id.openingDateField);
+        packagingDate = getActivity().findViewById(R.id.packagingDateField);
 
         dateField = getActivity().findViewById(getArguments().getInt("id"));
 
@@ -53,10 +54,11 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             }
 
             dpd.getDatePicker().setMaxDate(max.getTimeInMillis());
+
         } else if(dateField == openingDateField) {    // openingDate <= now && openingDate >= purchaseDate
             Calendar max = Calendar.getInstance();
 
-            if (!DateUtils.isDateEmpty(purchaseDateField)) {
+            if(!DateUtils.isDateEmpty(purchaseDateField)) {
                 Calendar min = DateUtils.getDate(purchaseDateField);
                 dpd.getDatePicker().setMinDate(min.getTimeInMillis());
             }

@@ -43,15 +43,13 @@ import com.example.robertotarullo.myfridge.Fragment.DatePickerFragment;
 import com.example.robertotarullo.myfridge.InputFilter.DaysInputFilter;
 import com.example.robertotarullo.myfridge.InputFilter.PriceInputFilter;
 import com.example.robertotarullo.myfridge.InputFilter.WeightInputFilter;
-import com.example.robertotarullo.myfridge.Utils.PriceUtils;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -864,8 +862,9 @@ public class AddProduct extends AppCompatActivity {
     // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
     // Mostra eventuale warning alert all'inserimento di una data
     public class DateWatcher implements TextWatcher {
+
         private EditText dateField;
-        String previousDate;
+        private String previousDate;
 
         public DateWatcher(EditText dateField){
             this.dateField = dateField;
@@ -879,19 +878,59 @@ public class AddProduct extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if(dateField.getTag().toString().equals("purchaseDate") && !DateUtils.isDateEmpty(purchaseDateField) && purchaseDateField.getTag(R.id.warningEdit)==null){ // purchaseDate
-                if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(purchaseDateField).after(TextUtils.getDate(expiryDateField)))
-                    showDateWarning(previousDate, purchaseDateField,"La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-            } else if(dateField.getTag().toString().equals("openingDate") && !DateUtils.isDateEmpty(openingDateField) && openingDateField.getTag(R.id.warningEdit)==null){ // openingDate
-                if(!DateUtils.isDateEmpty(expiryDateField) && TextUtils.getDate(openingDateField).after(TextUtils.getDate(expiryDateField)))
-                    showDateWarning(previousDate, openingDateField,"La data di apertura selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-            } else if(dateField.getTag().toString().equals("expiryDate") && !DateUtils.isDateEmpty(expiryDateField) && expiryDateField.getTag(R.id.warningEdit)==null){ // expiryDate
-                if(TextUtils.getDate(expiryDateField).before(Calendar.getInstance().getTime()))
-                    showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data odierna, continuare comunque aggiungendo un prodotto già scaduto?");
-                else if(!DateUtils.isDateEmpty(openingDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(openingDateField)))
-                    showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque aggiungendo un prodotto già scaduto?");
-                else if(!DateUtils.isDateEmpty(purchaseDateField) && TextUtils.getDate(expiryDateField).before(TextUtils.getDate(purchaseDateField)))
-                    showDateWarning(previousDate, expiryDateField,"La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
+            if(TextUtils.isDateFieldValidable(dateField)){
+
+                Date purchaseDate = TextUtils.getDate(purchaseDateField);
+                Date expiryDate = TextUtils.getDate(expiryDateField);
+                Date openingDate = TextUtils.getDate(openingDateField);
+                Date packagingDate = TextUtils.getDate(packagingDateField);
+
+                // TODO considerare apertura, expiryDays e expiryDate, anche con quale selezionato se prodotto fresco !
+                // TODO alla pressione del tasto 'cambio' se il valore immesso non è valido rispetto agli altri, avvisare o valutare cosa fare
+
+                // purchaseDate
+                if(dateField==purchaseDateField){
+
+                    // se purchaseDate >= expiryDate
+                    if(expiryDate!=null && purchaseDate.after(expiryDate))
+                        showDateWarning(previousDate, dateField,
+                        "La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                // openingDate
+                } else if(dateField==openingDateField){
+
+                    // se openingDate >= expiryDate
+                    if(expiryDate!=null && openingDate.after(expiryDate))
+                        showDateWarning(previousDate, dateField,
+                        "La data di apertura selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                // expiryDate
+                } else if(dateField==expiryDateField){
+
+                    // se expiryDate <= now
+                    if(expiryDate.before(Calendar.getInstance().getTime()))
+                        showDateWarning(previousDate, dateField,
+                        "La data di scadenza selezionata è uguale o precedente alla data odierna, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                    // se expiryDate <= openingDate
+                    else if(!DateUtils.isDateEmpty(openingDateField) && expiryDate.before(TextUtils.getDate(openingDateField)))
+                        showDateWarning(previousDate, dateField,
+                        "La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                    // se expiryDate <= purchaseDate
+                    else if(!DateUtils.isDateEmpty(purchaseDateField) && expiryDate.before(purchaseDate))
+                        showDateWarning(previousDate, dateField,
+                        "La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                // packagingDate
+                } else if(dateField==packagingDateField) {
+
+                    // se packagingDate = expiryDate
+                    if(packagingDate.equals(expiryDate))
+                        showDateWarning(previousDate, dateField,
+                        "La data di produzione/lotto selezionata è uguale alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
+
+                }
             }
         }
     }
