@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class DateUtils {
@@ -289,5 +290,45 @@ public abstract class DateUtils {
         return c;
     }
 
+    public static Date getDate(Calendar cal){
+        if(cal!=null)
+            return cal.getTime();
+        return null;
+    }
+
+    public static Calendar getCalendar(Date date){
+        if(date!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            return cal;
+        }
+        return null;
+    }
+
+    public static Date getMinDate(List<Date> dates){
+        if(dates!=null && dates.size()>0){
+            Date min = null;
+            for(int i=0; i<dates.size(); i++){
+                if(min==null || (dates.get(i)!=null && dates.get(i).before(min)))
+                    min = dates.get(i);
+            }
+            return min;
+        }
+
+        return null;
+    }
+
+    public static Date getMaxDate(List<Date> dates){
+        if(dates!=null && dates.size()>0){
+            Date max = null;
+            for(int i=0; i<dates.size(); i++){
+                if(max==null || (dates.get(i)!=null && dates.get(i).after(max)))
+                    max = dates.get(i);
+            }
+            return max;
+        }
+
+        return null;
+    }
 
 }

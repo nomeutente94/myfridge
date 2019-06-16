@@ -17,6 +17,9 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
+import org.w3c.dom.Text;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,11 +28,18 @@ import java.util.List;
 
 public class SpinnerDatePickerFragment extends DialogFragment{
 
-    private int MIN_YEAR = 1990; // la data 01/01/1970 porta a dei conflitti con la rappresentazione "mai" sulla data di scadenza
-    private int YEAR_OFFSET = 100;
-    private int MAX_YEAR = MIN_YEAR + YEAR_OFFSET;
+    private static final int MIN_DAY = 1;
+    private static final int MAX_DAY = 31;
 
-    private Calendar maxDate, minDate; // range di date permesse
+    private static final int MIN_MONTH = 1;
+    private static final int MAX_MONTH = 12;
+
+    private static final int MIN_YEAR = 1990; // la data 01/01/1970 porta a dei conflitti con la rappresentazione "mai" sulla data di scadenza
+    private static final int YEAR_OFFSET = 100;
+    private static final int MAX_YEAR = MIN_YEAR + YEAR_OFFSET;
+
+    private Calendar maxDate = new GregorianCalendar(MAX_YEAR, MAX_MONTH, MAX_DAY);
+    private Calendar minDate = new GregorianCalendar(MIN_YEAR, MIN_MONTH, MIN_DAY);
 
     private Spinner daySpinner;
     private Spinner monthSpinner;
@@ -57,16 +67,7 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         monthSpinner = view.findViewById(R.id.expiryDateMonthSpinner);
         yearSpinner = view.findViewById(R.id.expiryDateYearSpinner);
 
-        minDate = new GregorianCalendar(MIN_YEAR, 1, 1);
-        maxDate = new GregorianCalendar(MAX_YEAR, 12, 31);
-
-        // Setta range di date permesse
-        if(dateField==getActivity().findViewById(R.id.expiryDateField)){
-            // Nessun vincolo
-        } else if(dateField==getActivity().findViewById(R.id.packagingDateField)){
-            maxDate = Calendar.getInstance();
-        }
-
+        setAllowedDateRange(); // Setta range di date permesse
         initializeExpiryDateSpinner(); // Popola i campi
         DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nel form
 
@@ -77,22 +78,26 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         return builder.create();
     }
 
+    // Setta range di date permesse
+    private void setAllowedDateRange() {
+        if(dateField==getActivity().findViewById(R.id.expiryDateField)){
+            // Nessun vincolo
+        } else if(dateField==getActivity().findViewById(R.id.packagingDateField)){
+            List<Date> dates = new ArrayList<>();
+            dates.add(Calendar.getInstance().getTime()); // ≤ now
+            dates.add(TextUtils.getDate(getActivity().findViewById(R.id.purchaseDateField))); // ≤ purchaseDate
+            // TODO dates.add(TextUtils.getDate(getActivity().findViewById(R.id.consumingDateField))); // ≤ consumingDate
+            dates.add(TextUtils.getDate(getActivity().findViewById(R.id.expiryDateField))); // ≤ expiryDate
+            dates.add(TextUtils.getDate(getActivity().findViewById(R.id.openingDateField))); // ≤ openingDate
+
+            maxDate = DateUtils.getCalendar(DateUtils.getMinDate(dates));
+        }
+    }
+
     @Override
     public void onStart(){
         super.onStart();
         if(getDialog() != null){
-
-            yearSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                    // updateSpinners();
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parentView) {}
-
-            });
-
             Button positiveButton = ((AlertDialog)getDialog()).getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {
                 day = daySpinner.getSelectedItemPosition();
@@ -113,8 +118,12 @@ public class SpinnerDatePickerFragment extends DialogFragment{
     }
 
     private boolean isDateValid(){
-        if(isExpiryDateValid() || isPackagingDateValid())
-            return true;
+        Date currentDate = DateUtils.getDate(daySpinner, monthSpinner, yearSpinner);
+
+        if(minDate.getTime().before(currentDate) && maxDate.getTime().after(currentDate)){
+            if(isExpiryDateValid() || isPackagingDateValid())
+                return true;
+        }
         return false;
     }
 
@@ -152,28 +161,22 @@ public class SpinnerDatePickerFragment extends DialogFragment{
     }
 
     private void initializeExpiryDateSpinner() {
-        int minDay = 1;
-        int maxDay = 31;
-        int minMonth = 1;
-        int maxMonth = 12;
-
+        /* Mostra solo il range permesso di date dai valori di minDate e maxDate
         if(!DateUtils.isDateEmpty(dateField)){
             Calendar currentDate = Calendar.getInstance();
             currentDate.setTime(TextUtils.getDate(dateField));
 
-            System.out.println("maxMonth: " + (maxDate.get(Calendar.MONTH)+1));
-            System.out.println("currentMonth: " + (currentDate.get(Calendar.MONTH)+1));
-
             if(maxDate.get(Calendar.YEAR)==currentDate.get(Calendar.YEAR))
-                maxMonth = (maxDate.get(Calendar.MONTH)+1);
+                MAX_MONTH = (maxDate.get(Calendar.MONTH)+1);
             if(maxDate.get(Calendar.MONTH)==(currentDate.get(Calendar.MONTH)))
-                maxDay = maxDate.get(Calendar.DAY_OF_MONTH);
+                MAX_DAY = maxDate.get(Calendar.DAY_OF_MONTH);
 
             if(minDate.get(Calendar.YEAR)==currentDate.get(Calendar.YEAR))
-                minMonth = (minDate.get(Calendar.MONTH)+1);
+                MIN_MONTH = (minDate.get(Calendar.MONTH)+1);
             if(minDate.get(Calendar.MONTH)==(currentDate.get(Calendar.MONTH)))
-                minDay = minDate.get(Calendar.DAY_OF_MONTH);
+                MIN_DAY = minDate.get(Calendar.DAY_OF_MONTH);
         }
+        */
 
         List<String> days = new ArrayList<>();
         List<String> months = new ArrayList<>();
@@ -188,7 +191,7 @@ public class SpinnerDatePickerFragment extends DialogFragment{
             years.add(String.valueOf(i));
 
         // Inizializza mesi
-        for(int i=minMonth; i<=maxMonth; i++) {
+        for(int i = MIN_MONTH; i<= MAX_MONTH; i++) {
             if (String.valueOf(i).length() == 1)
                 months.add("0" + i);
             else
@@ -196,7 +199,7 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         }
 
         // Inizializza giorni
-        for(int i=minDay; i<=maxDay; i++){
+        for(int i = MIN_DAY; i<= MAX_DAY; i++){
             if(String.valueOf(i).length()==1)
                 days.add("0" + i);
             else
@@ -206,9 +209,5 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days));
         monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months));
         yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years));
-    }
-
-    private void updateSpinners(){
-
     }
 }
