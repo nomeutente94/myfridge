@@ -1,5 +1,6 @@
 package com.example.robertotarullo.myfridge.Activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
@@ -35,6 +36,7 @@ import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.Watcher.CurrentPiecesWatcher;
 import com.example.robertotarullo.myfridge.Watcher.CurrentWeightSliderListener;
+import com.example.robertotarullo.myfridge.Watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.Watcher.PiecesWatcher;
 import com.example.robertotarullo.myfridge.Watcher.QuantityWatcher;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
@@ -195,10 +197,10 @@ public class AddProduct extends AppCompatActivity {
         priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, currentWeightField, currentWeightSlider));
         pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, currentWeightField, currentWeightSlider));
         weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, currentWeightField, currentWeightSlider));
-        purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField));
-        openingDateField.addTextChangedListener(new DateWatcher(openingDateField));
-        expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField));
-        packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField));
+        purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField, this));
+        openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
+        expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
+        packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
         piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
@@ -747,26 +749,7 @@ public class AddProduct extends AppCompatActivity {
         }).start();
     }
 
-    private void showDateWarning(String previousValue, EditText dateField, String message) {
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which){
-                case DialogInterface.BUTTON_POSITIVE:
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    dateField.setTag(R.id.warningEdit, "warningEdit");
-                    dateField.setText(previousValue);
-                    dateField.setTag(R.id.warningEdit,null);
-                    break;
-            }
-        };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message)
-            .setTitle("Attenzione")
-            .setPositiveButton("Ok", dialogClickListener)
-            .setNegativeButton("Annulla", dialogClickListener)
-            .show();
-    }
 
     private void onWeightFocusLost() {
         if(currentWeightField.getText().length() > 0 && weightField.getText().length() > 0) {
@@ -856,82 +839,6 @@ public class AddProduct extends AppCompatActivity {
         } else {
             expiryDateBlock.setVisibility(View.GONE);
             findViewById(R.id.expiryDaysAfterOpeningBlock).setVisibility(View.VISIBLE);
-        }
-    }
-
-    // Non spostare in una classe esterna poichè impossibile chiamare showDateWarning da un contesto statico
-    // Mostra eventuale warning alert all'inserimento di una data
-    public class DateWatcher implements TextWatcher {
-
-        private EditText dateField;
-        private String previousDate;
-
-        public DateWatcher(EditText dateField){
-            this.dateField = dateField;
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {}
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {previousDate = s.toString();}
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if(TextUtils.isDateFieldValidable(dateField)){
-
-                Date purchaseDate = TextUtils.getDate(purchaseDateField);
-                Date expiryDate = TextUtils.getDate(expiryDateField);
-                Date openingDate = TextUtils.getDate(openingDateField);
-                Date packagingDate = TextUtils.getDate(packagingDateField);
-
-                // TODO considerare apertura, expiryDays e expiryDate, anche con quale selezionato se prodotto fresco !
-                // TODO alla pressione del tasto 'cambio' se il valore immesso non è valido rispetto agli altri, avvisare o valutare cosa fare
-
-                // purchaseDate
-                if(dateField==purchaseDateField){
-
-                    // se purchaseDate >= expiryDate
-                    if(expiryDate!=null && purchaseDate.after(expiryDate))
-                        showDateWarning(previousDate, dateField,
-                        "La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                // openingDate
-                } else if(dateField==openingDateField){
-
-                    // se openingDate >= expiryDate
-                    if(expiryDate!=null && openingDate.after(expiryDate))
-                        showDateWarning(previousDate, dateField,
-                        "La data di apertura selezionata è uguale o successiva alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                // expiryDate
-                } else if(dateField==expiryDateField){
-
-                    // se expiryDate <= now
-                    if(expiryDate.before(Calendar.getInstance().getTime()))
-                        showDateWarning(previousDate, dateField,
-                        "La data di scadenza selezionata è uguale o precedente alla data odierna, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                    // se expiryDate <= openingDate
-                    else if(!DateUtils.isDateEmpty(openingDateField) && expiryDate.before(TextUtils.getDate(openingDateField)))
-                        showDateWarning(previousDate, dateField,
-                        "La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                    // se expiryDate <= purchaseDate
-                    else if(!DateUtils.isDateEmpty(purchaseDateField) && expiryDate.before(purchaseDate))
-                        showDateWarning(previousDate, dateField,
-                        "La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                // packagingDate
-                } else if(dateField==packagingDateField) {
-
-                    // se packagingDate = expiryDate
-                    if(packagingDate.equals(expiryDate))
-                        showDateWarning(previousDate, dateField,
-                        "La data di produzione/lotto selezionata è uguale alla data di scadenza, continuare comunque aggiungendo un prodotto già scaduto?");
-
-                }
-            }
         }
     }
 }

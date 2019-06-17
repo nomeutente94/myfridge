@@ -83,12 +83,15 @@ public abstract class TextUtils {
     }
 
     public static Date getDate(EditText dateField){
-        try {
-            return new SimpleDateFormat("dd/MM/yyyy").parse(dateField.getText().toString());
-        } catch (ParseException e) {
-            Log.d("DEBUG", "Data non valida per: " + dateField.getTag());
-            return null;
+        if(dateField!=null){
+            try {
+                return new SimpleDateFormat("dd/MM/yyyy").parse(dateField.getText().toString());
+            } catch (ParseException e) {
+                Log.d("DEBUG", "Data non valida per: " + dateField.getTag());
+                return null;
+            }
         }
+        return null;
     }
 
     // prova a ritornare il valore del testo nel campo come float

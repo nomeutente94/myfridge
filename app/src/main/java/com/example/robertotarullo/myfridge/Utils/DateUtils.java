@@ -1,14 +1,20 @@
 package com.example.robertotarullo.myfridge.Utils;
 
+import android.app.Activity;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
+import com.example.robertotarullo.myfridge.R;
+
+import org.w3c.dom.Text;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -16,6 +22,23 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class DateUtils {
+
+    // codice campo
+    public static final int CONSUMING_DATE = 1;
+    public static final int EXPIRY_DATE = 2;
+    public static final int PACKAGING_DATE = 3;
+    public static final int OPENING_DATE = 4;
+    public static final int PURCHASE_DATE = 5;
+
+    // data minima possibile globale
+    public static final int MIN_DAY = 1;
+    public static final int MIN_MONTH = 1;
+    public static final int MIN_YEAR = 1990; // la data 01/01/1970 porta a dei conflitti con la rappresentazione "mai" sulla data di scadenza
+
+    // data massima possibile globale
+    public static final int MAX_DAY = 31;
+    public static final int MAX_MONTH = 12;
+    public static final int MAX_YEAR = 2099;
 
     public static Date getActualExpiryDate(Product p){
         if(p!=null){
@@ -305,30 +328,143 @@ public abstract class DateUtils {
         return null;
     }
 
-    public static Date getMinDate(List<Date> dates){
-        if(dates!=null && dates.size()>0){
-            Date min = null;
-            for(int i=0; i<dates.size(); i++){
-                if(min==null || (dates.get(i)!=null && dates.get(i).before(min)))
-                    min = dates.get(i);
-            }
-            return min;
-        }
-
-        return null;
+    private static Date getMin(Date date1, Date date2){
+        if(date1==null)
+            return date2;
+        else if(date2==null)
+            return date1;
+        else if(date1.before(date2))
+            return date1;
+        else
+            return date2;
     }
 
-    public static Date getMaxDate(List<Date> dates){
-        if(dates!=null && dates.size()>0){
-            Date max = null;
-            for(int i=0; i<dates.size(); i++){
-                if(max==null || (dates.get(i)!=null && dates.get(i).after(max)))
-                    max = dates.get(i);
-            }
-            return max;
-        }
-
-        return null;
+    private static Date getMax(Date date1, Date date2){
+        if(date1==null)
+            return date2;
+        else if(date2==null)
+            return date1;
+        else if(date1.before(date2))
+            return date2;
+        else
+            return date1;
     }
 
+    public static Date getMaxDateAllowed(EditText dateField, Activity activity){
+        return getAllowedDate(false, true, dateField, activity);
+    }
+
+    public static Date getMinDateAllowed(EditText dateField, Activity activity){
+        return getAllowedDate(false, false, dateField, activity);
+    }
+
+    public static Date getMaxWarningDateAllowed(EditText dateField, Activity activity){
+        return getAllowedDate(true, true, dateField, activity);
+    }
+
+    public static Date getMinWarningDateAllowed(EditText dateField, Activity activity){
+        return getAllowedDate(true, false, dateField, activity);
+    }
+
+    /*private static Date getMaxDateAllowed(EditText dateField, EditText consumingDateField, EditText expiryDateField, EditText packagingDateField, EditText openingDateField, EditText purchaseDateField){
+
+    }*/
+
+    private static Date getAllowedDate(boolean warning, boolean max, EditText dateField, Activity activity){
+        EditText expiryDateField = activity.findViewById(R.id.expiryDateField);
+        EditText purchaseDateField = activity.findViewById(R.id.purchaseDateField);
+        EditText openingDateField = activity.findViewById(R.id.openingDateField);
+        EditText packagingDateField = activity.findViewById(R.id.packagingDateField);
+        EditText consumingDateField = null; // TODO = activity.findViewById(R.id.consumingDateField);
+
+        Date expiryDate = TextUtils.getDate(expiryDateField);
+        Date purchaseDate = TextUtils.getDate(purchaseDateField);
+        Date openingDate = TextUtils.getDate(openingDateField);
+        Date packagingDate = TextUtils.getDate(packagingDateField);
+        Date consumingDate = TextUtils.getDate(consumingDateField);
+
+        if(warning){
+            if(max){
+                Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH-1, MAX_DAY));
+
+                if(dateField==consumingDateField){
+                    // TODO consumingDate < expiryDate
+                } else if(dateField==expiryDateField){
+                    // TODO expiryDate = packagingDate
+                } else if(dateField==packagingDateField){
+                    // TODO packagingDate = expiryDate
+                } else if(dateField==openingDateField){
+                    // TODO openingDate < expiryDate
+                } else if(dateField==purchaseDateField){
+                    // TODO purchaseDate < expiryDate
+                }
+
+                return maxDate;
+            } else {
+                Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH-1, MIN_DAY));
+
+                if(dateField==consumingDateField){
+                    // nessun vincolo
+                } else if(dateField==expiryDateField){
+                    // TODO expiryDate > consumingDate
+                    // TODO expiryDate = packagingDate
+                    // TODO expiryDate > openingDate
+                    // TODO expiryDate > now
+                    // TODO expiryDate > purchaseDate
+                } else if(dateField==packagingDateField){
+                    // TODO packagingDate = expiryDate
+                } else if(dateField==openingDateField){
+                    // nessun vincolo
+                } else if(dateField==purchaseDateField){
+                    // nessun vincolo
+                }
+
+                return minDate;
+            }
+        } else {
+            if(max){
+                Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH-1, MAX_DAY));
+
+                if(dateField==consumingDateField){
+                    maxDate = getMin(getCurrentDate(), maxDate);    // consumingDate <= now
+                } else if(dateField==expiryDateField){
+                    // nessun vincolo
+                } else if(dateField==packagingDateField){
+                    maxDate = getMin(consumingDate, maxDate);       // packagingDate <= consumingDate
+                    maxDate = getMin(expiryDate, maxDate);          // packagingDate <= expiryDate
+                    maxDate = getMin(openingDate, maxDate);         // packagingDate <= openingDate
+                    maxDate = getMin(getCurrentDate(), maxDate);    // packagingDate <= now
+                    maxDate = getMin(purchaseDate, maxDate);        // packagingDate <= purchaseDate
+                } else if(dateField==openingDateField){
+                    maxDate = getMin(consumingDate, maxDate);       // openingDate <= consumingDate
+                    maxDate = getMin(getCurrentDate(), maxDate);    // openingDate <= now
+                } else if(dateField==purchaseDateField){
+                    maxDate = getMin(consumingDate, maxDate);       // purchaseDate <= consumingDate
+                    maxDate = getMin(openingDate, maxDate);         // purchaseDate <= openingDate
+                    maxDate = getMin(getCurrentDate(), maxDate);    // purchaseDate <= now
+                }
+
+                return maxDate;
+            } else {
+                Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH-1, MIN_DAY));
+
+                if(dateField==consumingDateField){
+                    minDate = getMax(packagingDate, minDate);       // consumingDate >= packagingDate
+                    minDate = getMax(openingDate, minDate);         // consumingDate >= openingDate
+                    minDate = getMax(purchaseDate, minDate);        // consumingDate >= purchaseDate
+                } else if(dateField==expiryDateField){
+                    minDate = getMax(packagingDate, minDate);       // expiryDate >= packagingDate
+                } else if(dateField==packagingDateField){
+                    // nessun vincolo
+                } else if(dateField==openingDateField){
+                    minDate = getMax(packagingDate, minDate);       // openingDate >= packagingDate
+                    minDate = getMax(purchaseDate, minDate);        // openingDate >= purchaseDate
+                } else if(dateField==purchaseDateField){
+                    minDate = getMax(packagingDate, minDate);       // purchaseDate >= packagingDate
+                }
+
+                return minDate;
+            }
+        }
+    }
 }

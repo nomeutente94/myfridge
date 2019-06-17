@@ -8,30 +8,21 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
-import com.example.robertotarullo.myfridge.R;
 
 import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private EditText dateField; // Data attuale
-    private EditText expiryDateField, purchaseDateField, openingDateField, packagingDate;  // Campi data
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int year, month, day;
 
-        // inizializza campi data
-        expiryDateField = getActivity().findViewById(R.id.expiryDateField);
-        purchaseDateField = getActivity().findViewById(R.id.purchaseDateField);
-        openingDateField = getActivity().findViewById(R.id.openingDateField);
-        packagingDate = getActivity().findViewById(R.id.packagingDateField);
-
         dateField = getActivity().findViewById(getArguments().getInt("id"));
 
         // inizializza giorno, mese ed anno
-        if(DateUtils.isDateEmpty(dateField)){  // STRINGS.XML
-            // Create a new instance of DatePickerDialog with current date
+        if(DateUtils.isDateEmpty(dateField)){
             Calendar c = Calendar.getInstance();
             month = c.get(Calendar.MONTH);
             year = c.get(Calendar.YEAR);
@@ -44,27 +35,8 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         DatePickerDialog dpd = new DatePickerDialog(getActivity(), this, year, month, day);
 
-        if(dateField == purchaseDateField) {          // purchaseDate <= openingDate && purchaseDate <= now
-            Calendar max = Calendar.getInstance();
-
-            if(!DateUtils.isDateEmpty(openingDateField)){
-                Calendar openingDate = DateUtils.getDate(openingDateField);
-                if(openingDate.before(max))
-                    max = openingDate;
-            }
-
-            dpd.getDatePicker().setMaxDate(max.getTimeInMillis());
-
-        } else if(dateField == openingDateField) {    // openingDate <= now && openingDate >= purchaseDate
-            Calendar max = Calendar.getInstance();
-
-            if(!DateUtils.isDateEmpty(purchaseDateField)) {
-                Calendar min = DateUtils.getDate(purchaseDateField);
-                dpd.getDatePicker().setMinDate(min.getTimeInMillis());
-            }
-
-            dpd.getDatePicker().setMaxDate(max.getTimeInMillis());
-        }
+        dpd.getDatePicker().setMaxDate(DateUtils.getCalendar(DateUtils.getMaxDateAllowed(dateField, getActivity())).getTimeInMillis());
+        dpd.getDatePicker().setMinDate(DateUtils.getCalendar(DateUtils.getMinDateAllowed(dateField, getActivity())).getTimeInMillis());
 
         return dpd;
     }
