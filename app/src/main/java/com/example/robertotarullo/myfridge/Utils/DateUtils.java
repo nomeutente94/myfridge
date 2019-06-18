@@ -106,32 +106,31 @@ public abstract class DateUtils {
     }
 
     public static Date getExpiryDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
-        String day, month, year;
+        int daySelection = daySpinner.getSelectedItemPosition();
+        int monthSelection = monthSpinner.getSelectedItemPosition();
+        int yearSelection = yearSpinner.getSelectedItemPosition();
+
+        String day = daySpinner.getSelectedItem().toString();
+        String month = monthSpinner.getSelectedItem().toString();
+        String year = yearSpinner.getSelectedItem().toString();
 
         // Intuisci data parzialmente immessa
         if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()==0 && yearSpinner.getSelectedItemPosition()>0) { // Se è stato inserito soltanto YYYY
             day = "31";
             month = "12";
-            year = yearSpinner.getSelectedItem().toString();
         } else if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0){ // Se è stato inserito soltanto MM e YYYY
-            month = monthSpinner.getSelectedItem().toString();
-            year = yearSpinner.getSelectedItem().toString();
             day = getLastDayOfMonth(month, year);
         } else if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()==0){ // Se è stato inserito soltanto DD e MM
             year = "2019"; // TODO calcolare anno attuale
-            month = monthSpinner.getSelectedItem().toString();
-            day = daySpinner.getSelectedItem().toString();
-        } else {
-            day = daySpinner.getSelectedItem().toString();
-            month = monthSpinner.getSelectedItem().toString();
-            year = yearSpinner.getSelectedItem().toString();
         }
 
         return getDate(day, month, year);
     }
 
     public static Date getDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
-        return getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString());
+        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0)
+            return getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString());
+        return null;
     }
 
     public static Date getNoExpiryDate(){
