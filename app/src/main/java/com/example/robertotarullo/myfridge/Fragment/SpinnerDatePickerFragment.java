@@ -5,7 +5,9 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -17,7 +19,6 @@ import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -28,13 +29,37 @@ public class SpinnerDatePickerFragment extends DialogFragment{
     private Spinner yearSpinner;
     private EditText dateField;
 
-    private int day;
-    private int month;
-    private int year;
+    private List<String> days;
+    private List<String> months;
+    private List<String> years;
 
-    private String dayAsString;
-    private String monthAsString;
-    private String yearAsString;
+    private DateSpinnerAdapter dayAdapter;
+    private DateSpinnerAdapter monthAdapter;
+    private DateSpinnerAdapter yearAdapter;
+
+    public class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
+        boolean userSelect = false;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            System.out.println("onTouch: userSelect = " + userSelect);
+            userSelect = true;
+            return false;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            System.out.println("onItemSelected: userSelect = " + userSelect);
+            if(userSelect) {
+                updateSpinners();
+                userSelect = false;
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {}
+
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -52,6 +77,14 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         initializeExpiryDateSpinner(); // Popola i campi
         DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nel form
 
+        SpinnerInteractionListener monthListener = new SpinnerInteractionListener();
+        monthSpinner.setOnTouchListener(monthListener);
+        monthSpinner.setOnItemSelectedListener(monthListener);
+
+        SpinnerInteractionListener yearListener = new SpinnerInteractionListener();
+        yearSpinner.setOnTouchListener(yearListener);
+        yearSpinner.setOnItemSelectedListener(yearListener);
+
         builder.setView(view)
             .setTitle("Seleziona data")
             .setPositiveButton("Ok", (dialog, id) -> {})
@@ -65,17 +98,15 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         if(getDialog() != null){
             Button positiveButton = ((AlertDialog)getDialog()).getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(v -> {
-                day = daySpinner.getSelectedItemPosition();
-                month = monthSpinner.getSelectedItemPosition();
-                year = yearSpinner.getSelectedItemPosition();
+                Date formDate = null;
 
-                dayAsString = daySpinner.getSelectedItem().toString();
-                monthAsString = monthSpinner.getSelectedItem().toString();
-                yearAsString = yearSpinner.getSelectedItem().toString();
-
-                Date formDate = getDateFromForm();
+                if(dateField==getActivity().findViewById(R.id.packagingDateField))
+                    formDate = getPackagingDate();
+                else if(dateField==getActivity().findViewById(R.id.expiryDateField))
+                    formDate = getExpiryDate();
 
                 if(formDate!=null){
+                    System.out.println("formDate: " + formDate);
                     dateField.setText(DateUtils.getFormattedDate(formDate));
                     dismiss();
                 } else
@@ -84,27 +115,30 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         }
     }
 
-    private Date getDateFromForm(){
-        Date currentDate = null;
-        Calendar maxDate = DateUtils.getCalendar(DateUtils.getMaxDateAllowed(dateField, getActivity()));
-        Calendar minDate = DateUtils.getCalendar(DateUtils.getMinDateAllowed(dateField, getActivity()));
+    private void updateSpinners(){
+        int dayPosition = daySpinner.getSelectedItemPosition();
+        int monthPosition = monthSpinner.getSelectedItemPosition();
 
-        if(dateField==getActivity().findViewById(R.id.packagingDateField))
-            currentDate = getPackagingDate();
-        else if(dateField==getActivity().findViewById(R.id.expiryDateField))
-            currentDate = getExpiryDate();
+        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days, DateSpinnerAdapter.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
+        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateSpinnerAdapter.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
 
-        if(currentDate!=null && minDate.getTime().before(currentDate) && maxDate.getTime().after(currentDate))
-            return currentDate;
-
-        return null;
+        daySpinner.setSelection(dayPosition);
+        monthSpinner.setSelection(monthPosition);
     }
 
     // Validazione per data di produzione
     private Date getPackagingDate(){
+        int daySpinnerPosition = daySpinner.getSelectedItemPosition();
+        int monthSpinnerPosition = monthSpinner.getSelectedItemPosition();
+        int yearSpinnerPosition = yearSpinner.getSelectedItemPosition();
+
+        String dayAsString = daySpinner.getSelectedItem().toString();
+        String monthAsString = monthSpinner.getSelectedItem().toString();
+        String yearAsString = yearSpinner.getSelectedItem().toString();
+
         if(dateField==getActivity().findViewById(R.id.packagingDateField)){
             if(
-                (day>0 && month>0 && year>0) && // Se tutti i campi sono compilati
+                (daySpinnerPosition >0 && monthSpinnerPosition >0 && yearSpinnerPosition >0) && // Se tutti i campi sono compilati
                 (DateUtils.isDateValid(dayAsString, monthAsString, yearAsString)) // Se è stato compilato 29/02 ma l'anno non è bisestile
             ){
                 return DateUtils.getDate(daySpinner, monthSpinner, yearSpinner);
@@ -115,24 +149,32 @@ public class SpinnerDatePickerFragment extends DialogFragment{
 
     // Validazione per data di scadenza
     private Date getExpiryDate(){
+        int daySpinnerPosition = daySpinner.getSelectedItemPosition();
+        int monthSpinnerPosition = monthSpinner.getSelectedItemPosition();
+        int yearSpinnerPosition = yearSpinner.getSelectedItemPosition();
+
+        String dayAsString = daySpinner.getSelectedItem().toString();
+        String monthAsString = monthSpinner.getSelectedItem().toString();
+        String yearAsString = yearSpinner.getSelectedItem().toString();
+
         if(dateField==getActivity().findViewById(R.id.expiryDateField)){
             if(
-                (day==0 && month==0 && year==0) || // Se non è stato compilato nessun campo
-                (day>0 && month==0 && year==0) || // Se è stato compilato solo il giorno di scadenza
-                (day==0 && month>0 && year==0) || // Se è stato compilato solo il mese di scadenza
-                ((day>0 && month>0 && year==0) && (!DateUtils.isDateValid(dayAsString, monthAsString, "2019"))) || // Se è stato compilato 29/02 ma l'anno corrente non è bisestile // TODO settare anno corrente
-                ((day>0 && month>0 && year>0) && (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString))) // Se è stato compilato 29/02 ma l'anno non è bisestile
+                (daySpinnerPosition==0 && monthSpinnerPosition==0 && yearSpinnerPosition==0) || // Se non è stato compilato nessun campo
+                (daySpinnerPosition>0 && monthSpinnerPosition==0 && yearSpinnerPosition==0) || // Se è stato compilato solo il giorno di scadenza
+                (daySpinnerPosition==0 && monthSpinnerPosition>0 && yearSpinnerPosition==0) || // Se è stato compilato solo il mese di scadenza
+                ((daySpinnerPosition>0 && monthSpinnerPosition>0 && yearSpinnerPosition==0) && (!DateUtils.isDateValid(dayAsString, monthAsString, "2019"))) || // Se è stato compilato 29/02 ma l'anno corrente non è bisestile // TODO settare anno corrente
+                ((daySpinnerPosition>0 && monthSpinnerPosition>0 && yearSpinnerPosition>0) && (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString))) // Se è stato compilato 29/02 ma l'anno non è bisestile
             ){
-                return DateUtils.getExpiryDate(daySpinner, monthSpinner, yearSpinner);
+                return null;
             }
         }
-        return null;
+        return DateUtils.getExpiryDate(daySpinner, monthSpinner, yearSpinner);
     }
 
     private void initializeExpiryDateSpinner() {
-        List<String> days = new ArrayList<>();
-        List<String> months = new ArrayList<>();
-        List<String> years = new ArrayList<>();
+        days = new ArrayList<>();
+        months = new ArrayList<>();
+        years = new ArrayList<>();
 
         days.add("DD");
         months.add("MM");
@@ -158,8 +200,26 @@ public class SpinnerDatePickerFragment extends DialogFragment{
                 days.add(String.valueOf(i));
         }
 
-        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days));
-        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months));
-        yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years));
+        dayAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days, DateSpinnerAdapter.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+        monthAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateSpinnerAdapter.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+        yearAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years, DateSpinnerAdapter.YEAR_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+
+        daySpinner.setAdapter(dayAdapter);
+        monthSpinner.setAdapter(monthAdapter);
+        yearSpinner.setAdapter(yearAdapter);
+    }
+
+    private int getCurrentMonth(){
+        int currentMonth = -1;
+        if(monthSpinner.getSelectedItemPosition()>0)
+            currentMonth = Integer.valueOf(monthSpinner.getSelectedItem().toString());
+        return currentMonth;
+    }
+
+    private int getCurrentYear(){
+        int currentYear = -1;
+        if(yearSpinner.getSelectedItemPosition()>0)
+            currentYear = Integer.valueOf(yearSpinner.getSelectedItem().toString());
+        return currentYear;
     }
 }

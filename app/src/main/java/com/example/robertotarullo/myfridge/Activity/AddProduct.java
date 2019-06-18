@@ -1,6 +1,5 @@
 package com.example.robertotarullo.myfridge.Activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
@@ -8,9 +7,7 @@ import android.content.Intent;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,12 +48,10 @@ import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-@SuppressWarnings("FieldCanBeLocal")
 public class AddProduct extends AppCompatActivity {
 
     // variabili statiche
