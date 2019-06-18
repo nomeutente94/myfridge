@@ -37,19 +37,18 @@ public class SpinnerDatePickerFragment extends DialogFragment{
     private DateSpinnerAdapter monthAdapter;
     private DateSpinnerAdapter yearAdapter;
 
+    // Aggiorna gli spinner solo se l'utente interagisce con esso
     public class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
         boolean userSelect = false;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            System.out.println("onTouch: userSelect = " + userSelect);
             userSelect = true;
             return false;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            System.out.println("onItemSelected: userSelect = " + userSelect);
             if(userSelect) {
                 updateSpinners();
                 userSelect = false;
@@ -85,8 +84,14 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         yearSpinner.setOnTouchListener(yearListener);
         yearSpinner.setOnItemSelectedListener(yearListener);
 
+        String title = "Seleziona data";
+        if(dateField==getActivity().findViewById(R.id.packagingDateField))
+            title += " di produzione/lotto";
+        else if(dateField==getActivity().findViewById(R.id.expiryDateField))
+            title += " di scadenza";
+
         builder.setView(view)
-            .setTitle("Seleziona data")
+            .setTitle(title)
             .setPositiveButton("Ok", (dialog, id) -> {})
             .setNegativeButton("Annulla", (dialog, id) -> SpinnerDatePickerFragment.this.getDialog().cancel());
         return builder.create();
