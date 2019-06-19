@@ -375,7 +375,7 @@ public abstract class DateUtils {
         Date consumingDate = TextUtils.getDate(consumingDateField);
 
         if(max){
-            Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH-1, MAX_DAY));
+            Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH, MAX_DAY));
 
             if(dateField==consumingDateField){
                 maxDate = getMin(getCurrentDate(), maxDate);    // consumingDate <= now
@@ -398,7 +398,7 @@ public abstract class DateUtils {
 
             return maxDate;
         } else {
-            Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH-1, MIN_DAY));
+            Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH, MIN_DAY));
 
             if(dateField==consumingDateField){
                 minDate = getMax(packagingDate, minDate);       // consumingDate >= packagingDate
