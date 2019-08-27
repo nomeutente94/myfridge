@@ -371,7 +371,7 @@ public class EditProduct extends AppCompatActivity {
     // Compila tutti i campi con i dati del prodotto da modificare
     private void fillFieldsFromProduct(SingleProduct p) {
 
-        // printProductOnConsole(p);
+        //printProductOnConsole(p);
 
         TextUtils.setText(p.getName(), nameField);
 
@@ -427,14 +427,16 @@ public class EditProduct extends AppCompatActivity {
             openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
         }
 
-        // Se si tratta di un prodotto fresco o confezione aperta
+        // Se si tratta di un prodotto fresco o confezionato aperto
         if(p.isOpened()){
-            if(p.getWeight()==0 && p.getPieces()==1) {
-                currentWeightSlider.setProgress(p.getPercentageQuantity());
-            } else if(p.getWeight()>0 && p.getPieces()==1) {
-                currentWeightSlider.setTag("currentWeight");
-                currentWeightSlider.setMax(TextUtils.getInt(weightField));
-                currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
+            if(p.getPieces()==1){
+                if(TextUtils.isEmpty(weightField))
+                    currentWeightSlider.setProgress(p.getPercentageQuantity());
+                else{
+                    currentWeightSlider.setTag("currentWeight");
+                    currentWeightSlider.setMax(TextUtils.getInt(weightField));
+                    currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
+                }
             } else {
                 currentWeightSlider.setTag("pieces");
                 currentWeightSlider.setMax(p.getPieces());
