@@ -103,8 +103,14 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         yearSpinner.setOnTouchListener(yearListener);
         yearSpinner.setOnItemSelectedListener(yearListener);
 
+        String title = "Data ";
+        if(dateField==getActivity().findViewById(R.id.packagingDateField))
+            title += "di produzione/lotto";
+        else if(dateField==getActivity().findViewById(R.id.expiryDateField))
+            title += "di scadenza";
+
         builder.setView(view)
-            .setTitle("Seleziona data")
+            .setTitle(title)
             .setPositiveButton("Ok", (dialog, id) -> {})
             .setNegativeButton("Annulla", (dialog, id) -> SpinnerDatePickerFragment.this.getDialog().cancel());
         return builder.create();
