@@ -1,6 +1,7 @@
 package com.example.robertotarullo.myfridge.Utils;
 
 import android.app.Activity;
+import android.content.Context;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -22,6 +23,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class DateUtils {
+
+    // Tipo di spinner
+    public static final int DAY_SPINNER = 0;
+    public static final int MONTH_SPINNER = 1;
+    public static final int YEAR_SPINNER = 2;
 
     // codice campo
     public static final int CONSUMING_DATE = 1;
@@ -173,19 +179,72 @@ public abstract class DateUtils {
         }
     }
 
-    public static String getLastDayOfMonth(String month, String year){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // TODO Permettere di settare il formato della data
-        String date = 01 + "/" + month + "/" + year;
-        Calendar calendar = new GregorianCalendar();
-
+    public static int getLastDayOfMonthAsInt(int month, int year){
         try {
-            Date convertedDate = dateFormat.parse(date);
-            calendar.setTime(convertedDate);
-            return String.valueOf(calendar.getActualMaximum(Calendar.DATE));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+            return Integer.valueOf(getLastDayOfMonth(month, year));
+        } catch (NumberFormatException e) {
+            return 0;
         }
+    }
+
+    public static String getLastDayOfMonth(int month, int year){
+        return getLastDayOfMonth(String.valueOf(month), String.valueOf(year));
+    }
+
+    public static String getLastDayOfMonth(String month, String year){
+        if(month!=null && Integer.valueOf(month)>0) {
+            if(Integer.valueOf(month)==2 && (year==null || year.equals("-1")))
+                return "29";
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // TODO Permettere di settare il formato della data
+            String date = 01 + "/" + month + "/" + year;
+
+            Calendar calendar = new GregorianCalendar();
+
+            try {
+                Date convertedDate = dateFormat.parse(date);
+                calendar.setTime(convertedDate);
+                return String.valueOf(calendar.getActualMaximum(Calendar.DATE));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    // stabilisce se il valore dello spinner è valido o meno
+    public static boolean isValueValid(int spinnerType, int position, EditText dateField, Context context, int currentMonth, int currentYear, List<String> entries){
+        Date maxDate = DateUtils.getMaxDateAllowed(dateField, (Activity)context);
+        Date minDate = DateUtils.getMinDateAllowed(dateField, (Activity)context);
+
+        int minDay = DateUtils.getCalendar(minDate).get(Calendar.DAY_OF_MONTH);
+        int maxDay = DateUtils.getCalendar(maxDate).get(Calendar.DAY_OF_MONTH);
+        int maxMonth = DateUtils.getCalendar(maxDate).get(Calendar.MONTH)+1;
+        int minMonth = DateUtils.getCalendar(minDate).get(Calendar.MONTH)+1;
+        int minYear = DateUtils.getCalendar(minDate).get(Calendar.YEAR);
+        int maxYear = DateUtils.getCalendar(maxDate).get(Calendar.YEAR);
+
+        if(spinnerType==DAY_SPINNER){
+            if(position>0 && currentYear>-1 && currentMonth>-1){
+                int value = Integer.valueOf(entries.get(position));
+                if((value < minDay && minMonth==currentMonth && minYear==currentYear) || (value > maxDay && maxMonth==currentMonth && maxYear==currentYear))
+                    return false;
+            }
+        } else if(spinnerType==MONTH_SPINNER){
+            if(position>0 && currentYear>-1){
+                int value = Integer.valueOf(entries.get(position));
+                if((value < minMonth && minYear==currentYear) || (value > maxMonth && maxYear==currentYear))
+                    return false;
+            }
+        } else if(spinnerType==YEAR_SPINNER){
+            if(position>0){
+                int value = Integer.valueOf(entries.get(position));
+                if(value < minYear || value > maxYear)
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     // aggiunge giorni ad una data e la ritorna

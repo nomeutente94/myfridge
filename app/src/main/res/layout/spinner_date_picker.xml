@@ -20,32 +20,21 @@
                 android:tag="expiryDateDaySpinner"
                 android:dropDownWidth="70dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </Spinner>
+                android:layout_height="wrap_content"/>
             <Spinner
                 android:id="@+id/expiryDateMonthSpinner"
                 android:tag="expiryDateMonthSpinner"
                 android:dropDownWidth="70dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </Spinner>
+                android:layout_height="wrap_content"/>
             <Spinner
                 android:id="@+id/expiryDateYearSpinner"
                 android:tag="expiryDateYearSpinner"
                 android:dropDownWidth="70dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </Spinner>
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/illegalExpiryDateTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:textColor="#FF0000"
-            android:text="La data di scadenza immessa non è valida."/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -24,6 +24,8 @@ import java.util.List;
 
 public class SpinnerDatePickerFragment extends DialogFragment{
 
+    boolean dayAutoSelection;
+
     private Spinner daySpinner;
     private Spinner monthSpinner;
     private Spinner yearSpinner;
@@ -31,25 +33,18 @@ public class SpinnerDatePickerFragment extends DialogFragment{
 
     private List<String> days;
     private List<String> months;
-    private List<String> years;
-
-    private DateSpinnerAdapter dayAdapter;
-    private DateSpinnerAdapter monthAdapter;
-    private DateSpinnerAdapter yearAdapter;
 
     public class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
         boolean userSelect = false;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            System.out.println("onTouch: userSelect = " + userSelect);
             userSelect = true;
             return false;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            System.out.println("onItemSelected: userSelect = " + userSelect);
             if(userSelect) {
                 updateSpinners();
                 userSelect = false;
@@ -58,7 +53,24 @@ public class SpinnerDatePickerFragment extends DialogFragment{
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {}
+    }
 
+    public class DaySpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
+        boolean userSelect = false;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            userSelect = true;
+            return false;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+            dayAutoSelection = false;
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {}
     }
 
     @Override
@@ -76,6 +88,12 @@ public class SpinnerDatePickerFragment extends DialogFragment{
 
         initializeExpiryDateSpinner(); // Popola i campi
         DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nel form
+        updateSpinners();
+
+        // Aggiungi listener agli spinner giorno / mese / anno
+        /*SpinnerInteractionListener dayListener = new SpinnerInteractionListener();
+        daySpinner.setOnTouchListener(dayListener);*/
+        daySpinner.setOnItemSelectedListener(new DaySpinnerInteractionListener());
 
         SpinnerInteractionListener monthListener = new SpinnerInteractionListener();
         monthSpinner.setOnTouchListener(monthListener);
@@ -119,11 +137,28 @@ public class SpinnerDatePickerFragment extends DialogFragment{
         int dayPosition = daySpinner.getSelectedItemPosition();
         int monthPosition = monthSpinner.getSelectedItemPosition();
 
-        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days, DateSpinnerAdapter.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
-        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateSpinnerAdapter.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
+        int lastDayOfMonth = DateUtils.getLastDayOfMonthAsInt(getCurrentMonth(), getCurrentYear());
 
-        daySpinner.setSelection(dayPosition);
-        monthSpinner.setSelection(monthPosition);
+        List<String> actualDays;
+        if(lastDayOfMonth>0)
+            actualDays = getDays(DateUtils.MIN_DAY, lastDayOfMonth);
+        else
+            actualDays = days;
+        // TODO calcolare anche actualYears
+
+        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, actualDays, DateUtils.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
+        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateUtils.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear()));
+
+        if(dayPosition > lastDayOfMonth)
+            dayAutoSelection = true; // TODO al variare di mese/anno si setta sempre l'ultimo del mese finchè l'utente non cambia manualmente il giorno, anche se seleziona lo stesso
+        
+        // TODO controlla che il giorno selezionato sia enabled, se sì selezionane un altro
+        // TODO oltre il giorno, controlla che il mese corrente sia enabled
+        if(dayAutoSelection) // setta all'ultimo giorno disponibile e non oscurato
+            daySpinner.setSelection(lastDayOfMonth); // TODO controlla se la nuova scelta non è oscurata
+        else
+            daySpinner.setSelection(dayPosition); // setta al giorno precedentemente selezionato
+        monthSpinner.setSelection(monthPosition); // TODO controlla se la nuova scelta non è oscurata
     }
 
     // Validazione per data di produzione
@@ -172,41 +207,47 @@ public class SpinnerDatePickerFragment extends DialogFragment{
     }
 
     private void initializeExpiryDateSpinner() {
-        days = new ArrayList<>();
-        months = new ArrayList<>();
-        years = new ArrayList<>();
+        days = getDays(DateUtils.MIN_DAY, DateUtils.MAX_DAY);
+        months = getMonths(DateUtils.MIN_MONTH, DateUtils.MAX_MONTH);
+        List<String> years = getYears(DateUtils.MIN_YEAR, DateUtils.MAX_YEAR);
 
-        days.add("DD");
-        months.add("MM");
-        years.add("YYYY");
-
-        // Inizializza anni
-        for(int i=DateUtils.MIN_YEAR; i<=DateUtils.MAX_YEAR; i++)
-            years.add(String.valueOf(i));
-
-        // Inizializza mesi
-        for(int i = DateUtils.MIN_MONTH; i<= DateUtils.MAX_MONTH; i++) {
-            if (String.valueOf(i).length() == 1)
-                months.add("0" + i);
-            else
-                months.add(String.valueOf(i));
-        }
-
-        // Inizializza giorni
-        for(int i = DateUtils.MIN_DAY; i<= DateUtils.MAX_DAY; i++){
-            if(String.valueOf(i).length()==1)
-                days.add("0" + i);
-            else
-                days.add(String.valueOf(i));
-        }
-
-        dayAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days, DateSpinnerAdapter.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
-        monthAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateSpinnerAdapter.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
-        yearAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years, DateSpinnerAdapter.YEAR_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+        DateSpinnerAdapter dayAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days, DateUtils.DAY_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+        DateSpinnerAdapter monthAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months, DateUtils.MONTH_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
+        DateSpinnerAdapter yearAdapter = new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years, DateUtils.YEAR_SPINNER, dateField, getCurrentMonth(), getCurrentYear());
 
         daySpinner.setAdapter(dayAdapter);
         monthSpinner.setAdapter(monthAdapter);
         yearSpinner.setAdapter(yearAdapter);
+    }
+
+    private List<String> getDays(int min, int max){
+        List<String> entries = new ArrayList<>();
+        entries.add("GG");
+        fillEntries(entries, min, max); // Inizializza giorni
+        return entries;
+    }
+
+    private List<String> getMonths(int min, int max){
+        List<String> entries = new ArrayList<>();
+        entries.add("MM");
+        fillEntries(entries, min, max); // Inizializza giorni
+        return entries;
+    }
+
+    private List<String> getYears(int min, int max){
+        List<String> entries = new ArrayList<>();
+        entries.add("AAAA");
+        fillEntries(entries, min, max); // Inizializza giorni
+        return entries;
+    }
+
+    private void fillEntries(List<String> entries, int min, int max){
+        for(int i = min; i<=max; i++){
+            if(String.valueOf(i).length()==1)
+                entries.add("0" + i);
+            else
+                entries.add(String.valueOf(i));
+        }
     }
 
     private int getCurrentMonth(){
