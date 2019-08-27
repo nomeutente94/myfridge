@@ -54,28 +54,40 @@ public class DateWatcher implements TextWatcher {
             String msg = null;
 
             if(dateField==consumingDateField){
-                if(expiryDate!=null && (consumingDate.after(expiryDate) || consumingDate.equals(expiryDate)))                           // consumingDate >= expiryDate
-                    msg = "La data di consumazione selezionata è uguale o successiva alla data di scadenza, continuare comunque?";
+
+                if(expiryDate!=null && (consumingDate.after(expiryDate) || consumingDate.equals(expiryDate)))                   // consumingDate >= expiryDate
+                    msg = "La data di consumazione selezionata è:\n- uguale o successiva alla data di scadenza\n\nContinuare comunque?";
+
             } else if(dateField==expiryDateField){
-                if(consumingDate!=null && (expiryDate.before(consumingDate) || expiryDate.equals(consumingDate)))                       // expiryDate <= consumingDate
-                    msg = "La data di scadenza selezionata è uguale o precedente alla data di consumazione, continuare comunque?";
-                else if(expiryDate.equals(packagingDate))                                                                               // expiryDate == packagingDate
-                    msg = "La data di scadenza selezionata è uguale o precedente alla data di produzione/lotto, continuare comunque?";
-                else if(openingDate!=null && (expiryDate.before(openingDate) || expiryDate.equals(openingDate)))                        // expiryDate <= openingDate
-                    msg = "La data di scadenza selezionata è uguale o precedente alla data di apertura, continuare comunque?";
-                else if(expiryDate.before(DateUtils.getCurrentDate()) || expiryDate.equals(DateUtils.getCurrentDate()))                 // expiryDate <= now
-                    msg = "La data di scadenza selezionata è uguale o precedente alla data ordierna, continuare comunque?";
-                else if(purchaseDate!=null && (expiryDate.before(purchaseDate) || expiryDate.equals(purchaseDate)))                     // expiryDate <= purchaseDate
-                    msg = "La data di scadenza selezionata è uguale o precedente alla data di acquisto, continuare comunque?";
+
+                msg = "La data di scadenza selezionata è:";
+                if(expiryDate.equals(packagingDate))                                                                            // expiryDate == packagingDate
+                    msg += "\n- uguale alla data di produzione/lotto";
+                if(expiryDate.before(DateUtils.getCurrentDate()) || expiryDate.equals(DateUtils.getCurrentDate()))              // expiryDate <= now
+                    msg += "\n- uguale o precedente alla data ordierna";
+                if(consumingDate!=null && (expiryDate.before(consumingDate) || expiryDate.equals(consumingDate)))               // expiryDate <= consumingDate
+                    msg += "\n- uguale o precedente alla data di consumazione";
+                if(openingDate!=null && (expiryDate.before(openingDate) || expiryDate.equals(openingDate)))                     // expiryDate <= openingDate
+                    msg += "\n- uguale o precedente alla data di apertura";
+                if(purchaseDate!=null && (expiryDate.before(purchaseDate) || expiryDate.equals(purchaseDate)))                  // expiryDate <= purchaseDate
+                    msg += "\n- uguale o precedente alla data di acquisto";
+                msg += "\n\nContinuare comunque?";
+
             } else if(dateField==packagingDateField){
-                if(packagingDate.equals(expiryDate))                                                                                    // packagingDate == expiryDate
-                    msg = "La data di produzione/lotto selezionata è uguale alla data di scadenza, continuare comunque?";
+
+                if(packagingDate.equals(expiryDate))                                                                            // packagingDate == expiryDate
+                    msg = "La data di produzione/lotto selezionata è:\n- uguale alla data di scadenza\n\nContinuare comunque?";
+
             } else if(dateField==openingDateField){
-                if(expiryDate!=null && (openingDate.after(expiryDate) || openingDate.equals(expiryDate)))                               // openingDate >= expiryDate
-                    msg = "La data di apertura selezionata è uguale o successiva alla data di scadenza, continuare comunque?";
+
+                if(expiryDate!=null && (openingDate.after(expiryDate) || openingDate.equals(expiryDate)))                       // openingDate >= expiryDate
+                    msg = "La data di apertura selezionata è:\n- uguale o successiva alla data di scadenza\n\ncontinuare comunque?";
+
             } else if(dateField==purchaseDateField){
-                if(expiryDate!=null && (purchaseDate.after(expiryDate) || purchaseDate.equals(expiryDate)))                             // purchaseDate >= expiryDate
-                    msg = "La data di acquisto selezionata è uguale o successiva alla data di scadenza, continuare comunque?";
+
+                if(expiryDate!=null && (purchaseDate.after(expiryDate) || purchaseDate.equals(expiryDate)))                     // purchaseDate >= expiryDate
+                    msg = "La data di acquisto selezionata è:\n- uguale o successiva alla data di scadenza\n\ncontinuare comunque?";
+
             }
 
             if(msg!=null)
