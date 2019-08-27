@@ -74,10 +74,10 @@ public class Cart extends AppCompatActivity {
         listView.setOnItemClickListener((parent, view, position, id) -> editSingleProduct(position));
     }
 
-    // Avvia l'activity AddProduct per la modifica
+    // Avvia l'activity EditProduct per la modifica
     public void editSingleProduct(int position){
-        // TODO modifica prodotto con AddProduct con i campi di action "shopping" e compilando i campi col prodotto cliccato
-        Intent intent = new Intent(this, AddProduct.class);
+        // TODO modifica prodotto con EditProduct con i campi di action "shopping" e compilando i campi col prodotto cliccato
+        Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", "shopping");
         intent.putExtra("position", position);
         intent.putExtra("quantity", quantities.get(position));
@@ -122,8 +122,8 @@ public class Cart extends AppCompatActivity {
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
-                        // TODO aggiungere qui i prodotti (o in una classe esterna) invece di delegare il compito ad AddProduct?
-                        Intent intent = new Intent(this, AddProduct.class);
+                        // TODO aggiungere qui i prodotti (o in una classe esterna) invece di delegare il compito ad EditProduct?
+                        Intent intent = new Intent(this, EditProduct.class);
                         intent.putExtra("cartProducts", cartProducts);
                         intent.putExtra("action", "shopping");
                         startActivityForResult(intent, 3);
@@ -147,7 +147,7 @@ public class Cart extends AppCompatActivity {
     }
 
     public void addProduct(View view){
-        Intent intent = new Intent(this, AddProduct.class);
+        Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", "shopping");
         intent.putExtra("pointOfPurchaseId", getIntent().getIntExtra("pointOfPurchaseId",0));
         intent.putExtra("suggestions", listToDisplay);

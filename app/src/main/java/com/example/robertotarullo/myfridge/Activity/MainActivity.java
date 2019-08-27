@@ -386,9 +386,9 @@ public class MainActivity extends AppCompatActivity {
             }).show();
     }*/
 
-    // Avvia l'activity AddProduct per l'aggiunta
+    // Avvia l'activity EditProduct per l'aggiunta
     public void addProduct(View view){
-        Intent intent = new Intent(this, AddProduct.class);
+        Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", "add");
         intent.putExtra("filter", currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
@@ -400,9 +400,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // Avvia l'activity AddProduct per la modifica
+    // Avvia l'activity EditProduct per la modifica
     public void editSingleProduct(SingleProduct p){
-        Intent intent = new Intent(this, AddProduct.class);
+        Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
         intent.putExtra("action", "edit");
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);

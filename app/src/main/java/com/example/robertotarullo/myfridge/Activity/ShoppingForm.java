@@ -34,7 +34,7 @@ public class ShoppingForm extends AppCompatActivity {
         initializePointsOfPurchaseSpinner();
     }
 
-    private void initializePointsOfPurchaseSpinner() { // TODO stesso codice di AddProduct
+    private void initializePointsOfPurchaseSpinner() { // TODO stesso codice di EditProduct
         new Thread(() -> {
             List<PointOfPurchase> pointsOfPurchase = productDatabase.pointOfPurchaseDao().getPointsOfPurchase();
 

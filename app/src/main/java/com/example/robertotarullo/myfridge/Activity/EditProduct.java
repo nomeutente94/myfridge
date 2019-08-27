@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class AddProduct extends AppCompatActivity {
+public class EditProduct extends AppCompatActivity {
 
     // variabili statiche
     public static final int FREEZER_MAX_CELSIUS = 0, FRIDGE_MIN_CELSIUS = 3, FRIDGE_MAX_CELSIUS = 6;
