@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+// !!!!!!!!!!!!!!!!!!! DEPRECATO E BUGGATO !!!!!!!!!!!!!!!!!!!
+// !!!!!! SI USA DATEPICKERFRAGMENT IN MODALITÀ SPINNER !!!!!!
+
 public class SpinnerDatePickerFragment extends DialogFragment{
 
     boolean dayAutoSelection;

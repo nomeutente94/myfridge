@@ -7,6 +7,7 @@ import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 
 import java.util.Calendar;
@@ -33,7 +34,11 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             day = DateUtils.getDay(dateField);
         }
 
-        DatePickerDialog dpd = new DatePickerDialog(getActivity(), this, year, month, day);
+        DatePickerDialog dpd;
+        if(getArguments().getBoolean("spinnerMode"))
+            dpd = new DatePickerDialog(getActivity(), R.style.MySpinnerDatePickerStyle, this, year, month, day);
+        else
+            dpd = new DatePickerDialog(getActivity(), this, year, month, day);
 
         dpd.getDatePicker().setMaxDate(DateUtils.getCalendar(DateUtils.getMaxDateAllowed(dateField, getActivity())).getTimeInMillis());
         dpd.getDatePicker().setMinDate(DateUtils.getCalendar(DateUtils.getMinDateAllowed(dateField, getActivity())).getTimeInMillis());

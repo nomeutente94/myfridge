@@ -30,7 +30,6 @@ import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
-import com.example.robertotarullo.myfridge.Fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.Watcher.CurrentPiecesWatcher;
 import com.example.robertotarullo.myfridge.Watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.Watcher.DateWatcher;
@@ -46,7 +45,6 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -781,9 +779,10 @@ public class EditProduct extends AppCompatActivity {
 
     // immissione data con spinner date picker
     public void showSpinnerDatePickerDialog(View v){
-        DialogFragment f = new SpinnerDatePickerFragment();
+        DialogFragment f = new DatePickerFragment();
         Bundle args = new Bundle();
         args.putInt("id", v.getId());
+        args.putBoolean("spinnerMode", true);
         f.setArguments(args);
         f.show(getSupportFragmentManager(), "spinnerDatePicker");
     }
@@ -793,6 +792,7 @@ public class EditProduct extends AppCompatActivity {
         DialogFragment f = new DatePickerFragment();
         Bundle args = new Bundle();
         args.putInt("id", v.getId());
+        args.putBoolean("spinnerMode", false);
         f.setArguments(args);
         f.show(getSupportFragmentManager(), "datePicker");
     }
