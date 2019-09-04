@@ -425,7 +425,7 @@ public abstract class DateUtils {
         EditText purchaseDateField = activity.findViewById(R.id.purchaseDateField);
         EditText openingDateField = activity.findViewById(R.id.openingDateField);
         EditText packagingDateField = activity.findViewById(R.id.packagingDateField);
-        EditText consumingDateField = null; // TODO = activity.findViewById(R.id.consumingDateField);
+        EditText consumingDateField = activity.findViewById(R.id.consumptionDateField);
 
         Date expiryDate = TextUtils.getDate(expiryDateField);
         Date purchaseDate = TextUtils.getDate(purchaseDateField);

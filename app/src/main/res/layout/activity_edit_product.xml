@@ -19,6 +19,65 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/consumedCheckBoxBlock"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="11dp">
+
+                <TextView
+                    android:id="@+id/consumedCheckBoxLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="È stato consumato?" />
+
+                <CheckBox
+                    android:id="@+id/consumedCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/consumptionDateBlock"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="11dp">
+
+                <TextView
+                    android:id="@+id/consumptionDateFieldLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Data di consumazione" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        android:id="@+id/consumptionDateField"
+                        android:layout_width="280dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:cursorVisible="false"
+                        android:focusable="false"
+                        android:hint="Data non impostata"
+                        android:onClick="showDatePickerDialog"
+                        android:tag="purchaseDate" />
+
+                    <Button
+                        android:id="@+id/consumptionDateClearButton"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:onClick="clearField"
+                        android:tag="purchaseDate"
+                        android:text="X" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/quantityBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

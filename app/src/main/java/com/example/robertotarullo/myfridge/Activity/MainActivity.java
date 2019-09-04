@@ -440,7 +440,11 @@ public class MainActivity extends AppCompatActivity {
                             });
                             */
                         } else {
-                            if (productDatabase.productDao().updateConsumption(((SingleProduct) p).getId(), true) > 0){
+                            SingleProduct sp = ((SingleProduct) p);
+                            sp.setConsumed(true);
+                            sp.setConsumptionDate(new Date());
+
+                            if (productDatabase.productDao().update(sp) > 0){
                                 runOnUiThread(() -> {
                                     Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
                                     retrieveProductsFromDB(null); // aggiorna lista

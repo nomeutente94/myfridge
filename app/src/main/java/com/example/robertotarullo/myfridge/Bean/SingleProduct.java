@@ -66,7 +66,7 @@ public class SingleProduct implements Product, Serializable {
 
     // Data in cui il prodotto è stato consumato
     // Un prodotto può essere consumato senza aver precisato la data di consumazione
-    private Date consumingDate;
+    private Date consumptionDate;
 
     // Indica la modalità di conservazione nello stato in cui lo si è comprato
     // Può assumere valori tra 0, 1, 2, rispettivamente per Dispensa, Frigorifero, Congelatore
@@ -317,7 +317,7 @@ public class SingleProduct implements Product, Serializable {
                 singleProductObj.getCurrentPieces()==currentPieces &&
                 singleProductObj.getExpiringDaysAfterOpening()==expiringDaysAfterOpening &&
                 Objects.equals(singleProductObj.getPurchaseDate(), purchaseDate) &&
-                Objects.equals(singleProductObj.getConsumingDate(), consumingDate) &&
+                Objects.equals(singleProductObj.getConsumptionDate(), consumptionDate) &&
                 singleProductObj.getStorageCondition()==storageCondition &&
                 singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
                 singleProductObj.isConsumed()==consumed &&
@@ -341,11 +341,11 @@ public class SingleProduct implements Product, Serializable {
         this.packagingDate = packagingDate;
     }
 
-    public Date getConsumingDate() {
-        return consumingDate;
+    public Date getConsumptionDate() {
+        return consumptionDate;
     }
 
-    public void setConsumingDate(Date consumingDate) {
-        this.consumingDate = consumingDate;
+    public void setConsumptionDate(Date consumptionDate) {
+        this.consumptionDate = consumptionDate;
     }
 }

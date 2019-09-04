@@ -68,9 +68,9 @@ public class EditProduct extends AppCompatActivity {
 
     // views
     private ScrollView listScrollView;
-    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField;
+    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField, consumptionDateField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
-    private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox;
+    private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox, consumedCheckBox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton, addQuantityButton, subtractQuantityButton, addPieceButton, subtractPieceButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
@@ -79,7 +79,7 @@ public class EditProduct extends AppCompatActivity {
     private boolean expiryDateMode;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock;
+    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock, consumedCheckboxBlock, consumptionDateBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -111,7 +111,7 @@ public class EditProduct extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_product);
+        setContentView(R.layout.activity_edit_product);
 
         // Ottieni un riferimento al db
         productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
@@ -138,6 +138,8 @@ public class EditProduct extends AppCompatActivity {
         piecesField = findViewById(R.id.piecesField);
         currentPiecesField = findViewById(R.id.currentPiecesField);
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
+        consumedCheckBox = findViewById(R.id.consumedCheckBox);
+        consumptionDateField = findViewById(R.id.consumptionDateField);
 
         // View di controllo del form
         changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
@@ -162,6 +164,8 @@ public class EditProduct extends AppCompatActivity {
         expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
         pointOfPurchaseBlock = findViewById(R.id.pointOfPurchaseBlock);
         purchaseDateBlock = findViewById(R.id.purchaseDateBlock);
+        consumedCheckboxBlock = findViewById(R.id.consumedCheckBoxBlock);
+        consumptionDateBlock = findViewById(R.id.consumptionDateBlock);
 
         // riferimenti ai pulsanti clear di campi coinvolti in relazioni
         priceClearButton = findViewById(R.id.priceClearButton);
@@ -184,6 +188,7 @@ public class EditProduct extends AppCompatActivity {
         initializeOpenedCheckBox(true);
         initializePackagedCheckBox(true);
         initializeNoExpiryCheckBox(true);
+        initializeConsumedCheckBox(true);
 
         // Validazione e comportamento
         currentWeightSlider.setTag(R.id.percentageValue, "100");
@@ -211,50 +216,55 @@ public class EditProduct extends AppCompatActivity {
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
 
-        if(action.equals("add")) {
-            setTitle("Aggiungi prodotto");
-            confirmButton.setText("Aggiungi");
-            startingForm = getCurrentForm();
-        } else if(action.equals("edit")) {
-            setTitle("Modifica prodotto");
-            productToModifyId = getIntent().getLongExtra("id", 0);
-            confirmButton.setText("Salva");
-
-            new Thread(() -> {
-                SingleProduct p = productDatabase.productDao().get(productToModifyId);
-                runOnUiThread(() -> {
-                    fillFieldsFromProduct(p);
-                    startingForm = getCurrentForm();
-                });
-            }).start();
-
-        } else if(action.equals("shopping")){
-            if(getIntent().getSerializableExtra("productToEdit")!=null){
-                setTitle("Modifica prodotto");
-                confirmButton.setText("Salva");
-                quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
-                fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
-            } else if(getIntent().getSerializableExtra("cartProducts")!=null){
-                new Thread(() -> {
-                    if(addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts"))>0){ // TODO spostare new thread in addproducts()?
-                        runOnUiThread(() -> { // TODO è necessario l'ui thread?
-                            Intent resultIntent = new Intent();
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                        });
-                    }
-                }).start();
-            } else {
+        switch (action) {
+            case "add":
                 setTitle("Aggiungi prodotto");
-            }
+                confirmButton.setText("Aggiungi");
+                startingForm = getCurrentForm();
+                break;
+            case "edit":
+                setTitle("Modifica prodotto");
+                productToModifyId = getIntent().getLongExtra("id", 0);
+                confirmButton.setText("Salva");
 
-            // Nascondi i campi precompilati
-            pointOfPurchaseBlock.setVisibility(View.GONE);
-            purchaseDateBlock.setVisibility(View.GONE);
-            openedCheckBoxBlock.setVisibility(View.GONE);
-            currentWeightBlock.setVisibility(View.GONE);
+                new Thread(() -> {
+                    SingleProduct p = productDatabase.productDao().get(productToModifyId);
+                    runOnUiThread(() -> {
+                        fillFieldsFromProduct(p);
+                        startingForm = getCurrentForm();
+                    });
+                }).start();
 
-            startingForm = getCurrentForm();
+                break;
+            case "shopping":
+                if (getIntent().getSerializableExtra("productToEdit") != null) {
+                    setTitle("Modifica prodotto");
+                    confirmButton.setText("Salva");
+                    quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
+                    fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+                } else if (getIntent().getSerializableExtra("cartProducts") != null) {
+                    new Thread(() -> {
+                        if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts()?
+                            runOnUiThread(() -> { // TODO è necessario l'ui thread?
+                                Intent resultIntent = new Intent();
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            });
+                        }
+                    }).start();
+                } else {
+                    setTitle("Aggiungi prodotto");
+                }
+
+                // Nascondi i campi precompilati
+                pointOfPurchaseBlock.setVisibility(View.GONE);
+                purchaseDateBlock.setVisibility(View.GONE);
+                openedCheckBoxBlock.setVisibility(View.GONE);
+                currentWeightBlock.setVisibility(View.GONE);
+                consumedCheckboxBlock.setVisibility(View.GONE);
+
+                startingForm = getCurrentForm();
+                break;
         }
     }
 
@@ -371,6 +381,11 @@ public class EditProduct extends AppCompatActivity {
 
         //printProductOnConsole(p);
 
+        if(p.isConsumed())
+            consumedCheckBox.setChecked(true);
+
+        TextUtils.editFieldNotFromUser(consumptionDateField, DateUtils.getFormattedDate(p.getConsumptionDate()));
+
         TextUtils.setText(p.getName(), nameField);
 
         TextUtils.setText(p.getBrand(), brandField);
@@ -461,32 +476,35 @@ public class EditProduct extends AppCompatActivity {
                 int insertCount = 0; // counter inserimenti
                 Intent resultIntent = new Intent();
 
-                if(action.equals("edit")) { // Se si tratta di una modifica
-                    newProduct.setId(productToModifyId);
-
-                    if(productDatabase.productDao().update(newProduct)>0) {
-                        insertCount = 1;
-                        String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
-                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
-                    }
-                } else if(action.equals("add")){ // Se si tratta di un'aggiunta
-                    List<SingleProduct> productsToAdd = new ArrayList<>();
-                    for(int i=0; i<TextUtils.getInt(quantityField); i++)
-                        productsToAdd.add(newProduct);
-                    insertCount = addProducts(productsToAdd);
-                } else if(action.equals("shopping")) { // Se si tratta della modalità spesa
-                    if(getIntent().getSerializableExtra("productToEdit")!=null){
-                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
-                        resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
-                        resultIntent.putExtra("editedProduct", newProduct);
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
-                    } else {
-                        resultIntent.putExtra("newProduct", newProduct);
-                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
-                    }
+                switch (action) {
+                    case "edit":  // Se si tratta di una modifica
+                        newProduct.setId(productToModifyId);
+                        if (productDatabase.productDao().update(newProduct) > 0) {
+                            insertCount = 1;
+                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                        }
+                        break;
+                    case "add":  // Se si tratta di un'aggiunta
+                        List<SingleProduct> productsToAdd = new ArrayList<>();
+                        for (int i = 0; i < TextUtils.getInt(quantityField); i++)
+                            productsToAdd.add(newProduct);
+                        insertCount = addProducts(productsToAdd);
+                        break;
+                    case "shopping":  // Se si tratta della modalità spesa
+                        if (getIntent().getSerializableExtra("productToEdit") != null) {
+                            resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
+                            resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
+                            resultIntent.putExtra("editedProduct", newProduct);
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                        } else {
+                            resultIntent.putExtra("newProduct", newProduct);
+                            resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                        }
+                        break;
                 }
 
                 if(insertCount>0){
@@ -536,6 +554,11 @@ public class EditProduct extends AppCompatActivity {
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields(){
         SingleProduct p = new SingleProduct();
+
+        if(consumedCheckBox.isChecked()){
+            p.setConsumed(true);
+            p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
+        }
 
         p.setName(nameField.getText().toString());
 
@@ -704,6 +727,16 @@ public class EditProduct extends AppCompatActivity {
             noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox(false));
     }
 
+    private void initializeConsumedCheckBox(boolean addListener){
+        if(consumedCheckBox.isChecked())
+            consumptionDateBlock.setVisibility(View.VISIBLE);
+        else
+            consumptionDateBlock.setVisibility(View.GONE);
+
+        if(addListener)
+            consumedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeConsumedCheckBox(false));
+    }
+
     private void enableNoExpiryCheckBoxBehaviour(boolean enable){
         expiryDateField.setEnabled(!enable);
         findViewById(R.id.expiryDateClearButton).setEnabled(!enable);
@@ -781,7 +814,7 @@ public class EditProduct extends AppCompatActivity {
     public void showSpinnerDatePickerDialog(View v){
         DialogFragment f = new DatePickerFragment();
         Bundle args = new Bundle();
-        args.putInt("id", v.getId());
+        args.putInt("dateFieldId", v.getId());
         args.putBoolean("spinnerMode", true);
         f.setArguments(args);
         f.show(getSupportFragmentManager(), "spinnerDatePicker");
@@ -791,7 +824,7 @@ public class EditProduct extends AppCompatActivity {
     public void showDatePickerDialog(View v) {
         DialogFragment f = new DatePickerFragment();
         Bundle args = new Bundle();
-        args.putInt("id", v.getId());
+        args.putInt("dateFieldId", v.getId());
         args.putBoolean("spinnerMode", false);
         f.setArguments(args);
         f.show(getSupportFragmentManager(), "datePicker");

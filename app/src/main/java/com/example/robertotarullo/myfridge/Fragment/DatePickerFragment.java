@@ -20,7 +20,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int year, month, day;
 
-        dateField = getActivity().findViewById(getArguments().getInt("id"));
+        dateField = getActivity().findViewById(getArguments().getInt("dateFieldId"));
 
         // inizializza giorno, mese ed anno
         if(DateUtils.isDateEmpty(dateField)){
