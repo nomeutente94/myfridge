@@ -43,7 +43,7 @@ public class DateWatcher implements TextWatcher {
             EditText purchaseDateField = context.findViewById(R.id.purchaseDateField);
             EditText openingDateField = context.findViewById(R.id.openingDateField);
             EditText packagingDateField = context.findViewById(R.id.packagingDateField);
-            EditText consumingDateField = null; // TODO = activity.findViewById(R.id.consumingDateField);
+            EditText consumingDateField = context.findViewById(R.id.consumptionDateField);
 
             Date expiryDate = TextUtils.getDate(expiryDateField);
             Date purchaseDate = TextUtils.getDate(purchaseDateField);
@@ -54,44 +54,66 @@ public class DateWatcher implements TextWatcher {
             String msg = null;
 
             if(dateField==consumingDateField){
-
-                if(expiryDate!=null && (consumingDate.after(expiryDate) || consumingDate.equals(expiryDate)))                   // consumingDate >= expiryDate
-                    msg = "La data di consumazione selezionata è:\n- uguale o successiva alla data di scadenza\n\nContinuare comunque?";
-
+                if(expiryDate!=null){                                                                       // consumingDate >= expiryDate
+                    if(consumingDate.after(expiryDate))
+                        msg = "La data di consumazione selezionata è:\n- successiva alla data di scadenza";
+                    else if(consumingDate.equals(expiryDate))
+                        msg = "La data di consumazione selezionata è:\n- uguale alla data di scadenza";
+                }
             } else if(dateField==expiryDateField){
+                String defaultMsg = "La data di scadenza selezionata è:";
 
-                msg = "La data di scadenza selezionata è:";
-                if(expiryDate.equals(packagingDate))                                                                            // expiryDate == packagingDate
+                msg = defaultMsg;
+                if(expiryDate.equals(packagingDate))                                                        // expiryDate == packagingDate
                     msg += "\n- uguale alla data di produzione/lotto";
-                if(expiryDate.before(DateUtils.getCurrentDate()) || expiryDate.equals(DateUtils.getCurrentDate()))              // expiryDate <= now
-                    msg += "\n- uguale o precedente alla data ordierna";
-                if(consumingDate!=null && (expiryDate.before(consumingDate) || expiryDate.equals(consumingDate)))               // expiryDate <= consumingDate
-                    msg += "\n- uguale o precedente alla data di consumazione";
-                if(openingDate!=null && (expiryDate.before(openingDate) || expiryDate.equals(openingDate)))                     // expiryDate <= openingDate
-                    msg += "\n- uguale o precedente alla data di apertura";
-                if(purchaseDate!=null && (expiryDate.before(purchaseDate) || expiryDate.equals(purchaseDate)))                  // expiryDate <= purchaseDate
-                    msg += "\n- uguale o precedente alla data di acquisto";
-                msg += "\n\nContinuare comunque?";
+                if(expiryDate.equals(DateUtils.getCurrentDate()))                                           // expiryDate <= now
+                    msg += "\n- uguale alla data ordierna";
+                else if(expiryDate.before(DateUtils.getCurrentDate()))
+                    msg += "\n- precedente alla data ordierna";
+                if(consumingDate!=null){                                                                    // expiryDate <= consumingDate
+                    if(expiryDate.before(consumingDate))
+                        msg += "\n- precedente alla data di consumazione";
+                    else if(expiryDate.equals(consumingDate))
+                        msg += "\n- uguale alla data di consumazione";
+                }
+                if(openingDate!=null){                                                                      // expiryDate <= openingDate
+                    if(expiryDate.before(openingDate))
+                        msg += "\n- precedente alla data di apertura";
+                    else if(expiryDate.equals(openingDate))
+                        msg += "\n- uguale alla data di apertura";
+                }
+                if(purchaseDate!=null) {                                                                    // expiryDate <= purchaseDate
+                    if (expiryDate.before(purchaseDate))
+                        msg += "\n- precedente alla data di acquisto";
+                    else if (expiryDate.equals(purchaseDate))
+                        msg += "\n- uguale alla data di acquisto";
+                }
+                if(msg.equals(defaultMsg))
+                    msg = null;
 
             } else if(dateField==packagingDateField){
-
-                if(packagingDate.equals(expiryDate))                                                                            // packagingDate == expiryDate
-                    msg = "La data di produzione/lotto selezionata è:\n- uguale alla data di scadenza\n\nContinuare comunque?";
-
-            } else if(dateField==openingDateField){
-
-                if(expiryDate!=null && (openingDate.after(expiryDate) || openingDate.equals(expiryDate)))                       // openingDate >= expiryDate
-                    msg = "La data di apertura selezionata è:\n- uguale o successiva alla data di scadenza\n\ncontinuare comunque?";
-
-            } else if(dateField==purchaseDateField){
-
-                if(expiryDate!=null && (purchaseDate.after(expiryDate) || purchaseDate.equals(expiryDate)))                     // purchaseDate >= expiryDate
-                    msg = "La data di acquisto selezionata è:\n- uguale o successiva alla data di scadenza\n\ncontinuare comunque?";
-
+                if(packagingDate.equals(expiryDate))                                                        // packagingDate == expiryDate
+                    msg = "La data di produzione/lotto selezionata è:\n- uguale alla data di scadenza";
+            } else if(dateField==openingDateField){                                                         // openingDate >= expiryDate
+                if(expiryDate!=null){
+                    if(openingDate.after(expiryDate))
+                        msg = "La data di apertura selezionata è:\n- successiva alla data di scadenza";
+                    else if(openingDate.equals(expiryDate))
+                        msg = "La data di apertura selezionata è:\n- uguale alla data di scadenza";
+                }
+            } else if(dateField==purchaseDateField){                                                        // purchaseDate >= expiryDate
+                if(expiryDate!=null){
+                    if(purchaseDate.after(expiryDate))
+                        msg = "La data di acquisto selezionata è:\n- successiva alla data di scadenza";
+                    else if(purchaseDate.equals(expiryDate))
+                        msg = "La data di acquisto selezionata è:\n- uguale alla data di scadenza";
+                }
             }
 
-            if(msg!=null)
+            if(msg!=null) {
+                msg += "\n\nContinuare comunque?";
                 showDateWarning(previousDate, dateField, msg, context);
+            }
         }
     }
 
@@ -107,7 +129,6 @@ public class DateWatcher implements TextWatcher {
                     break;
             }
         };
-
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message)
                 .setTitle("Attenzione")
