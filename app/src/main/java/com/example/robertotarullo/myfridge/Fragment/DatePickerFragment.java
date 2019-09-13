@@ -24,6 +24,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         // inizializza giorno, mese ed anno
         if(DateUtils.isDateEmpty(dateField)){
+            // TODO controllare se la data è legale altrimenti scegli la più vicina (??)
             Calendar c = Calendar.getInstance();
             month = c.get(Calendar.MONTH);
             year = c.get(Calendar.YEAR);

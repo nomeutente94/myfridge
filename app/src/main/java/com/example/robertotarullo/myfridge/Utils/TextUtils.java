@@ -187,9 +187,6 @@ public abstract class TextUtils {
     }
 
     public static boolean isDateFieldValidable(EditText dateField){
-        if(!DateUtils.isDateEmpty(dateField) && dateField.getTag(R.id.warningEdit)==null)
-            return true;
-        else
-            return false;
+        return !DateUtils.isDateEmpty(dateField) && dateField.getTag(R.id.warningEdit) == null;
     }
 }

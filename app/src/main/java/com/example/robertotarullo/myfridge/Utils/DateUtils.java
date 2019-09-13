@@ -2,6 +2,8 @@ package com.example.robertotarullo.myfridge.Utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -11,11 +13,8 @@ import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
 
-import org.w3c.dom.Text;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -45,6 +44,8 @@ public abstract class DateUtils {
     public static final int MAX_DAY = 31;
     public static final int MAX_MONTH = 12;
     public static final int MAX_YEAR = 2099;
+
+    public static final String EXPIRY_SWITCH_CONTROL_TAG = "expirySwitchControlTag";
 
     public static Date getActualExpiryDate(Product p){
         if(p!=null){
@@ -105,10 +106,7 @@ public abstract class DateUtils {
         Date convertedDate = getDate(day, month, year); // Leggi data
 
         // Controlla se la data letta corrisponde a quella inserita
-        if(dateAsString.equals(dateFormat.format(convertedDate)))
-            return true;
-
-        return false;
+        return dateAsString.equals(dateFormat.format(convertedDate));
     }
 
     public static Date getExpiryDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
@@ -141,10 +139,6 @@ public abstract class DateUtils {
 
     public static Date getNoExpiryDate(){
         return getDate("01", "01", "1970");
-    }
-
-    public static Date getCurrentDate(){
-        return new Date();
     }
 
     public static Date getCurrentDateWithoutTime(){
@@ -196,7 +190,7 @@ public abstract class DateUtils {
                 return "29";
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // TODO Permettere di settare il formato della data
-            String date = 01 + "/" + month + "/" + year;
+            String date = "01/" + month + "/" + year;
 
             Calendar calendar = new GregorianCalendar();
 
@@ -359,10 +353,7 @@ public abstract class DateUtils {
     }
 
     public static boolean isDateEmpty(TextView dateField){
-        if(dateField.getText().length()==0)
-            return true;
-        else
-            return false;
+        return dateField.getText().length() == 0;
     }
 
     public static Calendar getDate(TextView dateField){
@@ -420,39 +411,48 @@ public abstract class DateUtils {
 
     }*/
 
-    private static Date getAllowedDate(boolean max, EditText dateField, Activity activity){
-        EditText expiryDateField = activity.findViewById(R.id.expiryDateField);
-        EditText purchaseDateField = activity.findViewById(R.id.purchaseDateField);
-        EditText openingDateField = activity.findViewById(R.id.openingDateField);
-        EditText packagingDateField = activity.findViewById(R.id.packagingDateField);
-        EditText consumingDateField = activity.findViewById(R.id.consumptionDateField);
+    private static Date getAllowedDate(boolean max, EditText dateField, Activity context){
+        EditText expiryDateField = context.findViewById(R.id.expiryDateField);
+        EditText purchaseDateField = context.findViewById(R.id.purchaseDateField);
+        EditText openingDateField = context.findViewById(R.id.openingDateField);
+        EditText packagingDateField = context.findViewById(R.id.packagingDateField);
+        EditText consumingDateField = context.findViewById(R.id.consumptionDateField);
 
-        Date expiryDate = TextUtils.getDate(expiryDateField);
+        Date expiryDate;
         Date purchaseDate = TextUtils.getDate(purchaseDateField);
         Date openingDate = TextUtils.getDate(openingDateField);
         Date packagingDate = TextUtils.getDate(packagingDateField);
         Date consumingDate = TextUtils.getDate(consumingDateField);
 
+        // TODO codice ripetuto in DateWatcher
+        if(context.findViewById(R.id.expiryDateBlock).getVisibility() == View.VISIBLE && !((CheckBox)context.findViewById(R.id.packagedCheckBox)).isChecked()) { // se prodotto fresco con data di scadenza visibile
+            //isExpiryDateBlockHidden = false;
+            expiryDate = TextUtils.getDate(expiryDateField);
+        } else {
+            //isExpiryDateBlockHidden = true;
+            expiryDate = DateUtils.getDateByAddingDays(packagingDate, TextUtils.getInt((EditText) context.findViewById(R.id.expiryDaysAfterOpeningField)));
+        }
+
         if(max){
             Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH, MAX_DAY));
 
             if(dateField==consumingDateField){
-                maxDate = getMin(getCurrentDate(), maxDate);    // consumingDate <= now
+                maxDate = getMin(getCurrentDateWithoutTime(), maxDate);    // consumingDate <= now
             } else if(dateField==expiryDateField){
                 // nessun vincolo
             } else if(dateField==packagingDateField){
-                maxDate = getMin(consumingDate, maxDate);       // packagingDate <= consumingDate
-                maxDate = getMin(expiryDate, maxDate);          // packagingDate <= expiryDate
-                maxDate = getMin(openingDate, maxDate);         // packagingDate <= openingDate
-                maxDate = getMin(getCurrentDate(), maxDate);    // packagingDate <= now
-                maxDate = getMin(purchaseDate, maxDate);        // packagingDate <= purchaseDate
+                maxDate = getMin(consumingDate, maxDate);                   // packagingDate <= consumingDate
+                maxDate = getMin(expiryDate, maxDate);                      // packagingDate <= expiryDate
+                maxDate = getMin(openingDate, maxDate);                     // packagingDate <= openingDate
+                maxDate = getMin(getCurrentDateWithoutTime(), maxDate);     // packagingDate <= now
+                maxDate = getMin(purchaseDate, maxDate);                    // packagingDate <= purchaseDate
             } else if(dateField==openingDateField){
-                maxDate = getMin(consumingDate, maxDate);       // openingDate <= consumingDate
-                maxDate = getMin(getCurrentDate(), maxDate);    // openingDate <= now
+                maxDate = getMin(consumingDate, maxDate);                   // openingDate <= consumingDate
+                maxDate = getMin(getCurrentDateWithoutTime(), maxDate);     // openingDate <= now
             } else if(dateField==purchaseDateField){
-                maxDate = getMin(consumingDate, maxDate);       // purchaseDate <= consumingDate
-                maxDate = getMin(openingDate, maxDate);         // purchaseDate <= openingDate
-                maxDate = getMin(getCurrentDate(), maxDate);    // purchaseDate <= now
+                maxDate = getMin(consumingDate, maxDate);                   // purchaseDate <= consumingDate
+                maxDate = getMin(openingDate, maxDate);                     // purchaseDate <= openingDate
+                maxDate = getMin(getCurrentDateWithoutTime(), maxDate);     // purchaseDate <= now
             }
 
             return maxDate;

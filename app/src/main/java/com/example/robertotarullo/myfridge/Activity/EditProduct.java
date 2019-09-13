@@ -199,6 +199,7 @@ public class EditProduct extends AppCompatActivity {
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
         packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
+        //expiryDaysAfterOpeningField.addTextChangedListener(new DateWatcher(expiryDaysAfterOpeningField, this)); // TODO implementare controlli date alla perdita del blur del campo expiryDays
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
         piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
@@ -215,6 +216,7 @@ public class EditProduct extends AppCompatActivity {
         weightField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onWeightFocusLost(); });
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
+        expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
 
         switch (action) {
             case "add":
@@ -777,8 +779,6 @@ public class EditProduct extends AppCompatActivity {
         }).start();
     }
 
-
-
     private void onWeightFocusLost() {
         if(currentWeightField.getText().length() > 0 && weightField.getText().length() > 0) {
             if(TextUtils.getFloat(currentWeightField) > TextUtils.getFloat(weightField)) { // se currentWeight > weight, currentWeight = weight
@@ -846,7 +846,7 @@ public class EditProduct extends AppCompatActivity {
     }
 
     // Sposta il focus su una determinata view
-    private final void setFocusAndScrollToView(final View view){
+    private void setFocusAndScrollToView(final View view){
         listScrollView.post(() -> {
             listScrollView.scrollTo(0, view.getTop());
             view.requestFocus();
@@ -858,17 +858,27 @@ public class EditProduct extends AppCompatActivity {
             expiryDateMode = true;
         else if(view==changeToExpiryDaysButton)
             expiryDateMode = false;
-
         changeToExpiringDateMode(expiryDateBlock.getVisibility()==View.GONE && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE);
+        validateExpiryDate();
     }
 
     private void changeToExpiringDateMode(boolean expiringDateMode){
+        View expiryDaysAfterOpeningBlock = findViewById(R.id.expiryDaysAfterOpeningBlock);
+
         if(expiringDateMode) {
             expiryDateBlock.setVisibility(View.VISIBLE);
-            findViewById(R.id.expiryDaysAfterOpeningBlock).setVisibility(View.GONE);
+            expiryDaysAfterOpeningBlock.setVisibility(View.GONE);
         } else {
             expiryDateBlock.setVisibility(View.GONE);
-            findViewById(R.id.expiryDaysAfterOpeningBlock).setVisibility(View.VISIBLE);
+            expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
         }
+    }
+
+    // Trigger manuale dell'onchange per mostrare eventuali warning sulla scadenza
+    // Considera sia expiryDays che expiryDate
+    private void validateExpiryDate(){
+        String temp = expiryDateField.getText().toString();
+        expiryDateField.setTag(R.id.expirySwitchControl, DateUtils.EXPIRY_SWITCH_CONTROL_TAG);
+        expiryDateField.setText(temp); // TODO controllare date illegali calcolate con expiryDays
     }
 }
