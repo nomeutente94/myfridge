@@ -24,6 +24,7 @@ import java.util.List;
 
 // !!!!!!!!!!!!!!!!!!! DEPRECATO E BUGGATO !!!!!!!!!!!!!!!!!!!
 // !!!!!! SI USA DATEPICKERFRAGMENT IN MODALITÀ SPINNER !!!!!!
+// TODO continuare sviluppo e utilizzare questo
 
 public class SpinnerDatePickerFragment extends DialogFragment{
 

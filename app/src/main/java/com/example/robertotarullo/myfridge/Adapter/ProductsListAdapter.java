@@ -3,14 +3,15 @@ package com.example.robertotarullo.myfridge.Adapter;
 import java.util.Date;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -27,13 +28,15 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     private Product p;
     private TextView quantityTextView, nameTextView, dataTextView, typeTextView;
     private LinearLayout consumptionBar, nonConsumptionBar;
-    private Button deleteButton;
     private Boolean showConsumed;
+    private Context context;
+    private View optionsButton;
 
     public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
         this.showConsumed = showConsumed;
+        this.context = context;
     }
 
     @Override
@@ -51,14 +54,16 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         nonConsumptionBar = v.findViewById(R.id.elem_lista_non_consumption);
         dataTextView = v.findViewById(R.id.elem_lista_data);
         typeTextView = v.findViewById(R.id.elem_lista_tipo);
-        deleteButton = v.findViewById(R.id.deleteButton);
+
+        optionsButton = v.findViewById(R.id.imagePopup);
+        //consumeItem = ((Activity) context).findViewById(R.id.consumeItem);
 
         setName();
         setType();
         setConsumption();
         setDate();
 
-        deleteButton.setTag(position);
+        optionsButton.setTag(position);
 
         return v;
     }
@@ -72,21 +77,20 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
     private void setType(){
         if(p instanceof SingleProduct) {
-            deleteButton.setVisibility(View.VISIBLE);
+            optionsButton.setVisibility(View.VISIBLE);
 
             if(p.isPackaged())
                 typeTextView.setText("Prodotto confezionato");
             else
                 typeTextView.setText("Prodotto fresco");
         } else {
-            deleteButton.setVisibility(View.INVISIBLE);
+            optionsButton.setVisibility(View.INVISIBLE);
             typeTextView.setText(((Pack) p).getSize(showConsumed) + " prodotti");
 
-            if(p.isPackaged()) {
+            if(p.isPackaged())
                 typeTextView.setText(typeTextView.getText() + " confezionati");
-            } else {
+            else
                 typeTextView.setText(typeTextView.getText() + " freschi");
-            }
         }
     }
 
@@ -95,22 +99,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             consumptionBar.setVisibility(View.VISIBLE);
             nonConsumptionBar.setVisibility(View.VISIBLE);
 
-            int consumedQuantity;
-            if(p.isConsumed()) {
-                consumedQuantity = 100;
-                deleteButton.setEnabled(false);
-            } else {
-                consumedQuantity = 100 - ((SingleProduct)p).getPercentageQuantity();
-                deleteButton.setEnabled(true);
-            }
+            int consumedQuantity = 100;
+            if(!p.isConsumed())
+                consumedQuantity -= ((SingleProduct)p).getPercentageQuantity();
 
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    0,
-                    (consumedQuantity)
-            );
+            consumptionBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,0, consumedQuantity));
 
-            consumptionBar.setLayoutParams(param);
             if(((SingleProduct)p).getPercentageQuantity() > HALF_CONSUMPTION)
                 nonConsumptionBar.setBackgroundColor(Color.parseColor(GREEN_BAR));
             else if(((SingleProduct)p).getPercentageQuantity() > LOW_CONSUMPTION)
