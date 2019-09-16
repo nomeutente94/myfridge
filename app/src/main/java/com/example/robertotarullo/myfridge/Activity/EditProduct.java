@@ -228,6 +228,9 @@ public class EditProduct extends AppCompatActivity {
                 productToModifyId = getIntent().getLongExtra("id", 0);
                 confirmButton.setText("Salva");
 
+                // Nascondi i campi precompilati
+                quantityBlock.setVisibility(View.GONE);
+
                 new Thread(() -> {
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
                     runOnUiThread(() -> {
@@ -482,7 +485,7 @@ public class EditProduct extends AppCompatActivity {
                         newProduct.setId(productToModifyId);
                         if (productDatabase.productDao().update(newProduct) > 0) {
                             insertCount = 1;
-                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (TextUtils.getInt(quantityField) - insertCount);
+                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (1 - insertCount);
                             runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                         }
                         break;
