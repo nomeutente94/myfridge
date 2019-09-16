@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">MyFridge Test</string>
-    <item name="expirySwitchControl" type="id" />
+    <string name="app_name">MyFridge</string>
     <item name="warningEdit" type="id" />
     <item name="percentageValue" type="id" />
 </resources>
