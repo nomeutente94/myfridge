@@ -3,7 +3,7 @@
     <item
         android:id="@+id/consumeItem"
         android:onClick="consumeProduct"
-        android:title="Segna come consumato"/>
+        android:title="Consuma"/>
 <!--    android:title="Segna come non consumato"/> -->
     <item
         android:id="@+id/unconsumeItem"
@@ -11,16 +11,19 @@
         android:visible="false"
         android:title="Segna come non consumato"/>
     <item
+        android:visible="false"
         android:id="@+id/updateStateItem"
-        android:title="Aggiorna stato (inactive)"/>
+        android:title="Aggiorna"/>
     <item
         android:id="@+id/editItem"
         android:onClick="editProduct"
         android:title="Modifica"/>
     <item
-        android:id="@+id/deleteItem"
-        android:title="Elimina definitivamente (inactive)"/>
-    <item
         android:id="@+id/cloneItem"
-        android:title="Crea una copia (inactive)"/>
+        android:onClick="cloneProduct"
+        android:title="Duplica"/>
+    <item
+        android:id="@+id/deleteItem"
+        android:onClick="deleteProduct"
+        android:title="Elimina"/>
 </menu>

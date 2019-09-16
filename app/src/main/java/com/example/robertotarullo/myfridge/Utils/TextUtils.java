@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.robertotarullo.myfridge.Activity.EditProduct;
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.R;
 
@@ -115,9 +116,9 @@ public abstract class TextUtils {
         int value = TextUtils.getInt(field);
         int newValue = -1;
 
-        if(button.getTag().toString().equals("add") && value<max)
+        if(button.getTag().toString().equals("add") && value < max)
             newValue = value + 1;
-        else if(button.getTag().toString().equals("subtract") && value>min)
+        else if(button.getTag().toString().equals("subtract") && value > min)
             newValue = value - 1;
 
         if(newValue!=-1)

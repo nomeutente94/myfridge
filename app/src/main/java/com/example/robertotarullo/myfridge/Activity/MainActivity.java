@@ -18,6 +18,7 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +35,7 @@ import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
+import com.example.robertotarullo.myfridge.Watcher.QuantityWatcher;
 
 import static com.example.robertotarullo.myfridge.Database.DatabaseUtils.DATABASE_NAME;
 
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     private ProductsListAdapter productsListAdapter;
     private TextView noProductsWarning;
 
+    // Position dell'elemento su cui si è aperto l'utlimo popupmenu
     private int currentPopupPosition;
 
     @Override
@@ -240,14 +243,14 @@ public class MainActivity extends AppCompatActivity {
 
         String msg;
         if (p instanceof Pack)
-            msg = "Vuoi consumare tutti i prodotti di tipo \"" + p.getName() + "\"?";
+            msg = "Vuoi segnare come consumati tutti i prodotti di tipo \"" + p.getName() + "\"?";
         else
-            msg = "Vuoi consumare il prodotto \"" + p.getName() + "\"?";
+            msg = "Vuoi segnare come consumato il prodotto \"" + p.getName() + "\"?";
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
                 .setTitle("Conferma consumazione")
-                .setPositiveButton("Consuma", dialogClickListener)
+                .setPositiveButton("Conferma", dialogClickListener)
                 .setNegativeButton("Annulla", dialogClickListener)
                 .show();
     }
@@ -299,27 +302,106 @@ public class MainActivity extends AppCompatActivity {
 
         String msg;
         if (p instanceof Pack)
-            msg = "Vuoi settare come consumati tutti i prodotti di tipo \"" + p.getName() + "\"?";
+            msg = "Vuoi settare come non consumati tutti i prodotti di tipo \"" + p.getName() + "\"?";
         else
             msg = "Vuoi settare come non consumato il prodotto \"" + p.getName() + "\"?";
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
-                .setTitle("Conferma consumazione")
-                .setPositiveButton("Consuma", dialogClickListener)
+                .setTitle("Conferma ripristino consumazione")
+                .setPositiveButton("Conferma", dialogClickListener)
                 .setNegativeButton("Annulla", dialogClickListener)
                 .show();
+    }
+
+    // TODO parametrizzare e mettere a fattor comune con onOptionsItemSelected case R.id.delete dell'activity EditProduct
+    public void deleteProduct(MenuItem item) {
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    new Thread(() -> {
+                        if (productDatabase.productDao().delete((SingleProduct)productsListAdapter.getItem(currentPopupPosition)) > 0) {
+                            Intent resultIntent = new Intent();
+                            resultIntent.putExtra("delete", true);
+                            setResult(RESULT_OK, resultIntent);
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
+                            retrieveProductsFromDB(null); // aggiorna lista
+                        }
+                    }).start();
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    break;
+            }
+        };
+
+        String msg = "Vuoi eliminare definitivamente il prodotto?";
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(msg)
+                .setTitle("Conferma eliminazione")
+                .setPositiveButton("Elimina", dialogClickListener)
+                .setNegativeButton("Annulla", dialogClickListener)
+                .show();
+    }
+
+    // TODO codice uguale a onConfirmButtonClick case "add"
+    public void cloneProduct(MenuItem item) {
+
+        View cloneDialogView = getLayoutInflater().inflate(R.layout.clone_dialog, null);
+        TextView clonesField = cloneDialogView.findViewById(R.id.quantityField);
+        clonesField.addTextChangedListener(new QuantityWatcher(cloneDialogView.findViewById(R.id.quantityAddButton), cloneDialogView.findViewById(R.id.quantitySubtractButton)));
+
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    List<SingleProduct> productsToClone = new ArrayList<>();
+                    int numberOfClones = TextUtils.getInt(clonesField);
+                    for (int i = 0; i < numberOfClones; i++){
+                        SingleProduct clonedProduct = (SingleProduct)productsListAdapter.getItem(currentPopupPosition);
+                        clonedProduct.setId(0);
+                        productsToClone.add(clonedProduct);
+                    }
+                    new Thread(() -> {
+                        int nonAddedProductsCount = Collections.frequency(productDatabase.productDao().insertAll(productsToClone), -1);
+                        int insertCount = productsToClone.size() - nonAddedProductsCount;
+
+                        String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + nonAddedProductsCount;
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                        retrieveProductsFromDB(null); // aggiorna lista
+                    }).start();
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    break;
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(cloneDialogView)
+               .setTitle("Inserisci quantità di duplicati")
+               .setPositiveButton("Conferma", dialogClickListener)
+               .setNegativeButton("Annulla", dialogClickListener)
+               .show();
+    }
+
+    // Modifica la quantità dei duplicati tramite i relativi pulsanti
+    public void editQuantity(View view) {
+        boolean found = false;
+        for(int i=0; i<((ViewGroup)view.getParent()).getChildCount() && !found; ++i) {
+            View child = ((ViewGroup)view.getParent()).getChildAt(i);
+            if(child.getId()==R.id.quantityField && child instanceof TextView){
+                found = true;
+                TextUtils.editQuantityByButtons((Button)view, (TextView)child, EditProduct.MIN_QUANTITY, EditProduct.MAX_QUANTITY);
+            }
+        }
     }
 
     // Setta il comportamento al variare del testo contenuto nella search bar
     public class SearchBarWatcher implements TextWatcher {
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
         @Override
         public void afterTextChanged(Editable s) {
@@ -470,51 +552,6 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
         updateNoProductsWarning();
     }
-
-    /*public void exportDB(View view) {
-        new AlertDialog.Builder(this)
-            .setTitle("Esporta Database")
-            .setMessage("Ogni database precedentemente esportato verrà sostituito, continuare comunque? Il database verrà esportato nella directory principale del dispositivo")
-            .setPositiveButton("Esporta", (dialog, whichButton) -> {
-                File externalStorageDirectory = Environment.getExternalStorageDirectory();
-                File dataDirectory = Environment.getDataDirectory();
-
-                FileChannel source = null;
-                FileChannel destination = null;
-
-
-                String currentDBPath = "/user/0/com.example.robertotarullo.myfridge/databases/products_db";
-                String backupDBPath = "myFridgeDB.sqlite";
-                File currentDB = new File(dataDirectory, currentDBPath);
-                File backupDB = new File(externalStorageDirectory, backupDBPath);
-
-                try {
-                    source = new FileInputStream(currentDB).getChannel();
-                    destination = new FileOutputStream(backupDB).getChannel();
-                    destination.transferFrom(source, 0, source.size());
-                    Toast.makeText(getApplicationContext(), "Database esportato", Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    Toast.makeText(getApplicationContext(), "Errore durante l'esportazione", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (source != null) source.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        if (destination != null) destination.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            })
-            .setNegativeButton("Annulla", new DialogInterface.OnClickListener(){
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    // non fare niente
-                }
-            }).show();
-    }*/
 
     // Avvia l'activity EditProduct per l'aggiunta
     public void addProduct(View view) {

@@ -199,10 +199,9 @@ public class EditProduct extends AppCompatActivity {
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
         packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
-        //expiryDaysAfterOpeningField.addTextChangedListener(new DateWatcher(expiryDaysAfterOpeningField, this)); // TODO implementare controlli date alla perdita del blur del campo expiryDays
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
-        quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton, MIN_QUANTITY, MAX_QUANTITY));
-        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, MIN_PIECES, MAX_PIECES, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
+        quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton));
+        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
         currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters

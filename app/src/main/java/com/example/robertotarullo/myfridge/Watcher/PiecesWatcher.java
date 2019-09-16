@@ -2,28 +2,24 @@ package com.example.robertotarullo.myfridge.Watcher;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.robertotarullo.myfridge.Activity.EditProduct;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 
 public class PiecesWatcher implements TextWatcher {
     private Button addButton, subtractButton;
-    private int min, max;
     private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
     private EditText weightField, currentWeightField;
 
-    public PiecesWatcher(Button addButton, Button subtractButton, int min, int max, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField){
+    public PiecesWatcher(Button addButton, Button subtractButton, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField){
        this.addButton = addButton;
        this.subtractButton = subtractButton;
-       this.min = min;
-       this.max = max;
        this.currentWeightSlider = currentWeightSlider;
        this.currentPiecesField = currentPiecesField;
        this.weightField = weightField;
@@ -38,7 +34,7 @@ public class PiecesWatcher implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-        TextUtils.updateQuantityButtonsView(addButton, subtractButton, s, min, max);
+        TextUtils.updateQuantityButtonsView(addButton, subtractButton, s, EditProduct.MIN_PIECES, EditProduct.MAX_PIECES);
         int pieces = TextUtils.getInt(s);
 
         if(pieces>1){
@@ -77,5 +73,4 @@ public class PiecesWatcher implements TextWatcher {
             }
         }
     }
-
 }
