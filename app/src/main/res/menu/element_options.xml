@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:onClick="updateProduct"
+        android:id="@+id/updateStateItem"
+        android:title="Aggiorna"/>
+    <item
         android:id="@+id/consumeItem"
         android:onClick="consumeProduct"
         android:title="Consuma"/>
@@ -9,11 +13,7 @@
         android:id="@+id/unconsumeItem"
         android:onClick="unconsumeProduct"
         android:visible="false"
-        android:title="Segna come non consumato"/>
-    <item
-        android:visible="false"
-        android:id="@+id/updateStateItem"
-        android:title="Aggiorna"/>
+        android:title="Annulla consumazione"/>
     <item
         android:id="@+id/editItem"
         android:onClick="editProduct"

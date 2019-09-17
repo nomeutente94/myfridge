@@ -19,11 +19,12 @@
             android:orientation="vertical">
 
             <LinearLayout
+                android:background="@android:drawable/dialog_holo_light_frame"
                 android:id="@+id/consumedCheckBoxBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp">
 
                 <TextView
                     android:id="@+id/consumedCheckBoxLabel"
@@ -35,54 +36,55 @@
                     android:id="@+id/consumedCheckBox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/consumptionDateBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/consumptionDateFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data di consumazione" />
 
                 <LinearLayout
+                    android:id="@+id/consumptionDateBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
 
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/consumptionDateField"
-                        android:layout_width="280dp"
+                    <TextView
+                        android:id="@+id/consumptionDateFieldLabel"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showDatePickerDialog"
-                        android:tag="purchaseDate" />
+                        android:text="Data di consumazione" />
 
-                    <Button
-                        android:id="@+id/consumptionDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="purchaseDate"
-                        android:text="X" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/consumptionDateField"
+                            android:layout_width="280dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:hint="Data non impostata"
+                            android:onClick="showDatePickerDialog"
+                            android:tag="purchaseDate" />
+
+                        <Button
+                            android:id="@+id/consumptionDateClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="purchaseDate"
+                            android:text="X" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            <LinearLayout
+                android:background="@android:drawable/dialog_holo_light_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:id="@id/quantityBlock"
-                android:padding="11dp">
+                android:padding="25dp">
 
                 <TextView
                     android:id="@+id/QuantityFieldLabel"
@@ -96,13 +98,15 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/nameBlock"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/nameFieldsBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp">
 
                 <LinearLayout
+                    android:id="@+id/nameBlock"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -139,292 +143,184 @@
                     </LinearLayout>
 
                 </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/brandBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/brandFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Marca" />
 
                 <LinearLayout
+                    android:id="@+id/brandBlock"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:paddingTop="11dp"
+                    android:orientation="vertical">
 
-                    <AutoCompleteTextView
-                        android:id="@+id/brandField"
+                    <TextView
+                        android:id="@+id/brandFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Marca" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Marca"
-                        android:inputType="textCapWords" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/brandClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="brand"
-                        android:text="X" />
+                        <AutoCompleteTextView
+                            android:id="@+id/brandField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Marca"
+                            android:inputType="textCapWords" />
+
+                        <Button
+                            android:id="@+id/brandClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="brand"
+                            android:text="X" />
+                    </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/packagedCheckBoxBlock"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/priceWeightBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/packagedCheckBoxLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="E' un prodotto confezionato?" />
-
-                <CheckBox
-                    android:id="@+id/packagedCheckBox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:id="@+id/priceBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/priceFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Prezzo (€)" />
+                android:padding="25dp">
 
                 <LinearLayout
+                    android:id="@+id/priceBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/priceField"
+                    <TextView
+                        android:id="@+id/priceFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Prezzo (€)" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:digits="0123456789,"
-                        android:hint="0,00"
-                        android:imeOptions="actionNext"
-                        android:inputType="numberDecimal"
-                        android:tag="priceField" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/priceClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="price"
-                        android:text="X" />
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/priceField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:digits="0123456789,"
+                            android:hint="0,00"
+                            android:imeOptions="actionNext"
+                            android:inputType="numberDecimal"
+                            android:tag="priceField" />
+
+                        <Button
+                            android:id="@+id/priceClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="price"
+                            android:text="X" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/pricePerKiloBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/pricePerKiloFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Prezzo/kg" />
-
                 <LinearLayout
+                    android:id="@+id/pricePerKiloBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
 
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/pricePerKiloField"
+                    <TextView
+                        android:id="@+id/pricePerKiloFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Prezzo/kg" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:digits="0123456789,"
-                        android:hint="0,00"
-                        android:imeOptions="actionNext"
-                        android:inputType="numberDecimal"
-                        android:tag="pricePerKiloField" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/pricePerKiloClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="pricePerKilo"
-                        android:text="X" />
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/pricePerKiloField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:digits="0123456789,"
+                            android:hint="0,00"
+                            android:imeOptions="actionNext"
+                            android:inputType="numberDecimal"
+                            android:tag="pricePerKiloField" />
+
+                        <Button
+                            android:id="@+id/pricePerKiloClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="pricePerKilo"
+                            android:text="X" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/weightBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/weightFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Peso (grammi)" />
-
                 <LinearLayout
+                    android:id="@+id/weightBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
 
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/weightField"
+                    <TextView
+                        android:id="@+id/weightFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Peso (grammi)" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="0"
-                        android:inputType="number"
-                        android:tag="weightField" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/weightClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="weight"
-                        android:text="X" />
-                </LinearLayout>
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/weightField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="0"
+                            android:inputType="number"
+                            android:tag="weightField" />
 
-            </LinearLayout>
+                        <Button
+                            android:id="@+id/weightClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="weight"
+                            android:text="X" />
+                    </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/openedCheckBoxBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/openedCheckBoxLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="É stato aperto?" />
-
-                <CheckBox
-                    android:id="@+id/openedCheckBox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/openingDateBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/openingDateFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data di apertura" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/openingDateField"
-                        android:layout_width="280dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="13dp"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showDatePickerDialog"
-                        android:tag="openingDate" />
-
-                    <Button
-                        android:id="@+id/openingDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="openingDate"
-                        android:text="X" />
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/currentWeightBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/currentWeightFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Peso attuale (grammi)" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/currentWeightField"
-                        android:hint="0"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:enabled="false"
-                        android:layout_weight="1"/>
-                </LinearLayout>
-
-                <SeekBar
-                    android:id="@+id/currentWeightSlider"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:tag="percentage"
-                    android:max="100"
-                    android:min="0"
-                    android:progress="100" />
-            </LinearLayout>
-
-            <LinearLayout
+                android:background="@android:drawable/dialog_holo_light_frame"
                 android:id="@+id/piecesBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp">
 
                 <TextView
                     android:id="@+id/piecesFieldLabel"
@@ -463,258 +359,402 @@
                         android:tag="add"
                         android:text="+" />
 
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/packagedBlock"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="25dp">
+
+                <LinearLayout
+                    android:id="@+id/packagedCheckBoxBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/packagedCheckBoxLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="É un prodotto confezionato?" />
+
+                    <CheckBox
+                        android:id="@+id/packagedCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:background="@android:drawable/dialog_holo_light_frame"
+                    android:id="@+id/openedBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="25dp">
+
                     <LinearLayout
-                        android:layout_marginTop="14dp"
+                        android:id="@+id/openedCheckBoxBlock"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:visibility="gone"
-                        android:id="@+id/currentPiecesBlock">
+                        android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/currentPiecesLabel"
+                            android:id="@+id/openedCheckBoxLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pezzi rimanenti: "
-                            android:layout_marginLeft="15dp"
-                            android:layout_marginRight="15dp"
-                            android:inputType="number" />
+                            android:text="É stato aperto?" />
 
-                        <TextView
-                            android:id="@+id/currentPiecesField"
+                        <CheckBox
+                            android:id="@+id/openedCheckBox"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1"
-                            android:layout_marginLeft="5dp"
-                            android:layout_marginRight="5dp"
-                            android:inputType="number" />
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
+                    <LinearLayout
+                        android:id="@+id/openingDateBlock"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:paddingTop="11dp">
+
+                        <TextView
+                            android:id="@+id/openingDateFieldLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Data di apertura" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                                android:id="@+id/openingDateField"
+                                android:layout_width="280dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="13dp"
+                                android:layout_weight="1"
+                                android:cursorVisible="false"
+                                android:focusable="false"
+                                android:hint="Data non impostata"
+                                android:onClick="showDatePickerDialog"
+                                android:tag="openingDate" />
+
+                            <Button
+                                android:id="@+id/openingDateClearButton"
+                                android:layout_width="50dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0"
+                                android:onClick="clearField"
+                                android:tag="openingDate"
+                                android:text="X" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/packagingDateBlock"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/currentWeightBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp">
 
                 <TextView
-                    android:id="@+id/packagingDateFieldLabel"
+                    android:id="@+id/currentWeightFieldLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Data di produzione/Lotto" />
+                    android:text="Peso attuale (grammi)" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
 
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/packagingDateField"
-                        android:layout_width="280dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showSpinnerDatePickerDialog"
-                        android:tag="packagingDate" />
-
-                    <Button
-                        android:id="@+id/packagingDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="packagingDate"
-                        android:text="X" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/purchaseDateBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/purchaseDateFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data di acquisto" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/purchaseDateField"
-                        android:layout_width="280dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showDatePickerDialog"
-                        android:tag="purchaseDate" />
-
-                    <Button
-                        android:id="@+id/purchaseDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="purchaseDate"
-                        android:text="X" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/expiryDateBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/expiryDateFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data di scadenza" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/expiryDateField"
-                        android:layout_width="280dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:cursorVisible="false"
-                        android:focusable="false"
-                        android:hint="Data non impostata"
-                        android:onClick="showSpinnerDatePickerDialog"
-                        android:tag="expiryDate" />
-                    <CheckBox
-                        android:id="@+id/noExpiryCheckbox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingRight="30px"
-                        android:text="Mai"/>
-                    <Button
-                        android:id="@+id/changeToExpiryDays"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:onClick="changeExpiryMode"
-                        android:text="Cambia" />
-                    <Button
-                        android:id="@+id/expiryDateClearButton"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="expiryDate"
-                        android:text="X" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/expiryDaysAfterOpeningBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
-
-                <TextView
-                    android:id="@+id/expiryDaysAfterOpeningFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Giorni entro cui consumare dopo l'apertura" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
-                        android:id="@+id/expiryDaysAfterOpeningField"
+                    <EditText
+                        android:id="@+id/currentWeightField"
+                        android:hint="0"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="0"
-                        android:inputType="number" />
-                    <Button
-                        android:id="@+id/changeToExpiryDate"
+                        android:enabled="false"
+                        android:layout_weight="1"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/currentPiecesFieldLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pezzi rimanenti" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/currentPiecesField"
+                        android:hint="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:layout_weight="1"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/currentWeightSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:min="0"
+                    android:progress="100"
+                    android:tag="percentage" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/datesBlock"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="25dp">
+
+                <LinearLayout
+                    android:id="@+id/packagingDateBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/packagingDateFieldLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="changeExpiryMode"
-                        android:text="Cambia" />
-                    <Button
-                        android:id="@+id/expiryDaysAfterOpeningClearButton"
-                        android:layout_width="50dp"
+                        android:text="Data di produzione/Lotto" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/packagingDateField"
+                            android:layout_width="280dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:hint="Data non impostata"
+                            android:onClick="showSpinnerDatePickerDialog"
+                            android:tag="packagingDate" />
+
+                        <Button
+                            android:id="@+id/packagingDateClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="packagingDate"
+                            android:text="X" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/purchaseDateBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
+
+                    <TextView
+                        android:id="@+id/purchaseDateFieldLabel"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_weight="0"
-                        android:onClick="clearField"
-                        android:tag="expiryDaysAfterOpening"
-                        android:text="X" />
+                        android:text="Data di acquisto" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/purchaseDateField"
+                            android:layout_width="280dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:hint="Data non impostata"
+                            android:onClick="showDatePickerDialog"
+                            android:tag="purchaseDate" />
+
+                        <Button
+                            android:id="@+id/purchaseDateClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="purchaseDate"
+                            android:text="X" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/expiryDateBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
+
+                    <TextView
+                        android:id="@+id/expiryDateFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Data di scadenza" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/expiryDateField"
+                            android:layout_width="280dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:hint="Data non impostata"
+                            android:onClick="showSpinnerDatePickerDialog"
+                            android:tag="expiryDate" />
+                        <CheckBox
+                            android:id="@+id/noExpiryCheckbox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingRight="30px"
+                            android:text="Mai"/>
+                        <Button
+                            android:id="@+id/changeToExpiryDays"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="changeExpiryMode"
+                            android:text="Cambia" />
+                        <Button
+                            android:id="@+id/expiryDateClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="expiryDate"
+                            android:text="X" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/expiryDaysAfterOpeningBlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
+
+                    <TextView
+                        android:id="@+id/expiryDaysAfterOpeningFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Giorni entro cui consumare dopo l'apertura" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            android:id="@+id/expiryDaysAfterOpeningField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="0"
+                            android:inputType="number" />
+                        <Button
+                            android:id="@+id/changeToExpiryDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="changeExpiryMode"
+                            android:text="Cambia" />
+                        <Button
+                            android:id="@+id/expiryDaysAfterOpeningClearButton"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:layout_weight="0"
+                            android:onClick="clearField"
+                            android:tag="expiryDaysAfterOpening"
+                            android:text="X" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/storageConditionBlock"
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:id="@+id/storageConditionsBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp">
 
-                <TextView
-                    android:id="@+id/storageConditionSpinnerLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Modalità di conservazione" />
-
-                <Spinner
-                    android:id="@+id/storageConditionSpinner"
+                <LinearLayout
+                    android:id="@+id/storageConditionBlock"
                     android:layout_width="match_parent"
-                    android:tag="storageConditionSpinner"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/openedStorageConditionBlock"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="11dp">
+                    <TextView
+                        android:id="@+id/storageConditionSpinnerLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Modalità di conservazione" />
 
-                <TextView
-                    android:id="@+id/openedStorageConditionSpinnerLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Modalità di conservazione dopo l'apertura" />
+                    <Spinner
+                        android:id="@+id/storageConditionSpinner"
+                        android:layout_width="match_parent"
+                        android:tag="storageConditionSpinner"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
 
-                <Spinner
-                    android:id="@+id/openedStorageConditionSpinner"
-                    android:enabled="false"
-                    android:tag="0"
+                <LinearLayout
+                    android:id="@+id/openedStorageConditionBlock"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingTop="11dp">
+
+                    <TextView
+                        android:id="@+id/openedStorageConditionSpinnerLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Modalità di conservazione dopo l'apertura" />
+
+                    <Spinner
+                        android:id="@+id/openedStorageConditionSpinner"
+                        android:enabled="false"
+                        android:tag="0"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/pointOfPurchaseBlock"
+                android:background="@android:drawable/dialog_holo_light_frame"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="11dp">
+                android:padding="25dp"
+                android:layout_marginBottom="11dp">
 
                 <TextView
                     android:id="@+id/pointOfPurchaseSpinnerLabel"

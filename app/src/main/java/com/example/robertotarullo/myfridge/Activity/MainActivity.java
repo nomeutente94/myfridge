@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
                 resetSearchBar();
                 setPackageView((Pack) p);
             } else                                          // Se si è clickato un singleProduct
-                editSingleProduct((SingleProduct)p);
+                updateProduct((SingleProduct)p);
         });
     }
 
@@ -346,7 +346,6 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO codice uguale a onConfirmButtonClick case "add"
     public void cloneProduct(MenuItem item) {
-
         View cloneDialogView = getLayoutInflater().inflate(R.layout.clone_dialog, null);
         TextView clonesField = cloneDialogView.findViewById(R.id.quantityField);
         clonesField.addTextChangedListener(new QuantityWatcher(cloneDialogView.findViewById(R.id.quantityAddButton), cloneDialogView.findViewById(R.id.quantitySubtractButton)));
@@ -465,34 +464,33 @@ public class MainActivity extends AppCompatActivity {
     private List<Pack> getPacks(List<SingleProduct> singleProducts) {
         List<Pack> packs = new ArrayList<>();
 
-        for (int i = 0; i < singleProducts.size(); i++) {                                             // Per ogni prodotto
+        for (int i = 0; i < singleProducts.size(); i++) {                                           // Per ogni prodotto
             if (showConsumedProducts || !singleProducts.get(i).isConsumed()) {
-                Pack p = new Pack();                                                            // Crea un nuovo pack
-                for (int j = 0; j < singleProducts.size(); j++) {                                     // Cerca tra tutti i prodotti
+                Pack p = new Pack();                                                                // Crea un nuovo pack
+                for (int j = 0; j < singleProducts.size(); j++) {                                   // Cerca tra tutti i prodotti
                     if (showConsumedProducts || !singleProducts.get(j).isConsumed()) {
                         if (j != i && singleProducts.get(i).packEquals(singleProducts.get(j))) {    // .. se i due prodotti sono raggruppabili
-                            p.addProduct(singleProducts.get(j));                                // .. sposta il prodotto nel pack
+                            p.addProduct(singleProducts.get(j));                                    // .. sposta il prodotto nel pack
                             singleProducts.remove(j);
                             j--;
                         }
                     }
                 }
-                if (!p.getProducts().isEmpty()) {                                                 // Se è stato raggruppato con almeno un altro prodotto
-                    p.addProduct(singleProducts.get(i));                                        // .. sposta il prodotto nel pack
+                if (!p.getProducts().isEmpty()) {                                                   // Se è stato raggruppato con almeno un altro prodotto
+                    p.addProduct(singleProducts.get(i));                                            // .. sposta il prodotto nel pack
                     singleProducts.remove(i);
                     i--;
-                    packs.add(p);                                                               // .. aggiungi il pack alla lista
+                    packs.add(p);                                                                   // .. aggiungi il pack alla lista
                 }
             }
         }
-
         return packs;
     }
 
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilterView(int storageCondition) {
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
-        setTitle("MyFridge (Test build)"); // Resetta il titolo al ritorno da una packageView
+        setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
@@ -573,6 +571,18 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("id", p.getId());
         intent.putExtra("action", "edit");
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
+    }
+
+    public void updateProduct(SingleProduct p) {
+        Intent intent = new Intent(this, EditProduct.class);
+        intent.putExtra("id", p.getId());
+        intent.putExtra("action", "update");
+        startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
+    }
+
+    public void updateProduct(MenuItem item) {
+        SingleProduct p = (SingleProduct) listView.getItemAtPosition(currentPopupPosition);
+        updateProduct(p);
     }
 
     public void startShoppingMode(View view) {

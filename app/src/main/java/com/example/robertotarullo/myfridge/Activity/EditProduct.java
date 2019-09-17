@@ -30,7 +30,6 @@ import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.Bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.Database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
-import com.example.robertotarullo.myfridge.Watcher.CurrentPiecesWatcher;
 import com.example.robertotarullo.myfridge.Watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.Watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.Watcher.PiecesWatcher;
@@ -79,7 +78,7 @@ public class EditProduct extends AppCompatActivity {
     private boolean expiryDateMode;
 
     // dichiarazione dei blocchi che hanno regole per la visibilità
-    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, currentPiecesBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock, consumedCheckboxBlock, consumptionDateBlock;
+    private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock, consumedCheckboxBlock, consumptionDateBlock, openedBlock;
 
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -154,7 +153,6 @@ public class EditProduct extends AppCompatActivity {
         confirmButton = findViewById(R.id.addButton);
 
         // riferimenti ai blocchi che hanno regole per la visibilità
-        currentPiecesBlock = findViewById(R.id.currentPiecesBlock);
         openingDateBlock = findViewById(R.id.openingDateBlock);
         expiryDateBlock = findViewById(R.id.expiryDateBlock);
         openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);
@@ -166,6 +164,7 @@ public class EditProduct extends AppCompatActivity {
         purchaseDateBlock = findViewById(R.id.purchaseDateBlock);
         consumedCheckboxBlock = findViewById(R.id.consumedCheckBoxBlock);
         consumptionDateBlock = findViewById(R.id.consumptionDateBlock);
+        openedBlock = findViewById(R.id.openedBlock);
 
         // riferimenti ai pulsanti clear di campi coinvolti in relazioni
         priceClearButton = findViewById(R.id.priceClearButton);
@@ -202,7 +201,7 @@ public class EditProduct extends AppCompatActivity {
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton));
         piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
-        currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
+        // currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters
         expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});
@@ -219,14 +218,12 @@ public class EditProduct extends AppCompatActivity {
 
         switch (action) {
             case "add":
-                setTitle("Aggiungi prodotto");
-                confirmButton.setText("Aggiungi");
-                startingForm = getCurrentForm();
+                initializeFormLabels("Aggiungi prodotto", "Aggiungi");
+                setCurrentFormToInitial();
                 break;
             case "edit":
-                setTitle("Modifica prodotto");
+                initializeFormLabels("Modifica prodotto", "Salva");
                 productToModifyId = getIntent().getLongExtra("id", 0);
-                confirmButton.setText("Salva");
 
                 // Nascondi i campi precompilati
                 quantityBlock.setVisibility(View.GONE);
@@ -235,15 +232,37 @@ public class EditProduct extends AppCompatActivity {
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
-                        startingForm = getCurrentForm();
+                        setCurrentFormToInitial();
                     });
                 }).start();
+                break;
+            case "update":
+                initializeFormLabels("Aggiorna prodotto", "Salva");
+                productToModifyId = getIntent().getLongExtra("id", 0);
 
+                // Disabilita/nascondi i campi non inerenti all'aggiornamento di stato
+                quantityBlock.setVisibility(View.GONE);
+                findViewById(R.id.nameFieldsBlock).setVisibility(View.GONE); // TODO mostrare in modo diverso
+                findViewById(R.id.piecesBlock).setVisibility(View.GONE);
+                findViewById(R.id.packagedCheckBoxBlock).setVisibility(View.GONE);
+                findViewById(R.id.packagedBlock).setBackground(null);
+                findViewById(R.id.packagedBlock).setPadding(0, 0, 0, 0);
+                findViewById(R.id.datesBlock).setVisibility(View.GONE);
+                findViewById(R.id.priceWeightBlock).setVisibility(View.GONE);
+                findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
+                pointOfPurchaseBlock.setVisibility(View.GONE);
+
+                new Thread(() -> {
+                    SingleProduct p = productDatabase.productDao().get(productToModifyId);
+                    runOnUiThread(() -> {
+                        fillFieldsFromProduct(p);
+                        setCurrentFormToInitial();
+                    });
+                }).start();
                 break;
             case "shopping":
                 if (getIntent().getSerializableExtra("productToEdit") != null) {
-                    setTitle("Modifica prodotto");
-                    confirmButton.setText("Salva");
+                    initializeFormLabels("Modifica prodotto", "Salva");
                     quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
                     fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
                 } else if (getIntent().getSerializableExtra("cartProducts") != null) {
@@ -257,19 +276,28 @@ public class EditProduct extends AppCompatActivity {
                         }
                     }).start();
                 } else {
-                    setTitle("Aggiungi prodotto");
+                    initializeFormLabels("Aggiungi prodotto", "Aggiungi");
                 }
 
                 // Nascondi i campi precompilati
                 pointOfPurchaseBlock.setVisibility(View.GONE);
                 purchaseDateBlock.setVisibility(View.GONE);
-                openedCheckBoxBlock.setVisibility(View.GONE);
+                openedBlock.setVisibility(View.GONE);
                 currentWeightBlock.setVisibility(View.GONE);
                 consumedCheckboxBlock.setVisibility(View.GONE);
 
-                startingForm = getCurrentForm();
+                setCurrentFormToInitial();
                 break;
         }
+    }
+
+    private void setCurrentFormToInitial(){
+        startingForm = getCurrentForm();
+    }
+
+    private void initializeFormLabels(String title, String confirmButtonText){
+        setTitle(title);
+        confirmButton.setText(confirmButtonText);
     }
 
     @Override
@@ -481,11 +509,19 @@ public class EditProduct extends AppCompatActivity {
                 Intent resultIntent = new Intent();
 
                 switch (action) {
+                    case "update":  // Se si tratta di un aggiornamento
+                        newProduct.setId(productToModifyId);
+                        if (productDatabase.productDao().update(newProduct) > 0) {
+                            insertCount = 1;
+                            String msg = "Prodotti aggiornati: " + insertCount + "\nProdotti non aggiornati: " + (1 - insertCount); // TODO adattare a update
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                        }
+                        break;
                     case "edit":  // Se si tratta di una modifica
                         newProduct.setId(productToModifyId);
                         if (productDatabase.productDao().update(newProduct) > 0) {
                             insertCount = 1;
-                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (1 - insertCount);
+                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (1 - insertCount); // TODO adattare a edit
                             runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                         }
                         break;
@@ -670,16 +706,19 @@ public class EditProduct extends AppCompatActivity {
             enableNoExpiryCheckBoxBehaviour(noExpiryCheckbox.isChecked());
             changeToExpiryDateButton.setVisibility(View.GONE);
             changeToExpiryDaysButton.setVisibility(View.GONE);
-            expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             noExpiryCheckbox.setVisibility(View.VISIBLE);
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
-            expiryDateBlock.setVisibility(View.VISIBLE);
 
             if(!action.equals("shopping"))
-                openedCheckBoxBlock.setVisibility(View.VISIBLE);
+                openedBlock.setVisibility(View.VISIBLE);
 
-            openedStorageConditionBlock.setVisibility(View.VISIBLE);
+            if(!action.equals("update")){
+                expiryDateBlock.setVisibility(View.VISIBLE);
+                expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
+                openedStorageConditionBlock.setVisibility(View.VISIBLE);
+            }
+
             if(!openedCheckBox.isChecked() && !action.equals("shopping"))
                 currentWeightBlock.setVisibility(View.GONE);
             else if(!action.equals("shopping"))
@@ -699,15 +738,14 @@ public class EditProduct extends AppCompatActivity {
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
 
-            if(!action.equals("shopping"))
-                openedCheckBoxBlock.setVisibility(View.GONE);
-            if(!action.equals("shopping"))
+            if(!action.equals("shopping")){
+                openedBlock.setVisibility(View.GONE);
                 openingDateBlock.setVisibility(View.GONE);
+                currentWeightBlock.setVisibility(View.VISIBLE);
+            }
+
             openedStorageConditionBlock.setVisibility(View.GONE);
             currentWeightSlider.setEnabled(true); // TODO ?
-
-            if(!action.equals("shopping"))
-                currentWeightBlock.setVisibility(View.VISIBLE);
             currentWeightSlider.setVisibility(View.VISIBLE); // TODO ?
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax() && !openedCheckBox.isChecked()) {
