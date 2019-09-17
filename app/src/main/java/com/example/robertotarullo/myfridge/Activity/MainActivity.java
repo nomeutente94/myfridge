@@ -179,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
                 setPackageView((Pack) p);
             } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
                 updateProduct((SingleProduct)p);
+            else
+                Toast.makeText(getApplicationContext(), "Non puoi aggiornare lo stato di un prodotto consumato!", Toast.LENGTH_LONG).show();
         });
     }
 
