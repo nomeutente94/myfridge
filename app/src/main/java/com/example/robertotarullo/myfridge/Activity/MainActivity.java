@@ -174,10 +174,10 @@ public class MainActivity extends AppCompatActivity {
             // TODO codice ripetuto con editProduct()
             Product p = (Product)listView.getItemAtPosition(position);
 
-            if(p instanceof Pack && currentPackage==null) { // Se si è clickato un pack
+            if(p instanceof Pack && currentPackage==null) { // Se si è clickato un Pack
                 resetSearchBar();
                 setPackageView((Pack) p);
-            } else                                          // Se si è clickato un singleProduct
+            } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
                 updateProduct((SingleProduct)p);
         });
     }
@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             SingleProduct sp = ((SingleProduct) p);
                             sp.setConsumed(true);
-                            sp.setConsumptionDate(new Date());
+                            sp.setConsumptionDate(DateUtils.getCurrentDateWithoutTime());
 
                             if (productDatabase.productDao().update(sp) > 0) {
                                 runOnUiThread(() -> {
@@ -646,6 +646,7 @@ public class MainActivity extends AppCompatActivity {
         if(productsListAdapter.getItem(currentPopupPosition).isConsumed()) {
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.unconsumeItem).setVisible(true);
+            popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
         }
 
         popup.show();

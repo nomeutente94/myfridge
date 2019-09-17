@@ -13,7 +13,7 @@
         android:id="@+id/unconsumeItem"
         android:onClick="unconsumeProduct"
         android:visible="false"
-        android:title="Annulla consumazione"/>
+        android:title="Ripristina"/>
     <item
         android:id="@+id/editItem"
         android:onClick="editProduct"

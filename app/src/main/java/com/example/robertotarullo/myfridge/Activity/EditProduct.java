@@ -24,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
+import com.example.robertotarullo.myfridge.Bean.Pack;
+import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapter;
@@ -45,6 +47,7 @@ import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -225,8 +228,9 @@ public class EditProduct extends AppCompatActivity {
                 initializeFormLabels("Modifica prodotto", "Salva");
                 productToModifyId = getIntent().getLongExtra("id", 0);
 
-                // Nascondi i campi precompilati
+                // Nascondi/mostra i campi
                 quantityBlock.setVisibility(View.GONE);
+                findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
 
                 new Thread(() -> {
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
@@ -241,6 +245,7 @@ public class EditProduct extends AppCompatActivity {
                 productToModifyId = getIntent().getLongExtra("id", 0);
 
                 // Disabilita/nascondi i campi non inerenti all'aggiornamento di stato
+                findViewById(R.id.consumeProduct).setVisibility(View.VISIBLE);
                 quantityBlock.setVisibility(View.GONE);
                 findViewById(R.id.nameFieldsBlock).setVisibility(View.GONE); // TODO mostrare in modo diverso
                 findViewById(R.id.piecesBlock).setVisibility(View.GONE);
@@ -259,6 +264,7 @@ public class EditProduct extends AppCompatActivity {
                         setCurrentFormToInitial();
 
                         // Mostra peso e/o pezzi solo se controllati dallo slider
+                        // TODO applicare in tutte le modalità a runtime
                         if(p.getPieces()==1 && p.getWeight()==0)
                             findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
                         if(p.getWeight()==0) {
@@ -576,6 +582,43 @@ public class EditProduct extends AppCompatActivity {
         runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
 
         return insertCount;
+    }
+
+    // TODO mettere a fattor comune con lo stesso metodo in MainAcitvity
+    public void consumeProduct(View view) {
+        SingleProduct newProduct = createProductFromFields();
+        newProduct.setId(productToModifyId);
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    new Thread(() -> {
+                        newProduct.setConsumed(true);
+                        newProduct.setConsumptionDate(DateUtils.getCurrentDateWithoutTime());
+
+                        if (productDatabase.productDao().update(newProduct) > 0) {
+                            runOnUiThread(() -> {
+                                Intent resultIntent = new Intent();
+                                Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
+                                resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            });
+                        }
+                    }).start();
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    break;
+            }
+        };
+
+        String msg = "Vuoi segnare come consumato il prodotto \"" + newProduct.getName() + "\"?";
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(msg)
+                .setTitle("Conferma consumazione")
+                .setPositiveButton("Conferma", dialogClickListener)
+                .setNegativeButton("Annulla", dialogClickListener)
+                .show();
     }
 
     // metodo usato per il debug
