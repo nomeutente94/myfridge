@@ -505,6 +505,14 @@
                         android:layout_weight="1"/>
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/currentWeightSliderLabel"
+                    android:layout_width="wrap_content"
+                    android:visibility="gone"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="11dp"
+                    android:text="Quantità rimanente" />
+
                 <SeekBar
                     android:id="@+id/currentWeightSlider"
                     android:layout_width="match_parent"

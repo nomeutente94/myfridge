@@ -257,6 +257,18 @@ public class EditProduct extends AppCompatActivity {
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
                         setCurrentFormToInitial();
+
+                        // Mostra peso e/o pezzi solo se controllati dallo slider
+                        if(p.getPieces()==1 && p.getWeight()==0)
+                            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+                        if(p.getWeight()==0) {
+                            findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE);
+                            currentWeightField.setVisibility(View.GONE);
+                        }
+                        if(p.getPieces()==1){
+                            findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE);
+                            currentPiecesField.setVisibility(View.GONE);
+                        }
                     });
                 }).start();
                 break;
