@@ -175,9 +175,11 @@ public class Cart extends AppCompatActivity {
         productsListAdapter = new CartListAdapter(this, R.layout.list_element, listToDisplay, quantities);
         listView.setAdapter(productsListAdapter);
 
-        int total = 0;
-        for(int i=0; i<cartProducts.size(); i++)
+        float total = 0;
+        for(int i=0; i<cartProducts.size(); i++) {
             total += cartProducts.get(i).getPrice();
+            System.out.println("TOTAL: " + total);
+        }
 
         if(total==0)
             totalPriceText.setText("€0,00");
