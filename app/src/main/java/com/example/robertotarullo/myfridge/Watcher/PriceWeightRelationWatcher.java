@@ -1,15 +1,20 @@
 package com.example.robertotarullo.myfridge.Watcher;
 
+import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
 import com.example.robertotarullo.myfridge.Utils.PriceUtils;
+
+import org.w3c.dom.Text;
 
 public class PriceWeightRelationWatcher implements TextWatcher {
     private String type;
@@ -18,15 +23,20 @@ public class PriceWeightRelationWatcher implements TextWatcher {
     private final String PRICE_TAG = "priceField", WEIGHT_TAG = "weightField", PRICEPERKILO_TAG = "pricePerKiloField";
     private SeekBar currentWeightSlider;
     private EditText currentWeightField;
+    private View currentWeightFieldLabel, currentWeightSliderLabel;
+    private TextView piecesField;
 
-    public PriceWeightRelationWatcher(String type, EditText editText1, EditText editText2, Button clearButton1, Button clearButton2, EditText currentWeightField, SeekBar currentWeightSlider){
+    public PriceWeightRelationWatcher(String type, EditText editText1, EditText editText2, Button clearButton1, Button clearButton2, Activity activity){
         this.type = type;
         this.editText1 = editText1;
         this.editText2 = editText2;
-        this.currentWeightField = currentWeightField;
+        this.currentWeightField = activity.findViewById(R.id.currentWeightField);
         this.clearButton1 = clearButton1;
         this.clearButton2 = clearButton2;
-        this.currentWeightSlider = currentWeightSlider;
+        this.currentWeightSlider = activity.findViewById(R.id.currentWeightSlider);
+        this.currentWeightFieldLabel = activity.findViewById(R.id.currentWeightFieldLabel);
+        this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
+        this.piecesField = activity.findViewById(R.id.piecesField);
     }
 
     @Override
@@ -38,10 +48,14 @@ public class PriceWeightRelationWatcher implements TextWatcher {
     @Override
     public void afterTextChanged(Editable s) {
         if(s.length()==0){ // Se si è svuotato un campo
-            Log.d("RelationWatcher", "Il campo " + type + " è stato svuotato");
-
-            if(type.equals(WEIGHT_TAG)) // Campo peso
+            if(type.equals(WEIGHT_TAG)) { // Campo peso
                 setWeight(0);
+
+                currentWeightFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+                currentWeightField.setVisibility(View.GONE);
+                if(TextUtils.getInt(piecesField)==1)
+                    currentWeightSliderLabel.setVisibility(View.VISIBLE);
+            }
 
             // Controlla e trova se c'è un campo calcolato/oscurato
             EditText disabledEditText = null;
@@ -61,27 +75,26 @@ public class PriceWeightRelationWatcher implements TextWatcher {
                 disabledEditText.setText("");
                 if(disabledEditText.getTag().equals(WEIGHT_TAG))
                     setWeight(0);
-
-                Log.d("RelationWatcher", "E' stato sbloccato il campo " +  disabledEditText.getTag());
             }
 
         } else { // Si è modificato il campo con un valore non vuoto
-            Log.d("RelationWatcher", "Il campo " + type + " ha assunto il valore '" + s + "'");
-
-            if(type.equals(WEIGHT_TAG)) // Se si tratta del campo peso modificalo
+            if(type.equals(WEIGHT_TAG)) { // Se si tratta del campo peso modificalo
                 setWeight(TextUtils.getInt(s));
+
+                currentWeightFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
+                currentWeightField.setVisibility(View.VISIBLE);
+                currentWeightSliderLabel.setVisibility(View.GONE);
+            }
 
             // Se si ha un campo non vuoto e abilitato e uno o non vuoto o disabilitato
             if(((!TextUtils.isEmpty(editText1) && editText1.isEnabled()) && (TextUtils.isEmpty(editText2) || !editText2.isEnabled()))){
                 reflectToField(s, editText1, editText2); // calcola il terzo campo
                 clearButton2.setEnabled(false);
                 editText2.setEnabled(false);
-                Log.d("RelationWatcher", "Calcolo e blocco " +  editText2.getTag() + "... Valore calcolato: " + editText2.getText());
             } else if(((!TextUtils.isEmpty(editText2) && editText2.isEnabled()) && (TextUtils.isEmpty(editText1) || !editText1.isEnabled()))){
                 reflectToField(s, editText2, editText1); // calcola il terzo campo
                 clearButton1.setEnabled(false);
                 editText1.setEnabled(false);
-                Log.d("RelationWatcher", "Calcolo e blocco " +  editText1.getTag() + "... Valore calcolato: " + editText1.getText());
             }
         }
     }
@@ -141,7 +154,6 @@ public class PriceWeightRelationWatcher implements TextWatcher {
                 int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightSlider.setProgress(currentWeight);
             }
-
             currentWeightField.setText(String.valueOf(currentWeightAsFloat));
         }
     }

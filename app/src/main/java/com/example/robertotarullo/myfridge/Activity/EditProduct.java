@@ -47,7 +47,6 @@ import com.example.robertotarullo.myfridge.Watcher.PriceWeightRelationWatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -194,16 +193,17 @@ public class EditProduct extends AppCompatActivity {
 
         // Validazione e comportamento
         currentWeightSlider.setTag(R.id.percentageValue, "100");
-        priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, currentWeightField, currentWeightSlider));
-        pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, currentWeightField, currentWeightSlider));
-        weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, currentWeightField, currentWeightSlider));
+        // TODO passare context al posto delle view fisse
+        priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, this));
+        pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, this));
+        weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, this));
         purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField, this));
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
         packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton));
-        piecesField.addTextChangedListener(new PiecesWatcher(addPieceButton, subtractPieceButton, currentWeightSlider, currentPiecesField, weightField, currentWeightField));
+        piecesField.addTextChangedListener(new PiecesWatcher(this));
         // currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters
@@ -222,6 +222,13 @@ public class EditProduct extends AppCompatActivity {
         switch (action) {
             case "add":
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
+
+                findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+                currentPiecesField.setVisibility(View.GONE);
+                findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+                currentWeightField.setVisibility(View.GONE);
+                findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+
                 setCurrentFormToInitial();
                 break;
             case "edit":
@@ -262,19 +269,6 @@ public class EditProduct extends AppCompatActivity {
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
                         setCurrentFormToInitial();
-
-                        // Mostra peso e/o pezzi solo se controllati dallo slider
-                        // TODO applicare in tutte le modalità a runtime
-                        if(p.getPieces()==1 && p.getWeight()==0)
-                            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
-                        if(p.getWeight()==0) {
-                            findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE);
-                            currentWeightField.setVisibility(View.GONE);
-                        }
-                        if(p.getPieces()==1){
-                            findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE);
-                            currentPiecesField.setVisibility(View.GONE);
-                        }
                     });
                 }).start();
                 break;
@@ -430,6 +424,19 @@ public class EditProduct extends AppCompatActivity {
     private void fillFieldsFromProduct(SingleProduct p) {
 
         //printProductOnConsole(p);
+
+        // TODO Mettere a fattor comune con codice in case("add"), PiecesWatcher e PriceWeightRelationWatcher
+        if(p.getWeight()==0){
+            findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+            currentWeightField.setVisibility(View.GONE);
+        }
+        if(p.getPieces()==1){
+            findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+            currentPiecesField.setVisibility(View.GONE);
+        }
+        if(p.getPieces()==1 && p.getWeight()==0){
+            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+        }
 
         if(p.isConsumed())
             consumedCheckBox.setChecked(true);

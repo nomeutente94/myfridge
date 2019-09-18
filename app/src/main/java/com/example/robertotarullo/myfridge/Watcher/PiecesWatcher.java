@@ -1,7 +1,9 @@
 package com.example.robertotarullo.myfridge.Watcher;
 
+import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -16,14 +18,17 @@ public class PiecesWatcher implements TextWatcher {
     private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
     private EditText weightField, currentWeightField;
+    private View currentPiecesFieldLabel, currentWeightSliderLabel;
 
-    public PiecesWatcher(Button addButton, Button subtractButton, SeekBar currentWeightSlider, TextView currentPiecesField, EditText weightField, EditText currentWeightField){
-       this.addButton = addButton;
-       this.subtractButton = subtractButton;
-       this.currentWeightSlider = currentWeightSlider;
-       this.currentPiecesField = currentPiecesField;
-       this.weightField = weightField;
-       this.currentWeightField = currentWeightField;
+    public PiecesWatcher(Activity activity){
+       this.addButton = activity.findViewById(R.id.piecesAddButton);
+       this.subtractButton = activity.findViewById(R.id.piecesSubtractButton);
+       this.currentWeightSlider = activity.findViewById(R.id.currentWeightSlider);
+       this.currentPiecesField = activity.findViewById(R.id.currentPiecesField);
+       this.weightField = activity.findViewById(R.id.weightField);
+       this.currentWeightField = activity.findViewById(R.id.currentWeightField);
+       this.currentPiecesFieldLabel = activity.findViewById(R.id.currentPiecesFieldLabel);
+       this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
     }
 
     @Override
@@ -38,6 +43,10 @@ public class PiecesWatcher implements TextWatcher {
         int pieces = TextUtils.getInt(s);
 
         if(pieces>1){
+            currentPiecesFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
+            currentPiecesField.setVisibility(View.VISIBLE);
+            currentWeightSliderLabel.setVisibility(View.GONE);
+
             // setta lo slider in base al numero di pezzi
             currentWeightSlider.setTag("pieces");
 
@@ -54,8 +63,12 @@ public class PiecesWatcher implements TextWatcher {
                 int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightField.setText(String.valueOf(currentWeightAsFloat));
             }
-
         } else { // setta lo slider in base al peso, se non compilato in percentuale generica
+            currentPiecesFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
+            currentPiecesField.setVisibility(View.GONE);
+            if(TextUtils.isEmpty(weightField))
+                currentWeightSliderLabel.setVisibility(View.VISIBLE);
+
             currentPiecesField.setText(s.toString());
             if(!TextUtils.isEmpty(weightField)){
                 // ripristina lo slide rispetto al peso attuale
