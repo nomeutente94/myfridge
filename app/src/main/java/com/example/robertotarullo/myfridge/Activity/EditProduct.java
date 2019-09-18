@@ -654,26 +654,26 @@ public class EditProduct extends AppCompatActivity {
     }
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
-    private SingleProduct createProductFromFields(){
+    private SingleProduct createProductFromFields() {
         SingleProduct p = new SingleProduct();
 
-        if(consumedCheckBox.isChecked()){
+        if (consumedCheckBox.isChecked()) {
             p.setConsumed(true);
             p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
         }
 
         p.setName(nameField.getText().toString());
 
-        if(!TextUtils.isEmpty(brandField))
+        if (!TextUtils.isEmpty(brandField))
             p.setBrand(brandField.getText().toString());
 
-        if(!TextUtils.isEmpty(priceField) && priceField.isEnabled())
+        if (!TextUtils.isEmpty(priceField) && priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
 
-        if(!TextUtils.isEmpty(weightField) && weightField.isEnabled())
+        if (!TextUtils.isEmpty(weightField) && weightField.isEnabled())
             p.setWeight(TextUtils.getFloat(weightField));
 
-        if(!TextUtils.isEmpty(currentWeightField))
+        if (!TextUtils.isEmpty(currentWeightField))
             p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
 
         if (!TextUtils.isEmpty(pricePerKiloField) && pricePerKiloField.isEnabled())
@@ -681,19 +681,17 @@ public class EditProduct extends AppCompatActivity {
 
         p.setPieces(TextUtils.getInt(piecesField));
 
-        if(action.equals("shopping") && getIntent().getSerializableExtra("productToEdit")==null)
+        if (action.equals("shopping") && getIntent().getSerializableExtra("productToEdit") == null){
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
-        else if(TextUtils.getDate(purchaseDateField)!=null)
+            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0)); // settare pointofpurchase dall'intent
+        } else if(TextUtils.getDate(purchaseDateField)!=null)
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+        else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
+            p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
 
         p.setPackagingDate(TextUtils.getDate(packagingDateField));
 
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
-
-        if(action.equals("shopping") && getIntent().getSerializableExtra("productToEdit")==null)
-            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0)); // settare pointofpurchase dall'intent
-        else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
-            p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
 
         if(!TextUtils.isEmpty(expiryDaysAfterOpeningField) && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));

@@ -149,7 +149,7 @@ public class Cart extends AppCompatActivity {
     public void addProduct(View view){
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", "shopping");
-        intent.putExtra("pointOfPurchaseId", getIntent().getIntExtra("pointOfPurchaseId",0));
+        intent.putExtra("pointOfPurchaseId", getIntent().getLongExtra("pointOfPurchaseId",0));
         intent.putExtra("suggestions", listToDisplay);
         startActivityForResult(intent, 1);
     }
