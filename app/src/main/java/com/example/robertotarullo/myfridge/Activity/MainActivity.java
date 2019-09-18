@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onPrepareOptionsMenu(menu);
     }
 
+    // Usare questa chiamata per cambiare scheda e NON setFilterView direttamente
     public void setFilteredProducts(View v) {
         highlightButton((Button) v); // Cambia il colore del filtro attuale
         clearSerchBarFocus();
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (currentPackage != null) {
             resetSearchBar();
-            setFilterView(currentFilter);
+            setFilterView(currentFilter); // TODO Usare setFilteredProducts per cambiare scheda e NON setFilterView direttamente ?
         } else
             super.onBackPressed();
     }
@@ -456,9 +457,14 @@ public class MainActivity extends AppCompatActivity {
         groupedProducts.addAll(getPacks(groupedSingleProducts));      // Passa gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
-        if (pack == null)
-            setFilterView(currentFilter);
-        else
+        if (pack == null) {
+            if(currentFilter==0)
+                setFilteredProducts(filterButton0);
+            else if(currentFilter==1)
+                setFilteredProducts(filterButton1);
+            else if(currentFilter==2)
+                setFilteredProducts(filterButton2);
+        } else
             setPackageView(pack);
     }
 
