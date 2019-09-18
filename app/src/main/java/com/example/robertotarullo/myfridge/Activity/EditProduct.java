@@ -865,17 +865,18 @@ public class EditProduct extends AppCompatActivity {
     private void initializePointsOfPurchaseSpinner() {
         new Thread(() -> {
             List<PointOfPurchase> pointsOfPurchase = productDatabase.pointOfPurchaseDao().getPointsOfPurchase();
-
-            // Aggiungi un prodotto fake che rappresenti la selezione nulla
-            PointOfPurchase noSelection = new PointOfPurchase();
-            if(pointsOfPurchase.size()>0)
-                noSelection.setName("Scegli...");
-            else {
-                noSelection.setName("Nessun punto di acquisto");
-                pointOfPurchaseSpinner.setEnabled(false);
-            }
-            pointsOfPurchase.add(0, noSelection);
-            pointOfPurchaseSpinner.setAdapter(new PointsOfPurchaseSpinnerAdapter(this, R.layout.storage_condition_spinner_item, pointsOfPurchase));
+            runOnUiThread(() -> {
+                // Aggiungi un prodotto fake che rappresenti la selezione nulla
+                PointOfPurchase noSelection = new PointOfPurchase();
+                if(pointsOfPurchase.size()>0)
+                    noSelection.setName("Scegli...");
+                else {
+                    noSelection.setName("Nessun punto di acquisto");
+                    pointOfPurchaseSpinner.setEnabled(false);
+                }
+                pointsOfPurchase.add(0, noSelection);
+                pointOfPurchaseSpinner.setAdapter(new PointsOfPurchaseSpinnerAdapter(this, R.layout.storage_condition_spinner_item, pointsOfPurchase));
+            });
         }).start();
     }
 
