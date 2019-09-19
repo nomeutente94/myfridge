@@ -80,12 +80,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             optionsButton.setVisibility(View.VISIBLE);
 
             if(p.isPackaged())
-                typeTextView.setText("Prodotto confezionato");
+                typeTextView.setText("Confezionato");
             else
-                typeTextView.setText("Prodotto fresco");
+                typeTextView.setText("Fresco");
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
-            typeTextView.setText(((Pack) p).getSize(showConsumed) + " prodotti");
+            typeTextView.setText(((Pack) p).getSize(showConsumed));
 
             if(p.isPackaged())
                 typeTextView.setText(typeTextView.getText() + " confezionati");
@@ -124,7 +124,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             if(date != null){
                 dataTextView.setText("Consumato il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
             } else
-                dataTextView.setText("Data di consumazione non specificata");
+                dataTextView.setText("Non specificata");
 
         } else {
             date = DateUtils.getActualExpiryDate(p);
@@ -138,11 +138,11 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                     } else if(now.after(date)) {
                         dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     } else {
-                        dataTextView.setText("Consumare entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                        dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     }
                 }
             } else
-                dataTextView.setText("Scadenza non specificata");
+                dataTextView.setText("Non specificata");
         }
     }
 }
