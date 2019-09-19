@@ -356,20 +356,25 @@ public class MainActivity extends AppCompatActivity {
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
+                    SingleProduct clonedProduct = (SingleProduct)productsListAdapter.getItem(currentPopupPosition);
+                    clonedProduct.setId(0);
+                    hardReset(clonedProduct);
+
+                    currentFilter = clonedProduct.getActualStorageCondition();
+
                     List<SingleProduct> productsToClone = new ArrayList<>();
-                    int numberOfClones = TextUtils.getInt(clonesField);
-                    for (int i = 0; i < numberOfClones; i++){
-                        SingleProduct clonedProduct = (SingleProduct)productsListAdapter.getItem(currentPopupPosition);
-                        clonedProduct.setId(0);
+                    for (int i = 0; i < TextUtils.getInt(clonesField); i++)
                         productsToClone.add(clonedProduct);
-                    }
+
                     new Thread(() -> {
                         int nonAddedProductsCount = Collections.frequency(productDatabase.productDao().insertAll(productsToClone), -1);
                         int insertCount = productsToClone.size() - nonAddedProductsCount;
-
                         String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + nonAddedProductsCount;
-                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
-                        retrieveProductsFromDB(null); // aggiorna lista
+
+                        runOnUiThread(() -> {
+                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show(); // STRINGS.XML
+                            retrieveProductsFromDB(null); // aggiorna lista
+                        });
                     }).start();
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -383,6 +388,21 @@ public class MainActivity extends AppCompatActivity {
                .setPositiveButton("Conferma", dialogClickListener)
                .setNegativeButton("Annulla", dialogClickListener)
                .show();
+    }
+
+    // TODO spostare nel bean o in una classe di utils?
+    private void hardReset(SingleProduct p){
+        p.setCurrentWeight(0);
+        p.setPercentageQuantity(100);
+        p.setCurrentPieces(p.getPieces());
+        p.setPurchaseDate(null);
+        p.setConsumptionDate(null);
+        p.setPointOfPurchaseId(0);
+        p.setConsumed(false);
+        p.setExpiryDate(null);
+        p.setPackagingDate(null);
+        p.setOpened(false);
+        p.setOpeningDate(null);
     }
 
     // Modifica la quantità dei duplicati tramite i relativi pulsanti

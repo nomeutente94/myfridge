@@ -48,7 +48,7 @@ public class SingleProduct implements Product, Serializable {
     // Peso corrente del prodotto
     private float currentWeight;
 
-    // Indica la percentuale generale attuale rimanente del prodotto, non specificato se 0
+    // Indica la percentuale generale attuale rimanente del prodotto (default 100)
     private int percentageQuantity;
 
     // Indica il numero totale di pezzi, 1 se non ve n'è più di uno, 0 se non specificato
