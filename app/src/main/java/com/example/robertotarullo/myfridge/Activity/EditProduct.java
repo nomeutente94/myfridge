@@ -793,7 +793,10 @@ public class EditProduct extends AppCompatActivity {
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
             p.setOpened(true);
 
-            p.setOpeningDate(p.getPurchaseDate());
+            if(p.getPackagingDate()!=null)
+                p.setOpeningDate(p.getPackagingDate());
+            else if(p.getPurchaseDate()!=null)
+                p.setOpeningDate(p.getPurchaseDate());
 
             if(expiryDateBlock.getVisibility()==View.VISIBLE)
                 p.setExpiryDate(TextUtils.getDate(expiryDateField));

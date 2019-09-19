@@ -119,14 +119,6 @@ public class SingleProduct implements Product, Serializable {
         this.price = price;
     }
 
-    // TODO spostare in classe Utils esterna
-    public Date calculateExpiryDate() {
-        if(getExpiryDate()==null && getOpeningDate()!=null && getExpiringDaysAfterOpening()>0 && !isPackaged()) // se non lo ha ed è un prodotto fresco, prova a calcolarlo
-            return DateUtils.getDateByAddingDays(getOpeningDate(), getExpiringDaysAfterOpening());
-        else
-            return getExpiryDate();
-    }
-
     public Date getExpiryDate() {
         return expiryDate;
     }

@@ -56,8 +56,11 @@ public abstract class DateUtils {
             else
                 productToCheck = ((Pack)p).getProducts().get(0); // TODO si dà per scontato che tutti i prodotti di un gruppo abbiano la stessa data di scadenza
 
-            if(productToCheck.isPackaged() && productToCheck.isOpened() && productToCheck.getOpeningDate()!=null && productToCheck.getExpiringDaysAfterOpening()>0)
-                return getDateByAddingDays(productToCheck.getOpeningDate(), productToCheck.getExpiringDaysAfterOpening());
+            if(!productToCheck.isPackaged() || productToCheck.isOpened()){ // prodotto confezionato aperto oppure prodotto fresco
+                if(productToCheck.getOpeningDate()!=null && productToCheck.getExpiringDaysAfterOpening()>0) // se data e giorni sono specificati
+                    return getDateByAddingDays(productToCheck.getOpeningDate(), productToCheck.getExpiringDaysAfterOpening());
+            }
+
             return productToCheck.getExpiryDate();
         } else
             return null;
