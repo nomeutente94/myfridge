@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
         if (showConsumedProducts)
-            menu.add(0, R.id.showConsumed, Menu.NONE, "Nascondi consumati");
+            menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra non consumati");
         else
             menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra consumati");
         return super.onPrepareOptionsMenu(menu);
@@ -474,7 +474,8 @@ public class MainActivity extends AppCompatActivity {
     private void groupProducts(Pack pack) {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
-        groupedProducts.addAll(getPacks(groupedSingleProducts));      // Passa gli eventuali raggruppamenti di prodotti
+        if(!showConsumedProducts) // Non raggruppare se si visualizzano i prodotti consumati
+            groupedProducts.addAll(getPacks(groupedSingleProducts));      // Passa gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
         if (pack == null) {
@@ -493,10 +494,10 @@ public class MainActivity extends AppCompatActivity {
         List<Pack> packs = new ArrayList<>();
 
         for (int i = 0; i < singleProducts.size(); i++) {                                           // Per ogni prodotto
-            if (showConsumedProducts || !singleProducts.get(i).isConsumed()) {
+            if ((showConsumedProducts && singleProducts.get(i).isConsumed()) || (!showConsumedProducts && !singleProducts.get(i).isConsumed())) {
                 Pack p = new Pack();                                                                // Crea un nuovo pack
                 for (int j = 0; j < singleProducts.size(); j++) {                                   // Cerca tra tutti i prodotti
-                    if (showConsumedProducts || !singleProducts.get(j).isConsumed()) {
+                    if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
                         if (j != i && singleProducts.get(i).packEquals(singleProducts.get(j))) {    // .. se i due prodotti sono raggruppabili
                             p.addProduct(singleProducts.get(j));                                    // .. sposta il prodotto nel pack
                             singleProducts.remove(j);
@@ -518,13 +519,16 @@ public class MainActivity extends AppCompatActivity {
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilterView(int storageCondition) {
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
-        setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
+        if(showConsumedProducts)
+            setTitle("Consumati"); // Resetta il titolo al ritorno da una packageView
+        else
+            setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
         filteredProducts = new ArrayList<>();
         for (int i = 0; i < groupedProducts.size(); i++) {
-            if (showConsumedProducts || !groupedProducts.get(i).isConsumed()) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
+            if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
                 // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
                 if (groupedProducts.get(i) instanceof SingleProduct) {
                     if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
@@ -559,9 +563,9 @@ public class MainActivity extends AppCompatActivity {
 
         packProducts = new ArrayList<>();
         for (int i = 0; i < pack.getProducts().size(); i++) {
-            if (showConsumedProducts)
+            if (showConsumedProducts){
                 packProducts.add(pack.getProducts().get(i));
-            else {
+            } else {
                 if (!pack.getProducts().get(i).isConsumed())
                     packProducts.add(pack.getProducts().get(i));
             }
@@ -632,47 +636,70 @@ public class MainActivity extends AppCompatActivity {
             // 1 mette in alto p2
             // 0 mantiene l'ordine di default
 
-            // Ordine: non specificata > data crescente > mai > (? no) consumati
+            // Ordine: non specificata > data crescente > mai
 
-            if(p1.isConsumed() && p2.isConsumed()){                                                 // Entrambi consumati
-                return 0;
-            } else {                                                                                // Qualcuno non consumato
-                if(p1.isConsumed()){                                                                    // Solo p1 consumato
-                    return 1;
-                } else if(p2.isConsumed()){                                                             // Solo p2 consumato
-                    return -1;
-                } else {                                                                                // Nessuno consumato
-                    if(date1!=null && date2!=null){                                                         // Nessuno non specificato
-                        if(date1.equals(date2)){                                                                // Uguali
-                            //System.out.println("result: /");
-                            return 0;
-                        } else {                                                                                // Diversi
-                            if(date1.equals(DateUtils.getNoExpiryDate())){                                          // p1 mai
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
-                                return 1;
-                            } else if(date2.equals(DateUtils.getNoExpiryDate())){                                   // p2 mai
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
-                                return -1;
-                            } else if (date1.after(date2)){                                                         // p1 < p2
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
-                                return 1;
-                            } else {                                                                                // p1 > p2
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
-                                return -1;
-                            }
+            if(showConsumedProducts){
+                date1 = ((SingleProduct)p1).getConsumptionDate();
+                date2 = ((SingleProduct)p2).getConsumptionDate();
+
+                if(date1!=null && date2!=null){
+                    if(date1.equals(date2)){                                                                // Uguali
+                        //System.out.println("result: /");
+                        return 0;
+                    } else {                                                                                // Diversi
+                        if (date1.after(date2)){                                                                // p1 < p2
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                            return 1;
+                        } else {                                                                                // p1 > p2
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                            return -1;
                         }
-                    } else {                                                                                // Qualcuno non specificato
-                        if(date1==null && date2==null){                                                         // Entrambi non specificati
-                            //System.out.println("result: /");
-                            return 0;
-                        } else {                                                                                // Qualcuno specificato
-                            if(date2==null){                                                                        // Solo p2 specificato
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
-                                return 1;
-                            } else {                                                                                // Solo p1 specificato
-                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
-                                return -1;
-                            }
+                    }
+                } else {
+                    if(date1==null && date2==null){                                                         // Entrambi non specificati
+                        //System.out.println("result: /");
+                        return 0;
+                    } else {                                                                                // Qualcuno specificato
+                        if(date2==null){                                                                        // Solo p2 specificato
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                            return -1;
+                        } else {                                                                                // Solo p1 specificato
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                            return 1;
+                        }
+                    }
+                }
+            } else {
+                if(date1!=null && date2!=null){                                                         // Nessuno non specificato
+                    if(date1.equals(date2)){                                                                // Uguali
+                        //System.out.println("result: /");
+                        return 0;
+                    } else {                                                                                // Diversi
+                        if(date1.equals(DateUtils.getNoExpiryDate())){                                          // p1 mai
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                            return 1;
+                        } else if(date2.equals(DateUtils.getNoExpiryDate())){                                   // p2 mai
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                            return -1;
+                        } else if (date1.after(date2)){                                                         // p1 < p2
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                            return 1;
+                        } else {                                                                                // p1 > p2
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                            return -1;
+                        }
+                    }
+                } else {                                                                                // Qualcuno non specificato
+                    if(date1==null && date2==null){                                                         // Entrambi non specificati
+                        //System.out.println("result: /");
+                        return 0;
+                    } else {                                                                                // Qualcuno specificato
+                        if(date2==null){                                                                        // Solo p2 specificato
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                            return 1;
+                        } else {                                                                                // Solo p1 specificato
+                            //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                            return -1;
                         }
                     }
                 }
@@ -713,6 +740,7 @@ public class MainActivity extends AppCompatActivity {
                     currentFilter = data.getIntExtra("filter", currentFilter);
                     highlightButton(null);
                 }
+                showConsumedProducts = false;
                 retrieveProductsFromDB(null);
             }
         } else if (requestCode == SHOPPING_REQUEST) {

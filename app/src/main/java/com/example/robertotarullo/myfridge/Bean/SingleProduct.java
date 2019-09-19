@@ -282,15 +282,16 @@ public class SingleProduct implements Product, Serializable {
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct!=null){
-            if( singleProduct.isPackaged()==packaged &&                                 // packaged
-                Objects.equals(singleProduct.getName(), name) &&                        // name
-                Objects.equals(singleProduct.getBrand(), brand) &&                      // brand
-                singleProduct.getWeight()==weight &&                                    // weight
-                singleProduct.getPieces()==pieces &&                                    // pieces
-                singleProduct.getStorageCondition()==storageCondition &&                // storageCondition
-                singleProduct.getOpenedStorageCondition()==openedStorageCondition &&    // openedStorageCondition
-                Objects.equals(singleProduct.getExpiryDate(), expiryDate) &&            // expiryDate
-                singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening   // expiringDaysAfterOpening
+            if(    singleProduct.isPackaged()==packaged                                     // packaged
+                && Objects.equals(singleProduct.getName(), name)                            // name
+                && Objects.equals(singleProduct.getBrand(), brand)                          // brand
+                && singleProduct.getWeight()==weight                                        // weight
+                && singleProduct.getPieces()==pieces                                        // pieces
+                && singleProduct.getStorageCondition()==storageCondition                    // storageCondition
+                && singleProduct.getOpenedStorageCondition()==openedStorageCondition        // openedStorageCondition
+                && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                // expiryDate
+                && singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening    // expiringDaysAfterOpening
+                //&& singleProduct.isConsumed()==consumed                                   // consumed
             ){
                 return true;
             }

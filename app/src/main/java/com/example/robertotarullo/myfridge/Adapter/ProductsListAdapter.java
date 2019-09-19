@@ -118,15 +118,32 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     }
 
     private void setDate(){
-        Date expiryDate = DateUtils.getActualExpiryDate(p);
+        Date date;
+        if(showConsumed) {
+            date = ((SingleProduct) p).getConsumptionDate();
+            if(date != null){
+                dataTextView.setText("Consumato il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+            } else
+                dataTextView.setText("Data di consumazione non specificata");
 
-        if(expiryDate!= null){
-            if(expiryDate.equals(DateUtils.getNoExpiryDate())) // TODO Cambiare controllo data "mai"
-                dataTextView.setText("Mai");
-            else
-                dataTextView.setText(DateUtils.getLanguageFormattedDate(expiryDate)); // TODO prevedere altre formattazioni data
-        } else
-            dataTextView.setText("Non specificata");
+        } else {
+            date = DateUtils.getActualExpiryDate(p);
+            if(date != null){
+                if(date.equals(DateUtils.getNoExpiryDate())) // TODO Cambiare controllo data "mai"
+                    dataTextView.setText("Non scade mai");
+                else {
+                    Date now = DateUtils.getCurrentDateWithoutTime();
+                    if(now.equals(date)){
+                        dataTextView.setText("Scade oggi");
+                    } else if(now.after(date)) {
+                        dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                    } else {
+                        dataTextView.setText("Consumare entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                    }
+                }
+            } else
+                dataTextView.setText("Scadenza non specificata");
+        }
     }
 }
 
