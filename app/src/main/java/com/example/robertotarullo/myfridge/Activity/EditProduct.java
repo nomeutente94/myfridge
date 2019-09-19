@@ -593,6 +593,7 @@ public class EditProduct extends AppCompatActivity {
         onWeightFocusLost();
         onPriceFocusLost(priceField);
         onPriceFocusLost(pricePerKiloField);
+        // TODO perdita focus giorni rimanenti ?
 
         // Il campo nome è obbligatorio
         if (TextUtils.isEmpty(nameField)) {

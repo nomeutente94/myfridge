@@ -619,50 +619,64 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SHOPPING_REQUEST);
     }
 
-    // ordina dalla data più recente alla più lontana, con i valori null alla fine
+    // ordina dalla data più recente alla più lontana
     private void sortByAscendingDate(List<Product> products) {
-
-        // Ordine: non specificata > data crescente > mai > consumati
-
         Collections.sort(products, (p1, p2) -> {
 
             Date date1 = DateUtils.getActualExpiryDate(p1);
             Date date2 = DateUtils.getActualExpiryDate(p2);
 
+            //System.out.println(DateUtils.getFormattedDate(date1) + " vs " + DateUtils.getFormattedDate(date2) + "\n\n");
+
             // -1 mette in alto p1
             // 1 mette in alto p2
             // 0 mantiene l'ordine di default
 
-            if (p1.isConsumed() && !p2.isConsumed())             // dai precedenza a non consumato
-                return 1;
-            else if (!p1.isConsumed() && p2.isConsumed())
-                return -1;
-            else if (p1.isConsumed() == p2.isConsumed())
+            // Ordine: non specificata > data crescente > mai > (? no) consumati
+
+            if(p1.isConsumed() && p2.isConsumed()){                                                 // Entrambi consumati
                 return 0;
-            else if (date1 == null && date2 != null)                 // dai precedenza a non specificata
-                return -1;
-            else if (date2 == null && date1 != null)
-                return 1;
-            else if (date1 == null && date2 == null)
-                return 0;
-            else if (date1.after(date2)) {
-                if (date2.equals(DateUtils.getNoExpiryDate()))   // dai precedenze a data non 'mai'
+            } else {                                                                                // Qualcuno non consumato
+                if(p1.isConsumed()){                                                                    // Solo p1 consumato
+                    return 1;
+                } else if(p2.isConsumed()){                                                             // Solo p2 consumato
                     return -1;
-                else
-                    return 1;                                   // dai precedenza alla data più vecchia
-            } else if (date1.before(date2)) {
-                if (date1.equals(DateUtils.getNoExpiryDate()))
-                    return 1;                                   // dai precedenze a data non 'mai'
-                else
-                    return -1;                                  // dai precedenza alla data più vecchia
-            } else if (date1.equals(date2))
-                return 0;
-            else if (p1.getName().compareTo(p2.getName()) > 0)
-                return 1;
-            else if (p1.getName().compareTo(p2.getName()) < 0)
-                return -1;
-            else
-                return 0;
+                } else {                                                                                // Nessuno consumato
+                    if(date1!=null && date2!=null){                                                         // Nessuno non specificato
+                        if(date1.equals(date2)){                                                                // Uguali
+                            //System.out.println("result: /");
+                            return 0;
+                        } else {                                                                                // Diversi
+                            if(date1.equals(DateUtils.getNoExpiryDate())){                                          // p1 mai
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                                return 1;
+                            } else if(date2.equals(DateUtils.getNoExpiryDate())){                                   // p2 mai
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                                return -1;
+                            } else if (date1.after(date2)){                                                         // p1 < p2
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                                return 1;
+                            } else {                                                                                // p1 > p2
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                                return -1;
+                            }
+                        }
+                    } else {                                                                                // Qualcuno non specificato
+                        if(date1==null && date2==null){                                                         // Entrambi non specificati
+                            //System.out.println("result: /");
+                            return 0;
+                        } else {                                                                                // Qualcuno specificato
+                            if(date2==null){                                                                        // Solo p2 specificato
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date2));
+                                return 1;
+                            } else {                                                                                // Solo p1 specificato
+                                //System.out.println("result: " + DateUtils.getFormattedDate(date1));
+                                return -1;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 
