@@ -51,13 +51,13 @@ import java.util.TreeSet;
 
 public class EditProduct extends AppCompatActivity {
 
-    // variabili statiche
+    // Variabili statiche
     public static final int FREEZER_MAX_CELSIUS = 0, FRIDGE_MIN_CELSIUS = 3, FRIDGE_MAX_CELSIUS = 6;
     public static final int FRIDGE_DEFAULT_CELSIUS = 5, FREEZER_DEFAULT_CELSIUS = -18, ROOM_DEFAULT_CELSIUS = 20;  // ideale (4-6) per frigo
     public static final int ROOM_SELECTION = 0, FRIDGE_SELECTION = 1, FREEZER_SELECTION = 2;
     public static final int MAX_QUANTITY = 99, MIN_QUANTITY = 1, MAX_PIECES = 99, MIN_PIECES = 1;
 
-    // intent
+    // Intent
     private String action;
     private ProductForm startingForm;
     private long productToModifyId;
@@ -508,9 +508,8 @@ public class EditProduct extends AppCompatActivity {
             findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.GONE);
         }
-        if(p.getPieces()==1 && p.getWeight()==0){
+        if(p.getPieces()==1 && p.getWeight()==0)
             findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
-        }
 
         if(p.isConsumed())
             consumedCheckBox.setChecked(true);
@@ -537,6 +536,7 @@ public class EditProduct extends AppCompatActivity {
         TextUtils.setDate(p.getPurchaseDate(), purchaseDateField);
 
         storageConditionSpinner.setSelection(p.getStorageCondition());
+        openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
 
         TextUtils.setDate(p.getPackagingDate(), packagingDateField);
 
@@ -561,14 +561,12 @@ public class EditProduct extends AppCompatActivity {
         if(p.isPackaged()){
             packagedCheckBox.setChecked(true);
 
-            // Se si tratta di un prodotto chiuso confezionato
+            // Se si tratta di un prodotto aperto confezionato
             if(p.isOpened()) {
                 openedCheckBox.setChecked(true);
                 if(p.getOpeningDate()!=null)
                     TextUtils.editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
             }
-
-            openedStorageConditionSpinner.setSelection(p.getOpenedStorageCondition());
         }
 
         // Se si tratta di un prodotto fresco o confezionato aperto
@@ -757,7 +755,7 @@ public class EditProduct extends AppCompatActivity {
 
         if (action.equals("shopping") && getIntent().getSerializableExtra("productToEdit") == null){
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
-            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0)); // settare pointofpurchase dall'intent
+            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
         } else if(TextUtils.getDate(purchaseDateField)!=null)
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
         else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
@@ -929,10 +927,10 @@ public class EditProduct extends AppCompatActivity {
         storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
         openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
 
-        if(!action.equals("shopping"))
-            storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", 0));
-        else
+        if (action.equals("shopping"))
             storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO permettere di selezionare il valore di default
+        else
+            storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", FRIDGE_SELECTION));
         openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
     }
 

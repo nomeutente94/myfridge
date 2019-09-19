@@ -597,6 +597,7 @@ public class MainActivity extends AppCompatActivity {
     public void editSingleProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
+        //intent.putExtra("filter", currentFilter);
         intent.putExtra("action", "edit");
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
