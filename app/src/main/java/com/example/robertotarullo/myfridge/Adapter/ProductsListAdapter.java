@@ -132,17 +132,22 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 if(date.equals(DateUtils.getNoExpiryDate())) // TODO Cambiare controllo data "mai"
                     dataTextView.setText("Non scade mai");
                 else {
+                    // Colore originale:
+
                     Date now = DateUtils.getCurrentDateWithoutTime();
-                    if(now.equals(date)){
+                    if(now.equals(date)) {
+                        dataTextView.setTextColor(Color.parseColor("#ea8c00"));
                         dataTextView.setText("Scade oggi");
                     } else if(now.after(date)) {
+                        dataTextView.setTextColor(Color.RED);
                         dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
-                    } else {
+                    } else
                         dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
-                    }
                 }
-            } else
+            } else {
+                dataTextView.setTextColor(Color.parseColor("#828282"));
                 dataTextView.setText("Non specificata");
+            }
         }
     }
 }
