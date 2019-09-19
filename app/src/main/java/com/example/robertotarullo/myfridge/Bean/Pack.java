@@ -30,17 +30,8 @@ public class Pack implements Product{
         products.add(singleProduct);
     }
 
-    public int getSize(boolean showConsumed){
-        if(showConsumed)
-            return getProducts().size();
-        else {
-            int size = 0;
-            for(int i=0; i<getProducts().size(); i++){
-                if(!getProducts().get(i).isConsumed())
-                    size++;
-            }
-            return size;
-        }
+    public int getSize(){
+        return getProducts().size();
     }
 
     @Override

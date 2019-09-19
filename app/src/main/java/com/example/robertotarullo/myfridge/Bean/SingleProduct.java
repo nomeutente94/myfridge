@@ -283,6 +283,7 @@ public class SingleProduct implements Product, Serializable {
                 && singleProduct.getOpenedStorageCondition()==openedStorageCondition        // openedStorageCondition
                 && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                // expiryDate
                 && singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening    // expiringDaysAfterOpening
+                && singleProduct.getPackagingDate()==packagingDate                          // packagingDate
                 //&& singleProduct.isConsumed()==consumed                                   // consumed
             ){
                 return true;

@@ -85,7 +85,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 typeTextView.setText("Fresco");
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
-            typeTextView.setText(((Pack) p).getSize(showConsumed));
+            typeTextView.setText(String.valueOf(((Pack)p).getSize()));
 
             if(p.isPackaged())
                 typeTextView.setText(typeTextView.getText() + " confezionati");
