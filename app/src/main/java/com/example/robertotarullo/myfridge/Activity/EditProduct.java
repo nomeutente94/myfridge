@@ -325,8 +325,6 @@ public class EditProduct extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String consumptionMsgFields =  "- Data di consumazione\n- Data di apertura\n- Consumazione";
-
         switch (item.getItemId()) {
             case R.id.delete:
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -371,9 +369,8 @@ public class EditProduct extends AppCompatActivity {
                     }
                 };
 
-                msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati:\n\n" +
-                      "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto\n\n" +
-                      consumptionMsgFields;
+                msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione. Inoltre verrano resettati:\n\n" +
+                      "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto";
 
                 builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
@@ -396,7 +393,7 @@ public class EditProduct extends AppCompatActivity {
                     }
                 };
 
-                msg = "Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati:\n\n" + consumptionMsgFields;
+                msg = "Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione.";
 
                 builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
