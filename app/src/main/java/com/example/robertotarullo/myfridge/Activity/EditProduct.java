@@ -24,8 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.robertotarullo.myfridge.Adapter.StorageSpinnerArrayAdapter;
-import com.example.robertotarullo.myfridge.Bean.Pack;
-import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.ProductForm;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
 import com.example.robertotarullo.myfridge.Adapter.PointsOfPurchaseSpinnerAdapter;
@@ -315,13 +313,20 @@ public class EditProduct extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if(action.equals("edit"))
+
+        if(action.equals("edit") || action.equals("update"))
+            menu.add(0, R.id.resetConsumption, Menu.NONE, "Resetta solo consumazione ");
+        if(action.equals("edit")) {
+            menu.add(0, R.id.reset, Menu.NONE, "Resetta");
             menu.add(0, R.id.delete, Menu.NONE, "Elimina");
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        String consumptionMsgFields =  "- Data di consumazione\n- Data di apertura\n- Consumazione";
+
         switch (item.getItemId()) {
             case R.id.delete:
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -352,9 +357,81 @@ public class EditProduct extends AppCompatActivity {
                         .show();
 
                 return true;
+            case R.id.reset:
+                dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            hardReset();
+                            /*new Thread(() -> {
+                                // modifica su db ?
+                            }).start();*/
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati:\n\n" +
+                      "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto\n\n" +
+                      consumptionMsgFields;
+
+                builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma ripristino (Hard reset)")
+                        .setPositiveButton("Conferma", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+                return true;
+            case R.id.resetConsumption:
+                dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            softReset();
+                            /*new Thread(() -> {
+                                // modifica su db ?
+                            }).start();*/
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                msg = "Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati:\n\n" + consumptionMsgFields;
+
+                builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma ripristino (Soft reset)")
+                        .setPositiveButton("Conferma", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void hardReset(){
+        softReset();
+
+        packagingDateField.setText(""); // Resetta data di confezionamento
+        purchaseDateField.setText(""); // Resetta data di acquisto
+        noExpiryCheckbox.setChecked(false); // Resetta data di scadenza
+        expiryDateField.setText("");
+        pointOfPurchaseSpinner.setSelection(0); // Resetta punto di acquisto // TODO resetta solo se si tratta di un prodotto che si può comprare anche altrove ?
+    }
+
+    private void softReset(){
+        // Resetta consumazione
+        consumptionDateField.setText("");
+        consumedCheckBox.setChecked(false);
+
+        // Resetta apertura
+        openingDateField.setText("");
+        openedCheckBox.setChecked(false);
+
+        // Resetta slider
+        currentWeightSlider.setTag(R.id.percentageValue, "100");
+        currentWeightSlider.setProgress(currentWeightSlider.getMax());
     }
 
     @Override
@@ -899,7 +976,7 @@ public class EditProduct extends AppCompatActivity {
         else if(priceAsString.indexOf(',')>-1){                                                     // se vi è una virgola e il valore non è 0, aggiungi eventuali zero mancanti ai decimali
             int digitsAfterComma = priceAsString.substring(priceAsString.indexOf(',')).length();
             if (digitsAfterComma == 1) {
-                priceField.setText(priceAsString + "00"); // FARE I CONTROLLI E GLI INSERIMENTI IN BASE A MAX_INT_DIGITS
+                priceField.setText(priceAsString + "00"); // TODO FARE I CONTROLLI E GLI INSERIMENTI IN BASE A MAX_INT_DIGITS
                 TextUtils.setSelectionToEnd(priceField);
             } else if (digitsAfterComma == 2) {
                 priceField.setText(priceAsString + "0");

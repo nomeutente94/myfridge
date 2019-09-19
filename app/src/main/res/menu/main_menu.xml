@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/showConsumed" android:title="Mostra prodotti consumati" />
-    <item android:id="@+id/delete" android:title="Elimina prodotto" />
+    <item
+        android:id="@+id/showConsumed"
+        android:title="Mostra prodotti consumati" />
+    <item
+        android:id="@+id/delete"
+        android:title="Elimina prodotto" />
+    <item
+        android:id="@+id/reset"
+        android:title="Resetta stato" />
+    <item
+        android:id="@+id/resetConsumption"
+        android:title="Resetta consumazione" />
 </menu>

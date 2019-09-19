@@ -1,15 +1,11 @@
 package com.example.robertotarullo.myfridge.Watcher;
 
-import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.TextUtils;
-
-import org.w3c.dom.Text;
 
 public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListener{
 
@@ -51,10 +47,6 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
         } else {
             seekBar.setProgress(1);
         }
-
-
-        //System.out.println("Tipo di slider: " + seekBar.getTag().toString());
-        //System.out.println("Percentuale interna dello slider: " + seekBar.getTag(R.id.percentageValue).toString());
     }
 
     @Override
