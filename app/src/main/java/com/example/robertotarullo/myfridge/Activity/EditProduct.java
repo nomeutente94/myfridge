@@ -757,10 +757,12 @@ public class EditProduct extends AppCompatActivity {
         if (action.equals("shopping") && getIntent().getSerializableExtra("productToEdit") == null){
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
             p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
-        } else if(TextUtils.getDate(purchaseDateField)!=null)
-            p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
-        else if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
-            p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
+        } else {
+            if(TextUtils.getDate(purchaseDateField)!=null)
+                p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+            if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
+                p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
+        }
 
         p.setPackagingDate(TextUtils.getDate(packagingDateField));
 
