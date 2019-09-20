@@ -145,13 +145,13 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
             // calcola il nuovo currentWeight rispetto al valore percentuale
             float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * weight) / (float)100;
+            int currentWeight = (int) Math.ceil(currentWeightAsFloat);
 
             if(currentWeightSlider.getTag().toString().equals("currentWeight")) {
                 currentWeightSlider.setMax(weight);
-                int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightSlider.setProgress(currentWeight);
             }
-            currentWeightField.setText(String.valueOf(currentWeightAsFloat));
+            currentWeightField.setText(String.valueOf(currentWeight));
         }
     }
 }
