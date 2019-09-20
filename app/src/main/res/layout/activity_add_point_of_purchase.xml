@@ -44,6 +44,7 @@
                             android:id="@+id/nameField"
                             android:layout_width="match_parent"
                             android:hint="Nome"
+                            android:importantForAutofill="no"
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
                             android:inputType="textCapSentences|textAutoCorrect" />
