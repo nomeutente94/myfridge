@@ -12,17 +12,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.Cart" />
-        <activity android:name=".Activity.ShoppingForm" />
-        <activity android:name=".Activity.AddPointOfPurchase" />
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name=".activity.Cart" />
+        <activity android:name=".activity.ShoppingForm" />
+        <activity android:name=".activity.AddPointOfPurchase" />
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.EditProduct" />
+        <activity android:name=".activity.EditProduct" />
     </application>
 
 </manifest>

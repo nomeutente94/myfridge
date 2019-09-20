@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.EditProduct">
+    tools:context=".activity.EditProduct">
 
     <ScrollView
         android:id="@+id/listScrollView"
@@ -65,7 +65,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/consumptionDateField"
                             android:layout_width="280dp"
                             android:layout_height="wrap_content"
@@ -220,7 +220,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/priceField"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -262,7 +262,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/pricePerKiloField"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -303,7 +303,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/weightField"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -443,7 +443,7 @@
                             android:layout_height="match_parent"
                             android:orientation="horizontal">
 
-                            <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                            <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                                 android:id="@+id/openingDateField"
                                 android:layout_width="280dp"
                                 android:layout_height="wrap_content"
@@ -559,7 +559,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/packagingDateField"
                             android:layout_width="280dp"
                             android:layout_height="wrap_content"
@@ -599,7 +599,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/purchaseDateField"
                             android:layout_width="280dp"
                             android:layout_height="wrap_content"
@@ -639,7 +639,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/expiryDateField"
                             android:layout_width="280dp"
                             android:layout_height="wrap_content"
@@ -691,7 +691,7 @@
                         android:layout_height="match_parent"
                         android:orientation="horizontal">
 
-                        <com.example.robertotarullo.myfridge.Widget.NoMenuEditText
+                        <com.example.robertotarullo.myfridge.widget.NoMenuEditText
                             android:id="@+id/expiryDaysAfterOpeningField"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
