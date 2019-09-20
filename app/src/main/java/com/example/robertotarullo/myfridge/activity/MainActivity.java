@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -351,15 +352,24 @@ public class MainActivity extends AppCompatActivity {
     // TODO codice uguale a onConfirmButtonClick case "add"
     public void cloneProduct(MenuItem item) {
         View cloneDialogView = getLayoutInflater().inflate(R.layout.clone_dialog, null);
+
         TextView clonesField = cloneDialogView.findViewById(R.id.quantityField);
         clonesField.addTextChangedListener(new QuantityWatcher(cloneDialogView.findViewById(R.id.quantityAddButton), cloneDialogView.findViewById(R.id.quantitySubtractButton)));
+
+        //RadioButton radioButtonFull = cloneDialogView.findViewById(R.id.radio_clone_complete);
+        RadioButton radioButtonPartial = cloneDialogView.findViewById(R.id.radio_clone_partial);
+        RadioButton radioButtonMin = cloneDialogView.findViewById(R.id.radio_clone_min);
 
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
                     SingleProduct clonedProduct = (SingleProduct)productsListAdapter.getItem(currentPopupPosition);
                     clonedProduct.setId(0);
-                    hardReset(clonedProduct);
+
+                    if(radioButtonPartial.isChecked())
+                        softReset(clonedProduct);
+                    else if(radioButtonMin.isChecked())
+                        hardReset(clonedProduct);
 
                     currentFilter = clonedProduct.getActualStorageCondition();
 
@@ -393,15 +403,20 @@ public class MainActivity extends AppCompatActivity {
 
     // TODO spostare nel bean o in una classe di utils?
     private void hardReset(SingleProduct p){
+        softReset(p);
+        p.setPurchaseDate(null);
+        p.setPointOfPurchaseId(0);
+        p.setExpiryDate(null);
+        p.setPackagingDate(null);
+    }
+
+    // TODO spostare nel bean o in una classe di utils?
+    private void softReset(SingleProduct p){
         p.setCurrentWeight(0);
         p.setPercentageQuantity(100);
         p.setCurrentPieces(p.getPieces());
-        p.setPurchaseDate(null);
         p.setConsumptionDate(null);
-        p.setPointOfPurchaseId(0);
         p.setConsumed(false);
-        p.setExpiryDate(null);
-        p.setPackagingDate(null);
         p.setOpened(false);
         p.setOpeningDate(null);
     }
