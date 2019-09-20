@@ -2,7 +2,6 @@ package com.example.robertotarullo.myfridge.Activity;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -31,6 +30,8 @@ import com.example.robertotarullo.myfridge.Adapter.ProductsListAdapter;
 import com.example.robertotarullo.myfridge.Bean.Pack;
 import com.example.robertotarullo.myfridge.Bean.Product;
 import com.example.robertotarullo.myfridge.Bean.SingleProduct;
+import com.example.robertotarullo.myfridge.Comparator.AscendingDateComparator;
+import com.example.robertotarullo.myfridge.Comparator.ConsumedDiscendingDateComparator;
 import com.example.robertotarullo.myfridge.Database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.Utils.DateUtils;
@@ -625,57 +626,10 @@ public class MainActivity extends AppCompatActivity {
 
     // ordina dalla data più recente alla più lontana
     private void sortByAscendingDate(List<Product> products) {
-        Collections.sort(products, (p1, p2) -> {
-            Date date1;
-            Date date2;
-
-            // -1 mette in alto p1
-            // 1 mette in alto p2
-            // 0 mantiene l'ordine predefinito
-
-            // Ordine: data decrescente > non specificata
-            if(showConsumedProducts){
-                date1 = ((SingleProduct)p1).getConsumptionDate();
-                date2 = ((SingleProduct)p2).getConsumptionDate();
-
-                if(date1!=null && date2!=null){
-                    if(date1.equals(date2))
-                        return 0;
-                    else if(date1.after(date2))
-                        return -1;
-                    else //if(date1.before(date2))
-                        return 1;
-                } else if(date1!=null)
-                    return -1;
-                else if(date2!=null)
-                    return 1;
-                else // entrambe null
-                    return 0;
-
-            // Ordine: non specificata > data crescente > mai
-            } else {
-                date1 = DateUtils.getActualExpiryDate(p1);
-                date2 = DateUtils.getActualExpiryDate(p2);
-
-                if(date1!=null && date2!=null){
-                    if(date1.equals(date2))
-                        return 0;
-                    else if(date1.equals(DateUtils.getNoExpiryDate()))
-                        return 1;
-                    else if(date2.equals(DateUtils.getNoExpiryDate()))
-                        return -1;
-                    else if(date1.after(date2))
-                        return 1;
-                    else // if(date1.before(date2))
-                        return -1;
-                } else if(date1!=null)
-                    return 1;
-                else if(date2!=null)
-                    return -1;
-                else // entrambe null
-                    return 0;
-            }
-        });
+        if(showConsumedProducts)
+            Collections.sort(products, new ConsumedDiscendingDateComparator());
+        else
+            Collections.sort(products, new AscendingDateComparator());
     }
 
     public void showPopup(View v) {
@@ -700,6 +654,8 @@ public class MainActivity extends AppCompatActivity {
 
         //resetSearchBar();
 
+        showConsumedProducts = false; // TODO controllare per quali casi
+
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", currentFilter);
@@ -711,7 +667,6 @@ public class MainActivity extends AppCompatActivity {
                     currentFilter = data.getIntExtra("filter", currentFilter);
                     highlightButton(null);
                 }
-                showConsumedProducts = false;
                 retrieveProductsFromDB(null);
             }
         } else if (requestCode == SHOPPING_REQUEST) {

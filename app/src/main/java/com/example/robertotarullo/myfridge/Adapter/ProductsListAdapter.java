@@ -3,12 +3,11 @@ package com.example.robertotarullo.myfridge.Adapter;
 import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -39,12 +38,13 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         this.context = context;
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View v, ViewGroup parent) {
-        if (v == null) {
-            Log.d("DEBUG","Inflating view");
+    public View getView(int position, View v, @NonNull ViewGroup parent) {
+        if (v == null)
             v = inflater.inflate(R.layout.list_element, null);
-        }
+
+
 
         p = getItem(position);
 
@@ -118,22 +118,21 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     }
 
     private void setDate(){
+        dataTextView.setTextColor(Color.parseColor("#828282"));
+
         Date date;
         if(showConsumed) {
             date = ((SingleProduct) p).getConsumptionDate();
-            if(date != null){
+            if(date != null)
                 dataTextView.setText("Consumato il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
-            } else
+            else
                 dataTextView.setText("Non specificata");
-
         } else {
             date = DateUtils.getActualExpiryDate(p);
             if(date != null){
                 if(date.equals(DateUtils.getNoExpiryDate())) // TODO Cambiare controllo data "mai"
                     dataTextView.setText("Non scade mai");
                 else {
-                    // Colore originale:
-
                     Date now = DateUtils.getCurrentDateWithoutTime();
                     if(now.equals(date)) {
                         dataTextView.setTextColor(Color.parseColor("#ea8c00"));
@@ -144,10 +143,8 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                     } else
                         dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                 }
-            } else {
-                dataTextView.setTextColor(Color.parseColor("#828282"));
+            } else
                 dataTextView.setText("Non specificata");
-            }
         }
     }
 }
