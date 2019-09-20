@@ -3,24 +3,33 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:paddingTop="25dp"
-        android:paddingBottom="10dp"
-        android:layout_width="wrap_content"
+        android:paddingTop="20dp"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_centerInParent="true">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <include
-                layout="@layout/quantity_block"
-                android:id="@+id/quantityBlock"/>
-        </LinearLayout>
+            <LinearLayout
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <include
+                    layout="@layout/quantity_block"
+                    android:id="@+id/quantityBlock"/>
+            </LinearLayout>
+        </RelativeLayout>
+
 
         <RadioGroup
-            android:layout_width="wrap_content"
+            android:paddingTop="10dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
@@ -37,12 +46,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Perdi solo la consumazione"/>
+                android:text="Conserva tutto eccetto la consumazione"/>
             <RadioButton
                 android:id="@+id/radio_clone_min"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Perdi l'intero stato"/>
+                android:text="Non conservare lo stato"/>
         </RadioGroup>
 
     </LinearLayout>
