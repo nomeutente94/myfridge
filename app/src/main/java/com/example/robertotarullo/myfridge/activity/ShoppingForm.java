@@ -1,12 +1,12 @@
 package com.example.robertotarullo.myfridge.activity;
 
-import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapter;
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
@@ -27,7 +27,7 @@ public class ShoppingForm extends AppCompatActivity {
         setContentView(R.layout.activity_shopping_form);
         setTitle("Seleziona punto d'acquisto");
 
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
+        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
         pointOfPurchaseSpinner = findViewById(R.id.pointOfPurchaseSpinner);
 
         initializePointsOfPurchaseSpinner();

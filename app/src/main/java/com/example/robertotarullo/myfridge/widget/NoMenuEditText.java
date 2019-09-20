@@ -6,8 +6,10 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.appcompat.widget.AppCompatEditText;
+
 // Custom EditText class
-public class NoMenuEditText extends android.support.v7.widget.AppCompatEditText {
+public class NoMenuEditText extends AppCompatEditText {
     private final Context context;
 
     /** This is a replacement method for the base TextView class' method of the same name. This

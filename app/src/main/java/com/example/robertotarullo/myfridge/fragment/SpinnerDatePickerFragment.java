@@ -3,7 +3,6 @@ package com.example.robertotarullo.myfridge.fragment;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.fragment.app.DialogFragment;
 
 import com.example.robertotarullo.myfridge.adapter.DateSpinnerAdapter;
 import com.example.robertotarullo.myfridge.R;
@@ -26,7 +27,7 @@ import java.util.List;
 // !!!!!! SI USA DATEPICKERFRAGMENT IN MODALITÀ SPINNER !!!!!!
 // TODO continuare sviluppo e utilizzare questo
 
-public class SpinnerDatePickerFragment extends DialogFragment{
+public class SpinnerDatePickerFragment extends DialogFragment {
 
     boolean dayAutoSelection;
 

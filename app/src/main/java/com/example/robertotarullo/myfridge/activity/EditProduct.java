@@ -1,11 +1,8 @@
 package com.example.robertotarullo.myfridge.activity;
 
 import android.app.AlertDialog;
-import android.arch.persistence.room.Room;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.Menu;
@@ -22,6 +19,9 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import com.example.robertotarullo.myfridge.adapter.StorageSpinnerArrayAdapter;
 import com.example.robertotarullo.myfridge.bean.ProductForm;
@@ -83,37 +83,13 @@ public class EditProduct extends AppCompatActivity {
     // dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
-    /*// resetta lo stato dell'activity come al lancio
-    // TODO Testare il buon funzionamento del risultato finale
-    private void resetActivityStatus(){
-        packagedCheckBox.setChecked(false); // TODO leggere da un valore delle impostazioni
-        nameField.setText("");
-        brandField.setText("");
-        pricePerKiloField.setText("");
-        currentWeightField.setText("");
-        priceField.setText("");
-        weightField.setText("");
-        storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO leggere da un valore delle impostazioni
-        openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
-        pointOfPurchaseSpinner.setSelection(0);
-        purchaseDateField.setText("");
-        openingDateField.setText("");
-        expiryDateField.setText("");
-        expiryDaysAfterOpeningField.setText("");
-        openedCheckBox.setChecked(false);
-        quantityField.setText(String.valueOf(MIN_QUANTITY));
-        piecesField.setText(String.valueOf(MIN_PIECES));
-        currentPiecesField.setText(String.valueOf(MIN_PIECES));
-        noExpiryCheckbox.setChecked(false);
-    }*/
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_product);
 
         // Ottieni un riferimento al db
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
+        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
 
         // Riferimenti ai campi
         packagedCheckBox = findViewById(R.id.packagedCheckBox);
@@ -497,8 +473,6 @@ public class EditProduct extends AppCompatActivity {
     // Compila tutti i campi con i dati del prodotto da modificare
     private void fillFieldsFromProduct(SingleProduct p) {
 
-        //printProductOnConsole(p);
-
         // TODO Mettere a fattor comune con codice in case("add"), PiecesWatcher e PriceWeightRelationWatcher
         if(p.getWeight()==0){
             findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
@@ -701,7 +675,7 @@ public class EditProduct extends AppCompatActivity {
                 .show();
     }
 
-    // metodo usato per il debug
+    // metodo usato per il debug/test
     private void printProductOnConsole(SingleProduct p){
         System.out.println("id: " + p.getId());
         System.out.println("packaged: " + p.isPackaged());

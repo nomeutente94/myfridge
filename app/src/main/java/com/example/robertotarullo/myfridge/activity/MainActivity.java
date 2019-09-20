@@ -5,13 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.AlertDialog;
-import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -27,19 +25,20 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.robertotarullo.myfridge.adapter.ProductsListAdapter;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.comparator.AscendingDateComparator;
 import com.example.robertotarullo.myfridge.comparator.ConsumedDiscendingDateComparator;
+import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
-
-import static com.example.robertotarullo.myfridge.database.DatabaseUtils.DATABASE_NAME;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Ottieni un riferimento al DB
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DATABASE_NAME).build();
+        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
 
         // Ottieni riferimenti alle view
         listView = findViewById(R.id.mylistview);

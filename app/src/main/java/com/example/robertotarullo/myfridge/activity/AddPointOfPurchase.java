@@ -1,12 +1,12 @@
 package com.example.robertotarullo.myfridge.activity;
 
-import android.arch.persistence.room.Room;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
@@ -17,7 +17,6 @@ import com.example.robertotarullo.myfridge.utils.TextUtils;
 public class AddPointOfPurchase extends AppCompatActivity {
 
     private EditText nameField;
-
     private Button addButton;
 
     // dichiarazione delle variabili di database
@@ -35,7 +34,7 @@ public class AddPointOfPurchase extends AppCompatActivity {
         addButton = findViewById(R.id.addButton);
 
         // Ottieni un riferimento al db
-        productDatabase = Room.databaseBuilder(getApplicationContext(), ProductDatabase.class, DatabaseUtils.DATABASE_NAME).build();
+        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
 
         addButton.setOnClickListener(v -> {
             if (isEmpty(nameField)) {
