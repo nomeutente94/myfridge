@@ -195,7 +195,9 @@ public class EditProduct extends AppCompatActivity {
 
         switch (action) {
             case "add":
-                initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
+                new Thread(() -> {
+                    initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
+                }).start();
 
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
 
