@@ -30,6 +30,7 @@ import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
+import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.watcher.PiecesWatcher;
@@ -971,6 +972,7 @@ public class EditProduct extends AppCompatActivity {
     // immissione data con spinner date picker
     public void showSpinnerDatePickerDialog(View v){
         DialogFragment f = new DatePickerFragment();
+        //DialogFragment f = new SpinnerDatePickerFragment(); // TODO risolvere bug e usarlo al posto di datepickerfragment
         Bundle args = new Bundle();
         args.putInt("dateFieldId", v.getId());
         args.putBoolean("spinnerMode", true);

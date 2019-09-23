@@ -66,10 +66,8 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <!-- TODO mostrare la searchBar quando implementata -->
                 <LinearLayout
                     android:padding="11dp"
-                    android:visibility="gone"
                     android:id="@+id/searchBarBlock"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
