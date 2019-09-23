@@ -30,7 +30,6 @@ import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
-import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.watcher.PiecesWatcher;
@@ -220,10 +219,7 @@ public class EditProduct extends AppCompatActivity {
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
-                    runOnUiThread(() -> {
-                        fillFieldsFromProduct(p);
-                        setCurrentFormToInitial();
-                    });
+                    runOnUiThread(() -> fillFieldsFromProduct(p));
                 }).start();
                 break;
             case "update":
@@ -246,13 +242,11 @@ public class EditProduct extends AppCompatActivity {
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
-                    runOnUiThread(() -> {
-                        fillFieldsFromProduct(p);
-                        setCurrentFormToInitial();
-                    });
+                    runOnUiThread(() -> fillFieldsFromProduct(p));
                 }).start();
                 break;
             case "shopping":
+                // Modifica di un prodotto nel carrello
                 if (getIntent().getSerializableExtra("productToEdit") != null) {
                     initializeFormLabels("Modifica prodotto", "Salva");
                     quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
@@ -260,17 +254,16 @@ public class EditProduct extends AppCompatActivity {
                         initializePointsOfPurchaseSpinner();
                         runOnUiThread(() -> fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit")));
                     }).start();
+                // Inserimento dei prodotti dal carrello al database
                 } else if (getIntent().getSerializableExtra("cartProducts") != null) {
                     new Thread(() -> {
-                        initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
-                        if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts()?
-                            runOnUiThread(() -> { // TODO è necessario l'ui thread?
-                                Intent resultIntent = new Intent();
-                                setResult(RESULT_OK, resultIntent);
-                                finish();
-                            });
+                        if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts() e modificare di conseguenza onconfirmbuttonclick
+                            Intent resultIntent = new Intent();
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
                         }
                     }).start();
+                // Aggiunta di un nuovo prodotto per il carrello
                 } else {
                     initializeFormLabels("Aggiungi prodotto", "Aggiungi");
                 }
@@ -417,14 +410,15 @@ public class EditProduct extends AppCompatActivity {
         currentWeightSlider.setProgress(currentWeightSlider.getMax());
     }
 
+    // Mostra avviso nel caso di campi che modificano il prodotto
     @Override
     public void onBackPressed() {
-        String msg = null;
+        System.out.println(startingForm.toString());
+        System.out.println(getCurrentForm().toString());
 
-        if(!startingForm.equals(getCurrentForm()))
-            msg = "Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?";
-
-        if(msg!=null){
+        if(startingForm.equals(getCurrentForm()))
+            super.onBackPressed();
+        else {
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
@@ -434,14 +428,13 @@ public class EditProduct extends AppCompatActivity {
                         break;
                 }
             };
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(msg)
-                    .setTitle("Attenzione")
-                    .setPositiveButton("Esci", dialogClickListener)
-                    .setNegativeButton("Annulla", dialogClickListener)
-                    .show();
-        } else
-            super.onBackPressed();
+            new AlertDialog.Builder(this)
+                .setMessage("Sono stati modificati alcuni campi, sei sicuro di voler uscire senza salvare?")
+                .setTitle("Attenzione")
+                .setPositiveButton("Esci", dialogClickListener)
+                .setNegativeButton("Annulla", dialogClickListener)
+                .show();
+        }
     }
 
     private ProductForm getCurrentForm(){
@@ -569,6 +562,8 @@ public class EditProduct extends AppCompatActivity {
                 currentWeightSlider.setProgress(p.getCurrentPieces());
             }
         }
+
+        setCurrentFormToInitial();
     }
 
     // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
@@ -675,39 +670,12 @@ public class EditProduct extends AppCompatActivity {
             }
         };
 
-        String msg = "Vuoi segnare come consumato il prodotto \"" + newProduct.getName() + "\"?";
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
+        new AlertDialog.Builder(this)
+                .setMessage("Vuoi segnare come consumato il prodotto \"" + newProduct.getName() + "\"?")
                 .setTitle("Conferma consumazione")
                 .setPositiveButton("Conferma", dialogClickListener)
                 .setNegativeButton("Annulla", dialogClickListener)
                 .show();
-    }
-
-    // metodo usato per il debug/test
-    private void printProductOnConsole(SingleProduct p){
-        System.out.println("id: " + p.getId());
-        System.out.println("packaged: " + p.isPackaged());
-        System.out.println("name: " + p.getName());
-        System.out.println("brand: " + p.getBrand());
-        System.out.println("price: " + p.getPrice());
-        System.out.println("priceperkilo: " + p.getPricePerKilo());
-        System.out.println("weight: " + p.getWeight());
-        System.out.println("currentweight: " + p.getCurrentWeight());
-        System.out.println("percentagequantity: " + p.getPercentageQuantity());
-        System.out.println("pieces: " + p.getPieces());
-        System.out.println("currentpieces: " + p.getCurrentPieces());
-        System.out.println("expiringdaysafteropening: " + p.getExpiringDaysAfterOpening());
-        System.out.println("purchasedate: " + p.getPurchaseDate());
-        System.out.println("storagecondition: " + p.getStorageCondition());
-        System.out.println("pointofpurchaseid: " + p.getPointOfPurchaseId());
-        System.out.println("consumed: " + p.isConsumed());
-        System.out.println("-------------------------");
-        System.out.println("opened: " + p.isOpened());
-        System.out.println("openingdate: " + p.getOpeningDate());
-        System.out.println("expirydate: " + p.getExpiryDate());
-        System.out.println("openedstoragecondition: " + p.getOpenedStorageCondition());
     }
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
@@ -804,7 +772,6 @@ public class EditProduct extends AppCompatActivity {
                 p.setCurrentWeight(p.getWeight());
         }
 
-        printProductOnConsole(p);
         return p;
     }
 

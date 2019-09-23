@@ -1,9 +1,8 @@
 package com.example.robertotarullo.myfridge.bean;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-
-import com.example.robertotarullo.myfridge.utils.DateUtils;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -23,7 +22,7 @@ import java.util.Objects;
 
 public class SingleProduct implements Product, Serializable {
     // Identificatore univoco del prodotto
-    // Se non specificato è 0, parte da id 1
+    // 0 se inserito, >1 se inserito nel database
     @PrimaryKey(autoGenerate = true)
     private long id;
 
@@ -167,7 +166,7 @@ public class SingleProduct implements Product, Serializable {
         this.pointOfPurchaseId = pointOfPurchaseId;
     }
 
-    // TODO spostare in classe Utils esterna
+    // TODO spostare in classe Utils esterna ?
     public int getActualStorageCondition(){
         if(opened)
             return openedStorageCondition;
@@ -246,14 +245,6 @@ public class SingleProduct implements Product, Serializable {
         this.openedStorageCondition = openedStorageCondition;
     }
 
-    // TODO spostare in classe Utils esterna
-    public int calculateExpiringDaysAfterOpening(){
-        if(getExpiringDaysAfterOpening()==0 && getOpeningDate()!=null && getExpiryDate()!=null && !isPackaged()) // se non lo ha ed è un prodotto fresco, prova a calcolarlo
-            return DateUtils.getDaysByDateDiff(getOpeningDate(), getExpiryDate());
-        else
-            return getExpiringDaysAfterOpening();
-    }
-
     public int getExpiringDaysAfterOpening() {
         return expiringDaysAfterOpening;
     }
@@ -270,63 +261,6 @@ public class SingleProduct implements Product, Serializable {
         this.packaged = packaged;
     }
 
-    // ritorna true se raggruppabile
-    // TODO permettere di configurare il criterio di raggruppamento
-    public boolean packEquals(SingleProduct singleProduct){
-        if(singleProduct!=null){
-            if(    singleProduct.isPackaged()==packaged                                     // packaged
-                && Objects.equals(singleProduct.getName(), name)                            // name
-                && Objects.equals(singleProduct.getBrand(), brand)                          // brand
-                && singleProduct.getWeight()==weight                                        // weight
-                && singleProduct.getPieces()==pieces                                        // pieces
-                && singleProduct.getStorageCondition()==storageCondition                    // storageCondition
-                && singleProduct.getOpenedStorageCondition()==openedStorageCondition        // openedStorageCondition
-                && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                // expiryDate
-                && singleProduct.getExpiringDaysAfterOpening()==expiringDaysAfterOpening    // expiringDaysAfterOpening
-                && singleProduct.getPackagingDate()==packagingDate                          // packagingDate
-                //&& singleProduct.isConsumed()==consumed                                   // consumed
-            ){
-                return true;
-            }
-        } else
-            return false;
-
-        return false;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof SingleProduct){
-            SingleProduct singleProductObj = (SingleProduct)obj;
-            if( singleProductObj.getId()==id &&
-                singleProductObj.isPackaged()==packaged &&
-                Objects.equals(singleProductObj.getName(), name) &&
-                Objects.equals(singleProductObj.getBrand(), brand) &&
-                singleProductObj.getPrice()==price &&
-                singleProductObj.getPricePerKilo()==pricePerKilo &&
-                singleProductObj.getWeight()==weight &&
-                singleProductObj.getCurrentWeight()==currentWeight &&
-                singleProductObj.getPercentageQuantity()==percentageQuantity &&
-                singleProductObj.getPieces()==pieces &&
-                singleProductObj.getCurrentPieces()==currentPieces &&
-                singleProductObj.getExpiringDaysAfterOpening()==expiringDaysAfterOpening &&
-                Objects.equals(singleProductObj.getPurchaseDate(), purchaseDate) &&
-                Objects.equals(singleProductObj.getConsumptionDate(), consumptionDate) &&
-                singleProductObj.getStorageCondition()==storageCondition &&
-                singleProductObj.getPointOfPurchaseId()==pointOfPurchaseId &&
-                singleProductObj.isConsumed()==consumed &&
-                Objects.equals(singleProductObj.getExpiryDate(), expiryDate) &&
-                Objects.equals(singleProductObj.getPackagingDate(), packagingDate) &&
-                singleProductObj.isOpened()==opened &&
-                Objects.equals(singleProductObj.getOpeningDate(), openingDate) &&
-                singleProductObj.getOpenedStorageCondition()==openedStorageCondition
-            ){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public Date getPackagingDate() {
         return packagingDate;
     }
@@ -341,5 +275,83 @@ public class SingleProduct implements Product, Serializable {
 
     public void setConsumptionDate(Date consumptionDate) {
         this.consumptionDate = consumptionDate;
+    }
+
+    // ritorna true se raggruppabile
+    // TODO permettere di configurare il criterio di raggruppamento
+    public boolean packEquals(SingleProduct singleProduct){
+        if(singleProduct!=null){
+            return     singleProduct.isPackaged() == packaged                                     // packaged
+                    && Objects.equals(singleProduct.getName(), name)                              // name
+                    && Objects.equals(singleProduct.getBrand(), brand)                            // brand
+                    && singleProduct.getWeight() == weight                                        // weight
+                    && singleProduct.getPieces() == pieces                                        // pieces
+                    && singleProduct.getStorageCondition() == storageCondition                    // storageCondition
+                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition        // openedStorageCondition
+                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                  // expiryDate
+                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening    // expiringDaysAfterOpening
+                    && singleProduct.getPackagingDate() == packagingDate;                         // packagingDate
+        } else
+            return false;
+
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof SingleProduct){
+            SingleProduct singleProductObj = (SingleProduct)obj;
+            return  singleProductObj.getId() == id &&
+                    singleProductObj.isPackaged() == packaged &&
+                    Objects.equals(singleProductObj.getName(), name) &&
+                    Objects.equals(singleProductObj.getBrand(), brand) &&
+                    singleProductObj.getPrice() == price &&
+                    singleProductObj.getPricePerKilo() == pricePerKilo &&
+                    singleProductObj.getWeight() == weight &&
+                    singleProductObj.getCurrentWeight() == currentWeight &&
+                    singleProductObj.getPercentageQuantity() == percentageQuantity &&
+                    singleProductObj.getPieces() == pieces &&
+                    singleProductObj.getCurrentPieces() == currentPieces &&
+                    singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
+                    Objects.equals(singleProductObj.getPurchaseDate(), purchaseDate) &&
+                    Objects.equals(singleProductObj.getConsumptionDate(), consumptionDate) &&
+                    singleProductObj.getStorageCondition() == storageCondition &&
+                    singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId &&
+                    singleProductObj.isConsumed() == consumed &&
+                    Objects.equals(singleProductObj.getExpiryDate(), expiryDate) &&
+                    Objects.equals(singleProductObj.getPackagingDate(), packagingDate) &&
+                    singleProductObj.isOpened() == opened &&
+                    Objects.equals(singleProductObj.getOpeningDate(), openingDate) &&
+                    singleProductObj.getOpenedStorageCondition() == openedStorageCondition;
+        }
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String singleProductAsString = "[";
+        singleProductAsString += "id: " + id + ", ";
+        singleProductAsString += "packaged: " + packaged + ", ";
+        singleProductAsString += "name: " + name + ", ";
+        singleProductAsString += "brand: " + brand + ", ";
+        singleProductAsString += "price: " + price + ", ";
+        singleProductAsString += "pricePerKilo: " + pricePerKilo + ", ";
+        singleProductAsString += "weight: " + weight + ", ";
+        singleProductAsString += "currentWeight: " + currentWeight + ", ";
+        singleProductAsString += "percentageQuantity: " + percentageQuantity + ", ";
+        singleProductAsString += "pieces: " + pieces + ", ";
+        singleProductAsString += "currentPieces: " + currentPieces + ", ";
+        singleProductAsString += "expiringDaysAfterOpening: " + expiringDaysAfterOpening + ", ";
+        singleProductAsString += "purchaseDate: " + purchaseDate + ", ";
+        singleProductAsString += "consumptionDate: " + consumptionDate + ", ";
+        singleProductAsString += "storageCondition: " + storageCondition + ", ";
+        singleProductAsString += "pointOfPurchaseId: " + pointOfPurchaseId + ", ";
+        singleProductAsString += "consumed: " + consumed + ", ";
+        singleProductAsString += "expiryDate: " + expiryDate + ", ";
+        singleProductAsString += "packagingDate: " + packagingDate + ", ";
+        singleProductAsString += "opened: " + opened + ", ";
+        singleProductAsString += "openingDate: " + openingDate + ", ";
+        singleProductAsString += "openedStorageCondition: " + openedStorageCondition + "]";
+        return singleProductAsString;
     }
 }

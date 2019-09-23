@@ -1,6 +1,9 @@
 package com.example.robertotarullo.myfridge.bean;
 
+import androidx.annotation.NonNull;
+
 import java.util.Date;
+import java.util.Objects;
 
 public class ProductForm {
 
@@ -22,9 +25,19 @@ public class ProductForm {
             return  that.formProduct.equals(this.formProduct) &&
                     that.quantity==this.quantity &&
                     that.expiryDaysAfterOpening==this.expiryDaysAfterOpening &&
-                    (that.expiryDate==this.expiryDate || (that.expiryDate!=null && that.expiryDate.equals(this.expiryDate)));
+                    Objects.equals(that.expiryDate, this.expiryDate);
         }
-
         return false;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String productFormAsString = "[";
+        productFormAsString += "formProduct: " + formProduct + ", ";
+        productFormAsString += "quantity: " + quantity + ", ";
+        productFormAsString += "expiryDaysAfterOpening: " + expiryDaysAfterOpening + ", ";
+        productFormAsString += "expiryDate: " + expiryDate + "]";
+        return productFormAsString;
     }
 }
