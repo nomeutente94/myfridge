@@ -154,7 +154,6 @@ public class EditProduct extends AppCompatActivity {
 
         // Popola spinners
         initializeStorageSpinners();
-        initializePointsOfPurchaseSpinner();
 
         // variabili di controllo del form
         expiryDateMode = false; // TODO configurabile: valore iniziale a preferenza dell'utente
@@ -195,6 +194,8 @@ public class EditProduct extends AppCompatActivity {
 
         switch (action) {
             case "add":
+                initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
+
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
 
                 findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
@@ -214,6 +215,7 @@ public class EditProduct extends AppCompatActivity {
                 findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
 
                 new Thread(() -> {
+                    initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
@@ -239,6 +241,7 @@ public class EditProduct extends AppCompatActivity {
                 pointOfPurchaseBlock.setVisibility(View.GONE);
 
                 new Thread(() -> {
+                    initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
@@ -250,9 +253,13 @@ public class EditProduct extends AppCompatActivity {
                 if (getIntent().getSerializableExtra("productToEdit") != null) {
                     initializeFormLabels("Modifica prodotto", "Salva");
                     quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
-                    fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+                    new Thread(() -> {
+                        initializePointsOfPurchaseSpinner();
+                        runOnUiThread(() -> fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit")));
+                    }).start();
                 } else if (getIntent().getSerializableExtra("cartProducts") != null) {
                     new Thread(() -> {
+                        initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                         if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts()?
                             runOnUiThread(() -> { // TODO è necessario l'ui thread?
                                 Intent resultIntent = new Intent();
@@ -915,21 +922,19 @@ public class EditProduct extends AppCompatActivity {
     }
 
     private void initializePointsOfPurchaseSpinner() {
-        new Thread(() -> {
-            List<PointOfPurchase> pointsOfPurchase = productDatabase.pointOfPurchaseDao().getPointsOfPurchase();
-            runOnUiThread(() -> {
-                // Aggiungi un prodotto fake che rappresenti la selezione nulla
-                PointOfPurchase noSelection = new PointOfPurchase();
-                if(pointsOfPurchase.size()>0)
-                    noSelection.setName("Scegli...");
-                else {
-                    noSelection.setName("Nessun punto di acquisto");
-                    pointOfPurchaseSpinner.setEnabled(false);
-                }
-                pointsOfPurchase.add(0, noSelection);
-                pointOfPurchaseSpinner.setAdapter(new PointsOfPurchaseSpinnerAdapter(this, R.layout.storage_condition_spinner_item, pointsOfPurchase));
-            });
-        }).start();
+        List<PointOfPurchase> pointsOfPurchase = productDatabase.pointOfPurchaseDao().getPointsOfPurchase();
+        runOnUiThread(() -> {
+            // Aggiungi un prodotto fake che rappresenti la selezione nulla
+            PointOfPurchase noSelection = new PointOfPurchase();
+            if(pointsOfPurchase.size()>0)
+                noSelection.setName("Scegli...");
+            else {
+                noSelection.setName("Nessun punto di acquisto");
+                pointOfPurchaseSpinner.setEnabled(false);
+            }
+            pointsOfPurchase.add(0, noSelection);
+            pointOfPurchaseSpinner.setAdapter(new PointsOfPurchaseSpinnerAdapter(this, R.layout.storage_condition_spinner_item, pointsOfPurchase));
+        });
     }
 
     private void onWeightFocusLost() {

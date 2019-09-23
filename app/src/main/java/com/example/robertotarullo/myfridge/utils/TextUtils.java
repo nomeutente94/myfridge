@@ -86,7 +86,7 @@ public abstract class TextUtils {
             try {
                 return new SimpleDateFormat("dd/MM/yyyy").parse(dateField.getText().toString());
             } catch (ParseException e) {
-                Log.d("DEBUG", "Data non valida per: " + dateField.getTag());
+                //Log.d("DEBUG", "Data non valida per: " + dateField.getTag());
                 return null;
             }
         }
