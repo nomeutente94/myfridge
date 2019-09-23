@@ -402,6 +402,14 @@ public abstract class DateUtils {
             return date1;
     }
 
+    public static Calendar getMaxDateAllowedAsCalendar(EditText dateField, Activity activity){
+        return getCalendar(getMaxDateAllowed(dateField, activity));
+    }
+
+    public static Calendar getMinDateAllowedAsCalendar(EditText dateField, Activity activity){
+        return getCalendar(getMinDateAllowed(dateField, activity));
+    }
+
     public static Date getMaxDateAllowed(EditText dateField, Activity activity){
         return getAllowedDate(true, dateField, activity);
     }

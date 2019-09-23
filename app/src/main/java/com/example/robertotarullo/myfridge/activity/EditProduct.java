@@ -30,6 +30,7 @@ import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
+import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.watcher.PiecesWatcher;
@@ -938,25 +939,24 @@ public class EditProduct extends AppCompatActivity {
         }
     }
 
-    // immissione data con spinner date picker
-    public void showSpinnerDatePickerDialog(View v){
-        DialogFragment f = new DatePickerFragment();
-        //DialogFragment f = new SpinnerDatePickerFragment(); // TODO risolvere bug e usarlo al posto di datepickerfragment
-        Bundle args = new Bundle();
-        args.putInt("dateFieldId", v.getId());
-        args.putBoolean("spinnerMode", true);
-        f.setArguments(args);
-        f.show(getSupportFragmentManager(), "spinnerDatePicker");
-    }
-
-    // immissione data con datepicker android
+    // immissione data
     public void showDatePickerDialog(View v) {
-        DialogFragment f = new DatePickerFragment();
+        DialogFragment f;
         Bundle args = new Bundle();
-        args.putInt("dateFieldId", v.getId());
-        args.putBoolean("spinnerMode", false);
-        f.setArguments(args);
-        f.show(getSupportFragmentManager(), "datePicker");
+
+        if(v==packagingDateField || v==expiryDateField){
+            f = new SpinnerDatePickerFragment();
+            //f = new DatePickerFragment();
+            //args.putBoolean("spinnerMode", true);
+            args.putInt("dateFieldId", v.getId());
+            f.setArguments(args);
+            f.show(getSupportFragmentManager(), "spinnerDatePicker");
+        } else {
+            f = new DatePickerFragment();
+            args.putInt("dateFieldId", v.getId());
+            f.setArguments(args);
+            f.show(getSupportFragmentManager(), "datePicker");
+        }
     }
 
     // Modifica i pezzi tramite i relativi pulsanti

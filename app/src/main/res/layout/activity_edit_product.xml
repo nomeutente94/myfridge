@@ -567,7 +567,7 @@
                             android:cursorVisible="false"
                             android:focusable="false"
                             android:hint="Data non impostata"
-                            android:onClick="showSpinnerDatePickerDialog"
+                            android:onClick="showDatePickerDialog"
                             android:tag="packagingDate" />
 
                         <Button
@@ -647,7 +647,7 @@
                             android:cursorVisible="false"
                             android:focusable="false"
                             android:hint="Data non impostata"
-                            android:onClick="showSpinnerDatePickerDialog"
+                            android:onClick="showDatePickerDialog"
                             android:tag="expiryDate" />
                         <CheckBox
                             android:id="@+id/noExpiryCheckbox"
