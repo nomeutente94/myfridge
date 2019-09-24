@@ -10,22 +10,24 @@ import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.utils.DateUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class DateSpinnerAdapter extends ArrayAdapter<String> {
 
-/*    private static final String COLOR_DISABLED = "#cecece";
     private int spinnerType;
+/*    private static final String COLOR_DISABLED = "#cecece";
+
     private EditText dateField;
     private List<String> entries;
     private Context context;
     private int currentYear, currentMonth;*/
 
-    public DateSpinnerAdapter(Context context, int resourceId, List<String> entries) {
+    public DateSpinnerAdapter(Context context, int resourceId, List<String> entries, int spinnerType) {
         super(context, resourceId, entries);
+        this.spinnerType = spinnerType;
 /*        this.context = context;
         this.dateField = dateField;
-        this.spinnerType = spinnerType;
         this.entries = entries;
         this.currentMonth = currentMonth;
         this.currentYear = currentYear;*/
@@ -37,7 +39,7 @@ public class DateSpinnerAdapter extends ArrayAdapter<String> {
 
         TextView tv = (TextView) v;
 
-        if (position == 0)
+        if (position == 0 && spinnerType!=DateUtils.YEAR_SPINNER)
             tv.setTextColor(Color.GRAY);
         /*else if(!DateUtils.isValueValid(spinnerType, position, dateField, context, currentMonth, currentYear, entries))
             tv.setTextColor(Color.parseColor(COLOR_DISABLED));*/

@@ -68,35 +68,61 @@ public abstract class DateUtils {
 
     // Setta gli spinner alla data
     public static void setDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner, Date date){
-        if(date!=null){
-            SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
-            SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
-
-            int dayPosition = -1, monthPosition = -1, yearPosition = -1;
-
-            for(int i=0; i<daySpinner.getAdapter().getCount() && dayPosition == -1; i++){
-                if(dayFormat.format(date).equals(daySpinner.getItemAtPosition(i)))
-                    dayPosition = i;
-            }
-
-            for(int i=0; i<monthSpinner.getAdapter().getCount() && monthPosition == -1; i++){
-                if(monthFormat.format(date).equals(monthSpinner.getItemAtPosition(i)))
-                    monthPosition = i;
-            }
-
-            for(int i=0; i<yearSpinner.getAdapter().getCount() && yearPosition == -1; i++){
-                if(yearFormat.format(date).equals(yearSpinner.getItemAtPosition(i)))
-                    yearPosition = i;
-            }
-
-            if(dayPosition>-1 && monthPosition>-1 && yearPosition>-1){
-                daySpinner.setSelection(dayPosition);
-                monthSpinner.setSelection(monthPosition);
-                yearSpinner.setSelection(yearPosition);
-            }
-        }
+        setDayDate(daySpinner, date);
+        setMonthDate(monthSpinner, date);
+        setYearDate(yearSpinner, date);
     }
+
+    // TODO mettere a fattor comune con setMonthDate e setYearDate
+    public static void setDayDate(Spinner spinner, Date date){
+        SimpleDateFormat format = new SimpleDateFormat("dd");
+        setDayDate(spinner, format.format(date));
+    }
+
+    public static void setMonthDate(Spinner spinner, Date date){
+        SimpleDateFormat format = new SimpleDateFormat("MM");
+        setMonthDate(spinner, format.format(date));
+    }
+
+    public static void setMonthDate(Spinner spinner, String month){
+        int position = -1;
+
+        for(int i=0; i<spinner.getAdapter().getCount() && position == -1; i++){
+            if(month.equals(spinner.getItemAtPosition(i)))
+                position = i;
+        }
+
+        if(position>-1)
+            spinner.setSelection(position);
+    }
+
+    public static void setDayDate(Spinner spinner, String day){
+        int position = -1;
+
+        for(int i=0; i<spinner.getAdapter().getCount() && position == -1; i++){
+            if(day.equals(spinner.getItemAtPosition(i)))
+                position = i;
+        }
+
+        if(position>-1)
+            spinner.setSelection(position);
+    }
+
+
+    public static void setYearDate(Spinner spinner, Date date){
+        int position = 0;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy");
+
+        for(int i=0; i<spinner.getAdapter().getCount() && position == 0; i++){
+            if(format.format(date).equals(spinner.getItemAtPosition(i)))
+                position = i;
+        }
+
+        if(position>0)
+            spinner.setSelection(position);
+    }
+
+
 
     /*public static boolean isDateValid(int day, int month, int year){
         return isDateValid()

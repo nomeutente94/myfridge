@@ -4,7 +4,9 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -33,12 +35,13 @@ public class SpinnerDatePickerFragment extends DialogFragment {
 
     private Calendar maxDate, minDate;
 
-    private List<String> days;
-    private List<String> months;
-    private List<String> years;
-
-    /*public class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
+    public class SpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
         boolean userSelect = false;
+        int spinnerType;
+
+        private SpinnerInteractionListener(int spinnerType){
+            this.spinnerType = spinnerType;
+        }
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -49,7 +52,15 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
             if(userSelect) {
-                updateSpinners();
+                String daySelection = daySpinner.getSelectedItem().toString();
+                String monthSelection = monthSpinner.getSelectedItem().toString();
+
+                populateSpinners(false);
+
+                // TODO settare giorno e mese al cambiamento
+                DateUtils.setMonthDate(monthSpinner, monthSelection);
+                DateUtils.setDayDate(daySpinner, daySelection);
+
                 userSelect = false;
             }
         }
@@ -58,7 +69,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         public void onNothingSelected(AdapterView<?> parent) {}
     }
 
-    public class DaySpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
+    /*public class DaySpinnerInteractionListener implements AdapterView.OnItemSelectedListener, View.OnTouchListener {
         boolean userSelect = false;
 
         @Override
@@ -91,8 +102,8 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         monthSpinner = view.findViewById(R.id.expiryDateMonthSpinner);
         yearSpinner = view.findViewById(R.id.expiryDateYearSpinner);
 
-        maxDate = DateUtils.getMaxDateAllowedAsCalendar(dateField, getActivity());
         minDate = DateUtils.getMinDateAllowedAsCalendar(dateField, getActivity());
+        maxDate = DateUtils.getMaxDateAllowedAsCalendar(dateField, getActivity());
 
         // Setta il titolo
         String title = "Data";
@@ -101,22 +112,29 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         else if(dateField==expiryDateField)
             title += " di scadenza";
 
-        populateSpinners();
-        DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nell'elemento del form
+        // Inizializza gli spinner
+        populateSpinners(true);
 
-        /*// Aggiungi listener agli spinner giorno / mese / anno
-        *//*SpinnerInteractionListener dayListener = new SpinnerInteractionListener();
-        daySpinner.setOnTouchListener(dayListener);*//*
-        daySpinner.setOnItemSelectedListener(new DaySpinnerInteractionListener());
+        // Inizializza la data selezionata
+        if(TextUtils.getDate(dateField)==null)
+            DateUtils.setYearDate(yearSpinner, DateUtils.getCurrentDateWithoutTime()); // Setta l'anno a quello corrente
+        else
+            DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nell'elemento del form
 
-        SpinnerInteractionListener monthListener = new SpinnerInteractionListener();
+        // Listener per spinner giorno/mese/anno
+        SpinnerInteractionListener dayListener = new SpinnerInteractionListener(DateUtils.DAY_SPINNER);
+        daySpinner.setOnTouchListener(dayListener);
+        daySpinner.setOnItemSelectedListener(dayListener);
+
+        SpinnerInteractionListener monthListener = new SpinnerInteractionListener(DateUtils.MONTH_SPINNER);
         monthSpinner.setOnTouchListener(monthListener);
         monthSpinner.setOnItemSelectedListener(monthListener);
 
-        SpinnerInteractionListener yearListener = new SpinnerInteractionListener();
+        SpinnerInteractionListener yearListener = new SpinnerInteractionListener(DateUtils.YEAR_SPINNER);
         yearSpinner.setOnTouchListener(yearListener);
-        yearSpinner.setOnItemSelectedListener(yearListener);*/
+        yearSpinner.setOnItemSelectedListener(yearListener);
 
+        // Crea dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
             .setView(view)
             .setTitle(title)
@@ -125,40 +143,54 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         return builder.create();
     }
 
-    private void populateSpinners(){
-        // Popola gli spinner
-        Date currentDate = TextUtils.getDate(dateField);
+    // Popola gli spinner
+    private void populateSpinners(boolean fromField){
         int minDay = DateUtils.MIN_DAY;
         int maxDay = DateUtils.MAX_DAY;
         int minMonth = DateUtils.MIN_MONTH;
         int maxMonth = DateUtils.MAX_MONTH;
 
-        // restringe il range dei singoli spinner se possibile
-        if(currentDate!=null) {
-            // se l'anno corrente è uguale all'anno di maxDate -> imposta il limite max del mese al mese di maxDate
-            if (maxDate.get(Calendar.YEAR) == getCurrentYear()) {
-                maxMonth = maxDate.get(Calendar.MONTH)+1;
-                // se la condizione sopra è vera e anche il mese corrente è uguale al mese di maxDate -> imposta il limite max del giorno al giorno di maxDate
-                if (maxDate.get(Calendar.MONTH) == getCurrentMonth())
-                    maxDay = maxDate.get(Calendar.DAY_OF_MONTH)+1;
-            }
+        int currentYear;
+        int currentMonth;
 
-            // se l'anno corrente è uguale all'anno di minDate -> imposta il limite min del mese al mese di minDate
-            if (minDate.get(Calendar.YEAR) == getCurrentYear()) {
-                minMonth = minDate.get(Calendar.MONTH)+1;
-                // se la condizione sopra è vera e anche il mese corrente è uguale al mese di minDate -> imposta il limite min del giorno al giorno di minDate
-                if (minDate.get(Calendar.MONTH) == getCurrentMonth())
-                    minDay = minDate.get(Calendar.DAY_OF_MONTH)+1;
+        // Inizializzo all'apertura della dialog
+        if(fromField){
+            if(TextUtils.getDate(dateField)==null) {
+                currentYear = DateUtils.getCalendar(DateUtils.getCurrentDateWithoutTime()).get(Calendar.YEAR); // ritorna anno corrente
+                currentMonth = 0; // mese non selezionato
+            } else {
+                currentYear = getCurrentYear();
+                currentMonth = getCurrentMonth();
             }
+        // Inizializzo dai campi correnti
+        } else {
+            currentYear = getCurrentSpinnerYear();
+            currentMonth = getCurrentSpinnerMonth();
+
+            System.out.println("currentYear: " + currentYear);
+            System.out.println("currentMonth: " + currentMonth);
         }
 
-        days = getDays(minDay, maxDay);
-        months = getMonths(minMonth, maxMonth);
-        years = getYears(minDate.get(Calendar.YEAR), maxDate.get(Calendar.YEAR));
+        // se l'anno corrente è uguale all'anno di maxDate -> imposta il limite max del mese al mese di maxDate
+        if (maxDate.get(Calendar.YEAR) == currentYear) {
+            maxMonth = maxDate.get(Calendar.MONTH)+1;
+            // se la condizione sopra è vera e anche il mese corrente è uguale al mese di maxDate -> imposta il limite max del giorno al giorno di maxDate
+            if (maxDate.get(Calendar.MONTH)+1 == currentMonth)
+                maxDay = maxDate.get(Calendar.DAY_OF_MONTH);
+        }
 
-        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, days));
-        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, months));
-        yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, years));
+        // se l'anno corrente è uguale all'anno di minDate -> imposta il limite min del mese al mese di minDate
+        if (minDate.get(Calendar.YEAR) == currentYear) {
+            minMonth = minDate.get(Calendar.MONTH)+1;
+            // se la condizione sopra è vera e anche il mese corrente è uguale al mese di minDate -> imposta il limite min del giorno al giorno di minDate
+            if (minDate.get(Calendar.MONTH)+1 == currentMonth)
+                minDay = minDate.get(Calendar.DAY_OF_MONTH);
+        }
+
+        daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getDays(minDay, maxDay), DateUtils.DAY_SPINNER));
+        monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getMonths(minMonth, maxMonth), DateUtils.MONTH_SPINNER));
+        if(fromField)
+            yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getYears(minDate.get(Calendar.YEAR), maxDate.get(Calendar.YEAR)), DateUtils.YEAR_SPINNER));
     }
 
     @Override
@@ -256,6 +288,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         return DateUtils.getExpiryDate(daySpinner, monthSpinner, yearSpinner);
     }
 
+    // Ritorna un array con i valori da min a max
     private List<String> getDays(int min, int max){
         List<String> entries = new ArrayList<>();
         entries.add("GG");
@@ -263,6 +296,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         return entries;
     }
 
+    // Ritorna un array con i valori da min a max
     private List<String> getMonths(int min, int max){
         List<String> entries = new ArrayList<>();
         entries.add("MM");
@@ -270,13 +304,15 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         return entries;
     }
 
+    // Ritorna un array con i valori da min a max
     private List<String> getYears(int min, int max){
         List<String> entries = new ArrayList<>();
-        entries.add("AAAA");
+        //entries.add("AAAA");
         fillEntries(entries, min, max); // Inizializza anni
         return entries;
     }
 
+    // Metodo di supporto per getDays, getMonths, getYears
     private void fillEntries(List<String> entries, int min, int max){
         for(int i = min; i<=max; i++){
             if(String.valueOf(i).length()==1)
@@ -286,8 +322,29 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         }
     }
 
+    private int getCurrentSpinnerDay(){
+        int currentDay = -1;
+        if(daySpinner.getSelectedItemPosition()>0)
+            currentDay = Integer.valueOf(daySpinner.getSelectedItem().toString());
+        return currentDay;
+    }
+
+    private int getCurrentSpinnerMonth(){
+        if(monthSpinner.getSelectedItemPosition()>0)
+            return Integer.valueOf(monthSpinner.getSelectedItem().toString());
+        return 0;
+    }
+
+    private int getCurrentSpinnerYear(){
+        return Integer.valueOf(yearSpinner.getSelectedItem().toString());
+    }
+
+    private int getCurrentDay(){
+        return DateUtils.getCalendar(TextUtils.getDate(dateField)).get(Calendar.DAY_OF_MONTH);
+    }
+
     private int getCurrentMonth(){
-        return DateUtils.getCalendar(TextUtils.getDate(dateField)).get(Calendar.MONTH);
+        return DateUtils.getCalendar(TextUtils.getDate(dateField)).get(Calendar.MONTH)+1;
     }
 
     private int getCurrentYear(){
