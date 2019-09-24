@@ -136,12 +136,13 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                     Date now = DateUtils.getCurrentDateWithoutTime();
                     if(now.equals(date)) {
                         dataTextView.setTextColor(Color.parseColor("#ea8c00"));
-                        dataTextView.setText("Scade oggi");
+                        dataTextView.setText("Entro oggi");
                     } else if(now.after(date)) {
                         dataTextView.setTextColor(Color.RED);
                         dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
-                    } else
+                    } else {
                         dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                    }
                 }
             } else
                 dataTextView.setText("Non specificata");

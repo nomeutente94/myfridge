@@ -467,7 +467,6 @@ public class MainActivity extends AppCompatActivity {
                     if (getCurrentDisplayedProducts().get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
                         searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
-
             }
             productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts);
         } else // Se la barra di ricerca è vuota resetta la view
