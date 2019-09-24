@@ -385,11 +385,12 @@ public abstract class DateUtils {
         return dateField.getText().length() == 0;
     }
 
-    public static Calendar getDate(TextView dateField){
+    // USARE TextUtils.getDate(TextView dateField)
+    /*public static Calendar getDate(TextView dateField){
         Calendar c = Calendar.getInstance();
         c.set(DateUtils.getYear(dateField), DateUtils.getMonth(dateField)-1, DateUtils.getDay(dateField));
         return c;
-    }
+    }*/
 
     public static Date getDate(Calendar cal){
         if(cal!=null)

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.R;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -84,9 +85,20 @@ public abstract class TextUtils {
     public static Date getDate(EditText dateField){
         if(dateField!=null){
             try {
-                return new SimpleDateFormat("dd/MM/yyyy").parse(dateField.getText().toString());
+                DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+                /* TODO codice per leggere date in formato 'MM/yyyy' e 'yyyy'
+                String dateAsString = dateField.getText().toString();
+                if(dateAsString.length()==4){
+                    // ritorna 31/12/yyyy
+                    return format.parse("31/12/" + dateField.getText().toString());
+                } else if(dateAsString.length()==7){
+                    String year = dateAsString.substring(3,7);
+                    String month = dateAsString.substring(0,2);
+                    String day = DateUtils.getLastDayOfMonth(month, year);
+                    return format.parse(day + "/" + month + "/" + year);
+                } else //if(dateAsString.length()==10)*/
+                    return format.parse(dateField.getText().toString());
             } catch (ParseException e) {
-                //Log.d("DEBUG", "Data non valida per: " + dateField.getTag());
                 return null;
             }
         }
