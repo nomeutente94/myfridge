@@ -58,7 +58,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
                 populateSpinners(false);
 
                 // TODO settare giorno e mese al cambiamento
-                // Allo stato attuale se la data precedente non viene trovata, si setta a pos 0
+                // Se la data precedente non viene trovata si setta il primo elemento
                 DateUtils.setMonthDate(monthSpinner, monthSelection);
                 DateUtils.setDayDate(daySpinner, daySelection);
 

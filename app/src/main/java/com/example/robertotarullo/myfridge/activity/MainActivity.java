@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Setta il filtro prodotti iniziale
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
-        highlightButton(filterButton1);
+        pressOnFilter(filterButton1);
 
         // Inizializza la lista leggendo dal DB
         retrieveProductsFromDB(null);
@@ -115,12 +115,12 @@ public class MainActivity extends AppCompatActivity {
 
     // Usare questa chiamata per cambiare scheda e NON setFilterView direttamente
     public void setFilteredProducts(View v) {
-        highlightButton((Button) v); // Cambia il colore del filtro attuale
+        pressOnFilter((Button) v); // Cambia il colore del filtro attuale
         clearSerchBarFocus();
         setFilterView(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
     }
 
-    private void highlightButton(Button b) {
+    private void pressOnFilter(Button b) {
         if (b == null) {
             if (currentFilter == 0)
                 b = filterButton0;
@@ -461,13 +461,13 @@ public class MainActivity extends AppCompatActivity {
         if (searchBar.getText().length() > 0) { // Se la barra di ricerca contiene qualcosa
             // Cerca la stringa della barra di ricerca nel nome o la marca dei prodotti
             for (int i = 0; i < getCurrentDisplayedProducts().size(); i++) {
-                if (getCurrentDisplayedProducts().get(i).getName() != null) {
-                    if (getCurrentDisplayedProducts().get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
-                        searchResults.add(getCurrentDisplayedProducts().get(i));
-                } else if (getCurrentDisplayedProducts().get(i).getBrand() != null) {
+                if (getCurrentDisplayedProducts().get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                    searchResults.add(getCurrentDisplayedProducts().get(i));
+                else if (getCurrentDisplayedProducts().get(i).getBrand() != null) {
                     if (getCurrentDisplayedProducts().get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
                         searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
+
             }
             productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts);
         } else // Se la barra di ricerca è vuota resetta la view
@@ -679,7 +679,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 if (!data.getBooleanExtra("delete", false)) { // Se il prodotto è stato modificato
                     currentFilter = data.getIntExtra("filter", currentFilter);
-                    highlightButton(null);
+                    pressOnFilter(null);
                 }
                 retrieveProductsFromDB(null);
             }
