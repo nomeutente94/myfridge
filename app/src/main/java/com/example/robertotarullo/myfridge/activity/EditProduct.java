@@ -68,7 +68,7 @@ public class EditProduct extends AppCompatActivity {
 
     // views
     private ScrollView listScrollView;
-    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField, consumptionDateField;
+    private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField, consumptionDateField, currentPercentageField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
     private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox, consumedCheckBox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton, addQuantityButton, subtractQuantityButton, addPieceButton, subtractPieceButton;
@@ -116,6 +116,7 @@ public class EditProduct extends AppCompatActivity {
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
         consumedCheckBox = findViewById(R.id.consumedCheckBox);
         consumptionDateField = findViewById(R.id.consumptionDateField);
+        currentPercentageField = findViewById(R.id.currentPercentageField);
 
         // View di controllo del form
         changeToExpiryDateButton = findViewById(R.id.changeToExpiryDate);
@@ -166,7 +167,7 @@ public class EditProduct extends AppCompatActivity {
         initializeConsumedCheckBox(true);
 
         // Validazione e comportamento
-        currentWeightSlider.setTag(R.id.percentageValue, "100");
+        currentPercentageField.setText("100");
         // TODO passare context al posto delle view fisse
         priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, this));
         pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, this));
@@ -175,7 +176,7 @@ public class EditProduct extends AppCompatActivity {
         openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
         expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
         packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
-        currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(weightField, currentWeightField, piecesField, currentPiecesField));
+        currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(this));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton));
         piecesField.addTextChangedListener(new PiecesWatcher(this));
         // currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
@@ -205,7 +206,7 @@ public class EditProduct extends AppCompatActivity {
                 currentPiecesField.setVisibility(View.GONE);
                 findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
-                findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+                // findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
 
                 setCurrentFormToInitial();
                 break;
@@ -407,7 +408,7 @@ public class EditProduct extends AppCompatActivity {
         openedCheckBox.setChecked(false);
 
         // Resetta slider
-        currentWeightSlider.setTag(R.id.percentageValue, "100");
+        currentPercentageField.setText("100");
         currentWeightSlider.setProgress(currentWeightSlider.getMax());
     }
 
@@ -486,8 +487,8 @@ public class EditProduct extends AppCompatActivity {
             findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.GONE);
         }
-        if(p.getPieces()==1 && p.getWeight()==0)
-            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+        /*if(p.getPieces()==1 && p.getWeight()==0)
+            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);*/
 
         if(p.isConsumed())
             consumedCheckBox.setChecked(true);
@@ -506,7 +507,7 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.getWeight()>0)
             TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
-        currentWeightSlider.setTag(R.id.percentageValue, String.valueOf(p.getPercentageQuantity()));
+        currentPercentageField.setText(String.valueOf(p.getPercentageQuantity()));
 
         if(p.getExpiringDaysAfterOpening()>0)
             TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
@@ -840,7 +841,7 @@ public class EditProduct extends AppCompatActivity {
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax() && !openedCheckBox.isChecked()) {
                 currentWeightSlider.setProgress(currentWeightSlider.getMax());
-                currentWeightSlider.setTag(R.id.percentageValue, 100);
+                currentPercentageField.setText("100");
             }
 
             // Mostra l'ultimo visualizzato

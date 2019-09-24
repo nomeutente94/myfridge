@@ -13,15 +13,17 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
+import org.w3c.dom.Text;
+
 public class PriceWeightRelationWatcher implements TextWatcher {
     private String type;
     private Button clearButton1, clearButton2;
-    private EditText editText1, editText2;
+    private EditText editText1, editText2, currentPercentageField;
     private final String PRICE_TAG = "priceField", WEIGHT_TAG = "weightField", PRICEPERKILO_TAG = "pricePerKiloField";
     private SeekBar currentWeightSlider;
     private EditText currentWeightField;
-    private View currentWeightFieldLabel, currentWeightSliderLabel;
-    private TextView piecesField;
+    private View currentWeightFieldLabel;
+    //private TextView piecesField;
 
     public PriceWeightRelationWatcher(String type, EditText editText1, EditText editText2, Button clearButton1, Button clearButton2, Activity activity){
         this.type = type;
@@ -32,8 +34,9 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         this.clearButton2 = clearButton2;
         this.currentWeightSlider = activity.findViewById(R.id.currentWeightSlider);
         this.currentWeightFieldLabel = activity.findViewById(R.id.currentWeightFieldLabel);
-        this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
-        this.piecesField = activity.findViewById(R.id.piecesField);
+        this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
+        //this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
+        //this.piecesField = activity.findViewById(R.id.piecesField);
     }
 
     @Override
@@ -50,8 +53,8 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
                 currentWeightFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
-                if(TextUtils.getInt(piecesField)==1)
-                    currentWeightSliderLabel.setVisibility(View.VISIBLE);
+                //if(TextUtils.getInt(piecesField)==1)
+                    //currentWeightSliderLabel.setVisibility(View.VISIBLE);
             }
 
             // Controlla e trova se c'è un campo calcolato/oscurato
@@ -80,7 +83,7 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
                 currentWeightFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.VISIBLE);
-                currentWeightSliderLabel.setVisibility(View.GONE);
+                //currentWeightSliderLabel.setVisibility(View.GONE);
             }
 
             // Se si ha un campo non vuoto e abilitato e uno o non vuoto o disabilitato
@@ -137,14 +140,14 @@ public class PriceWeightRelationWatcher implements TextWatcher {
                 // ripristina lo slide rispetto al valore percentuale
                 currentWeightSlider.setTag("percentage");
                 currentWeightSlider.setMax(100);
-                currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
+                currentWeightSlider.setProgress(TextUtils.getInt(currentPercentageField));
             }
         } else {
             if(currentWeightSlider.getTag().toString().equals("percentage"))
                 currentWeightSlider.setTag("currentWeight");
 
             // calcola il nuovo currentWeight rispetto al valore percentuale
-            float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * weight) / (float)100;
+            float currentWeightAsFloat = (TextUtils.getInt(currentPercentageField) * weight) / (float)100;
             int currentWeight = (int) Math.ceil(currentWeightAsFloat);
 
             if(currentWeightSlider.getTag().toString().equals("currentWeight")) {

@@ -17,8 +17,8 @@ public class PiecesWatcher implements TextWatcher {
     private Button addButton, subtractButton;
     private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
-    private EditText weightField, currentWeightField;
-    private View currentPiecesFieldLabel, currentWeightSliderLabel;
+    private EditText weightField, currentWeightField, currentPercentageField;
+    private View currentPiecesFieldLabel;
 
     public PiecesWatcher(Activity activity){
        this.addButton = activity.findViewById(R.id.piecesAddButton);
@@ -28,7 +28,8 @@ public class PiecesWatcher implements TextWatcher {
        this.weightField = activity.findViewById(R.id.weightField);
        this.currentWeightField = activity.findViewById(R.id.currentWeightField);
        this.currentPiecesFieldLabel = activity.findViewById(R.id.currentPiecesFieldLabel);
-       this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
+       // this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
+       this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
     }
 
     @Override
@@ -45,13 +46,13 @@ public class PiecesWatcher implements TextWatcher {
         if(pieces>1){
             currentPiecesFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.VISIBLE);
-            currentWeightSliderLabel.setVisibility(View.GONE);
+            //currentWeightSliderLabel.setVisibility(View.GONE);
 
             // setta lo slider in base al numero di pezzi
             currentWeightSlider.setTag("pieces");
 
             // calcola il numero di pezzi rimanenti rispetto al valore percentuale
-            float currentPiecesAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * pieces / (float)100);
+            float currentPiecesAsFloat = TextUtils.getInt(currentPercentageField) * pieces / (float)100;
             int currentPieces = (int) Math.ceil(currentPiecesAsFloat);
             currentWeightSlider.setMax(pieces);
             currentWeightSlider.setProgress(currentPieces);
@@ -66,15 +67,15 @@ public class PiecesWatcher implements TextWatcher {
         } else { // setta lo slider in base al peso, se non compilato in percentuale generica
             currentPiecesFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.GONE);
-            if(TextUtils.isEmpty(weightField))
-                currentWeightSliderLabel.setVisibility(View.VISIBLE);
+            //if(TextUtils.isEmpty(weightField))
+                //currentWeightSliderLabel.setVisibility(View.VISIBLE);
 
             currentPiecesField.setText(s.toString());
             if(!TextUtils.isEmpty(weightField)){
                 // ripristina lo slide rispetto al peso attuale
                 currentWeightSlider.setTag("currentWeight");
                 // calcola il nuovo currentWeight rispetto al valore percentuale
-                float currentWeightAsFloat = (Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()) * TextUtils.getInt(weightField)) / (float)100;
+                float currentWeightAsFloat = (TextUtils.getInt(currentPercentageField) * TextUtils.getInt(weightField)) / (float)100;
                 int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightSlider.setMax(TextUtils.getInt(weightField));
                 currentWeightSlider.setProgress(currentWeight);
@@ -82,7 +83,7 @@ public class PiecesWatcher implements TextWatcher {
                 // ripristina lo slide rispetto al valore percentuale
                 currentWeightSlider.setTag("percentage");
                 currentWeightSlider.setMax(100);
-                currentWeightSlider.setProgress(Integer.valueOf(currentWeightSlider.getTag(R.id.percentageValue).toString()));
+                currentWeightSlider.setProgress(TextUtils.getInt(currentPercentageField));
             }
         }
     }

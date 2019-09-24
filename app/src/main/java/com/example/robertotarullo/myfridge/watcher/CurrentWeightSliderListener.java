@@ -1,5 +1,6 @@
 package com.example.robertotarullo.myfridge.watcher;
 
+import android.app.Activity;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -9,14 +10,15 @@ import com.example.robertotarullo.myfridge.utils.TextUtils;
 
 public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListener{
 
-    private EditText weightField, currentWeightField;
+    private EditText weightField, currentWeightField, currentPercentageField;
     private TextView piecesField, currentPiecesField;
 
-    public CurrentWeightSliderListener(EditText weightField, EditText currentWeightField,  TextView piecesField, TextView currentPiecesField){
-        this.weightField = weightField;
-        this.currentWeightField = currentWeightField;
-        this.piecesField = piecesField;
-        this.currentPiecesField = currentPiecesField;
+    public CurrentWeightSliderListener(Activity activity){
+        this.weightField = activity.findViewById(R.id.weightField);
+        this.currentWeightField = activity.findViewById(R.id.currentWeightField);
+        this.piecesField = activity.findViewById(R.id.piecesField);
+        this.currentPiecesField = activity.findViewById(R.id.currentPiecesField);
+        this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
             }
 
             if(fromUser)
-                seekBar.setTag(R.id.percentageValue, String.valueOf(currentPercentage));
+                currentPercentageField.setText(String.valueOf(currentPercentage));
         } else {
             seekBar.setProgress(1);
         }
