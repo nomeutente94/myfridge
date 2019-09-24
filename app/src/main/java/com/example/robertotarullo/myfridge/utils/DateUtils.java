@@ -122,8 +122,6 @@ public abstract class DateUtils {
             spinner.setSelection(position);
     }
 
-
-
     /*public static boolean isDateValid(int day, int month, int year){
         return isDateValid()
     }*/
@@ -139,29 +137,25 @@ public abstract class DateUtils {
     }
 
     public static Date getExpiryDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
-        int daySelection = daySpinner.getSelectedItemPosition();
-        int monthSelection = monthSpinner.getSelectedItemPosition();
-        int yearSelection = yearSpinner.getSelectedItemPosition();
-
         String day = daySpinner.getSelectedItem().toString();
         String month = monthSpinner.getSelectedItem().toString();
         String year = yearSpinner.getSelectedItem().toString();
 
         // Intuisci data parzialmente immessa
-        if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()==0 && yearSpinner.getSelectedItemPosition()>0) { // Se è stato inserito soltanto YYYY
+        if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()==0 && yearSpinner.getSelectedItemPosition()>=0) { // Se è stato inserito soltanto YYYY
             day = "31";
             month = "12";
-        } else if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0){ // Se è stato inserito soltanto MM e YYYY
+        } else if(daySpinner.getSelectedItemPosition()==0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>=0){ // Se è stato inserito soltanto MM e YYYY
             day = getLastDayOfMonth(month, year);
-        } else if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()==0){ // Se è stato inserito soltanto DD e MM
+        } /*else if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()==0){ // Se è stato inserito soltanto DD e MM
             year = "2019"; // TODO calcolare anno attuale
-        }
+        }*/
 
         return getDate(day, month, year);
     }
 
     public static Date getDate(Spinner daySpinner, Spinner monthSpinner, Spinner yearSpinner){
-        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>0)
+        if(daySpinner.getSelectedItemPosition()>0 && monthSpinner.getSelectedItemPosition()>0 && yearSpinner.getSelectedItemPosition()>=0)
             return getDate(daySpinner.getSelectedItem().toString(), monthSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString());
         return null;
     }
@@ -177,6 +171,12 @@ public abstract class DateUtils {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
+    }
+
+    public static String getCurrentYear(){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy");
+        Date currentDateWithoutTime = getCurrentDateWithoutTime();
+        return dateFormat.format(currentDateWithoutTime);
     }
 
     public static Date getDate(int day, int month, int year){
