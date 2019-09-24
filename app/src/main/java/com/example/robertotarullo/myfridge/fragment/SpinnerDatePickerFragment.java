@@ -58,6 +58,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
                 populateSpinners(false);
 
                 // TODO settare giorno e mese al cambiamento
+                // Allo stato attuale se la data precedente non viene trovata, si setta a pos 0
                 DateUtils.setMonthDate(monthSpinner, monthSelection);
                 DateUtils.setDayDate(daySpinner, daySelection);
 
@@ -166,25 +167,28 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         } else {
             currentYear = getCurrentSpinnerYear();
             currentMonth = getCurrentSpinnerMonth();
-
-            System.out.println("currentYear: " + currentYear);
-            System.out.println("currentMonth: " + currentMonth);
         }
+
+        int lastDayOfMonth = DateUtils.getLastDayOfMonthAsInt(currentMonth, currentYear);
+        if(lastDayOfMonth>0)
+            maxDay = lastDayOfMonth;
 
         // se l'anno corrente è uguale all'anno di maxDate -> imposta il limite max del mese al mese di maxDate
         if (maxDate.get(Calendar.YEAR) == currentYear) {
             maxMonth = maxDate.get(Calendar.MONTH)+1;
             // se la condizione sopra è vera e anche il mese corrente è uguale al mese di maxDate -> imposta il limite max del giorno al giorno di maxDate
-            if (maxDate.get(Calendar.MONTH)+1 == currentMonth)
+            if (maxDate.get(Calendar.MONTH)+1 == currentMonth) {
                 maxDay = maxDate.get(Calendar.DAY_OF_MONTH);
+            }
         }
 
         // se l'anno corrente è uguale all'anno di minDate -> imposta il limite min del mese al mese di minDate
         if (minDate.get(Calendar.YEAR) == currentYear) {
             minMonth = minDate.get(Calendar.MONTH)+1;
             // se la condizione sopra è vera e anche il mese corrente è uguale al mese di minDate -> imposta il limite min del giorno al giorno di minDate
-            if (minDate.get(Calendar.MONTH)+1 == currentMonth)
+            if (minDate.get(Calendar.MONTH)+1 == currentMonth) {
                 minDay = minDate.get(Calendar.DAY_OF_MONTH);
+            }
         }
 
         daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getDays(minDay, maxDay), DateUtils.DAY_SPINNER));
