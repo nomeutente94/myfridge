@@ -55,7 +55,7 @@ public class PiecesWatcher implements TextWatcher {
             currentWeightSlider.setTag("pieces");
 
             // calcola il numero di pezzi rimanenti rispetto al valore percentuale
-            float currentPiecesAsFloat = TextUtils.getInt(currentPercentageField) * pieces / (float)100;
+            float currentPiecesAsFloat = TextUtils.getFloat(currentPercentageField) * pieces / (float)100;
             int currentPieces = (int) Math.ceil(currentPiecesAsFloat);
             currentWeightSlider.setMax(pieces);
             currentWeightSlider.setProgress(currentPieces);
@@ -64,7 +64,7 @@ public class PiecesWatcher implements TextWatcher {
             if(!TextUtils.isEmpty(weightField)){
                 // calcola il nuovo currentWeight rispetto ai pezzi
                 float currentWeightAsFloat = (TextUtils.getInt(weightField) * currentWeightSlider.getProgress()) / (float)pieces;
-                int currentWeight = (int) Math.ceil(currentWeightAsFloat);
+                //int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightField.setText(String.valueOf(currentWeightAsFloat));
             }
         } else { // setta lo slider in base al peso, se non compilato in percentuale generica
@@ -74,13 +74,13 @@ public class PiecesWatcher implements TextWatcher {
                 currentPercentageFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
                 currentPercentageField.setVisibility(View.VISIBLE);
             }
-
             currentPiecesField.setText(s.toString());
+
             if(!TextUtils.isEmpty(weightField)){
                 // ripristina lo slide rispetto al peso attuale
                 currentWeightSlider.setTag("currentWeight");
                 // calcola il nuovo currentWeight rispetto al valore percentuale
-                float currentWeightAsFloat = (TextUtils.getInt(currentPercentageField) * TextUtils.getInt(weightField)) / (float)100;
+                float currentWeightAsFloat = (TextUtils.getFloat(currentPercentageField) * TextUtils.getInt(weightField)) / (float)100;
                 int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                 currentWeightSlider.setMax(TextUtils.getInt(weightField));
                 currentWeightSlider.setProgress(currentWeight);
@@ -88,7 +88,7 @@ public class PiecesWatcher implements TextWatcher {
                 // ripristina lo slide rispetto al valore percentuale
                 currentWeightSlider.setTag("percentage");
                 currentWeightSlider.setMax(100);
-                currentWeightSlider.setProgress(TextUtils.getInt(currentPercentageField));
+                currentWeightSlider.setProgress((int) Math.ceil(TextUtils.getFloat(currentPercentageField)));
             }
         }
     }

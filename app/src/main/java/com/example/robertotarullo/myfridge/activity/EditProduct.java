@@ -52,6 +52,14 @@ import java.util.TreeSet;
 
 public class EditProduct extends AppCompatActivity {
 
+    public enum Action{
+        ADD,
+        ADD_NO_CONSUMPTION,
+        EDIT,
+        UPDATE,
+        SHOPPING
+    }
+
     // Variabili statiche
     public static final int FREEZER_MAX_CELSIUS = 0, FRIDGE_MIN_CELSIUS = 3, FRIDGE_MAX_CELSIUS = 6;
     public static final int FRIDGE_DEFAULT_CELSIUS = 5, FREEZER_DEFAULT_CELSIUS = -18, ROOM_DEFAULT_CELSIUS = 20;  // ideale (4-6) per frigo
@@ -59,7 +67,7 @@ public class EditProduct extends AppCompatActivity {
     public static final int MAX_QUANTITY = 99, MIN_QUANTITY = 1, MAX_PIECES = 99, MIN_PIECES = 1;
 
     // Intent
-    private String action;
+    private Action action;
     private ProductForm startingForm;
     private long productToModifyId;
 
@@ -149,7 +157,7 @@ public class EditProduct extends AppCompatActivity {
         pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
         weightClearButton = findViewById(R.id.weightClearButton);
 
-        action = getIntent().getStringExtra("action");
+        action = (Action) getIntent().getSerializableExtra("action");
 
         // inizializza gli array per i suggerimenti
         initializeSuggestions();
@@ -168,6 +176,7 @@ public class EditProduct extends AppCompatActivity {
 
         // Validazione e comportamento
         currentPercentageField.setText("100");
+
         // TODO passare context al posto delle view fisse
         priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, this));
         pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, this));
@@ -195,7 +204,9 @@ public class EditProduct extends AppCompatActivity {
         expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
 
         switch (action) {
-            case "add":
+            case ADD_NO_CONSUMPTION:
+                hideConsumptionFields();
+            case ADD:
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                 }).start();
@@ -206,12 +217,10 @@ public class EditProduct extends AppCompatActivity {
                 currentPiecesField.setVisibility(View.GONE);
                 findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
-                findViewById(R.id.currentPercentageFieldLabel).setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
-                currentPercentageField.setVisibility(View.VISIBLE);
 
                 setCurrentFormToInitial();
                 break;
-            case "edit":
+            case EDIT:
                 initializeFormLabels("Modifica prodotto", "Salva");
                 productToModifyId = getIntent().getLongExtra("id", 0);
 
@@ -225,7 +234,7 @@ public class EditProduct extends AppCompatActivity {
                     runOnUiThread(() -> fillFieldsFromProduct(p));
                 }).start();
                 break;
-            case "update":
+            case UPDATE:
                 initializeFormLabels("Aggiorna prodotto", "Salva");
                 productToModifyId = getIntent().getLongExtra("id", 0);
 
@@ -248,7 +257,7 @@ public class EditProduct extends AppCompatActivity {
                     runOnUiThread(() -> fillFieldsFromProduct(p));
                 }).start();
                 break;
-            case "shopping":
+            case SHOPPING:
                 // Modifica di un prodotto nel carrello
                 if (getIntent().getSerializableExtra("productToEdit") != null) {
                     initializeFormLabels("Modifica prodotto", "Salva");
@@ -271,16 +280,20 @@ public class EditProduct extends AppCompatActivity {
                     initializeFormLabels("Aggiungi prodotto", "Aggiungi");
                 }
 
-                // Nascondi i campi precompilati
+                // Nascondi i campi precompilati / da ignorare
                 pointOfPurchaseBlock.setVisibility(View.GONE);
                 purchaseDateBlock.setVisibility(View.GONE);
-                openedBlock.setVisibility(View.GONE);
-                currentWeightBlock.setVisibility(View.GONE);
-                consumedCheckboxBlock.setVisibility(View.GONE);
+                hideConsumptionFields();
 
                 setCurrentFormToInitial();
                 break;
         }
+    }
+
+    private void hideConsumptionFields(){
+        openedBlock.setVisibility(View.GONE);
+        currentWeightBlock.setVisibility(View.GONE);
+        consumedCheckboxBlock.setVisibility(View.GONE);
     }
 
     private void setCurrentFormToInitial(){
@@ -589,7 +602,7 @@ public class EditProduct extends AppCompatActivity {
                 Intent resultIntent = new Intent();
 
                 switch (action) {
-                    case "update":  // Se si tratta di un aggiornamento
+                    case UPDATE:  // Se si tratta di un aggiornamento
                         newProduct.setId(productToModifyId);
                         if (productDatabase.productDao().update(newProduct) > 0) {
                             insertCount = 1;
@@ -597,7 +610,7 @@ public class EditProduct extends AppCompatActivity {
                             runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                         }
                         break;
-                    case "edit":  // Se si tratta di una modifica
+                    case EDIT:  // Se si tratta di una modifica
                         newProduct.setId(productToModifyId);
                         if (productDatabase.productDao().update(newProduct) > 0) {
                             insertCount = 1;
@@ -605,13 +618,13 @@ public class EditProduct extends AppCompatActivity {
                             runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
                         }
                         break;
-                    case "add":  // Se si tratta di un'aggiunta
+                    case ADD:  // Se si tratta di un'aggiunta
                         List<SingleProduct> productsToAdd = new ArrayList<>();
                         for (int i = 0; i < TextUtils.getInt(quantityField); i++)
                             productsToAdd.add(newProduct);
                         insertCount = addProducts(productsToAdd);
                         break;
-                    case "shopping":  // Se si tratta della modalità spesa
+                    case SHOPPING:  // Se si tratta della modalità spesa
                         if (getIntent().getSerializableExtra("productToEdit") != null) {
                             resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
                             resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
@@ -762,12 +775,8 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.isOpened()){ // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
             // Memorizza la quantità percentuale
-            if(currentWeightSlider.getTag().toString().equals("currentWeight"))
-                p.setPercentageQuantity((int) Math.ceil((currentWeightSlider.getProgress() * 100) / (float)TextUtils.getInt(weightField)));
-            else if(currentWeightSlider.getTag().toString().equals("pieces"))
-                p.setPercentageQuantity((int) Math.ceil((currentWeightSlider.getProgress() * 100) / (float)TextUtils.getInt(piecesField)));
-            else
-                p.setPercentageQuantity(currentWeightSlider.getProgress());
+            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField)));
+            // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField));
         } else { // prodotto confezionato chiuso
             p.setPercentageQuantity(100);
             p.setCurrentPieces(p.getPieces());

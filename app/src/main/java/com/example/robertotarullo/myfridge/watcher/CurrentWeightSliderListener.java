@@ -24,22 +24,22 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if(progress!=0){
-            int currentPercentage = 100;
+            float currentPercentage = 100;
 
             if(seekBar.getTag().toString().equals("percentage")){
                 currentPercentage = progress;
             } else if(seekBar.getTag().toString().equals("currentWeight")){
                 currentWeightField.setText(String.valueOf(progress));
-                float percentageAsFloat = (progress * 100) / (float)TextUtils.getInt(weightField);
-                currentPercentage = (int) Math.ceil(percentageAsFloat);
+                currentPercentage = (progress * 100) / (float)TextUtils.getInt(weightField);
+                //currentPercentage = (int) Math.ceil(percentageAsFloat);
             } else if(seekBar.getTag().toString().equals("pieces")){
                 currentPiecesField.setText(String.valueOf(progress));
-                float percentageAsFloat = (progress * 100) / (float)TextUtils.getInt(piecesField);
-                currentPercentage = (int) Math.ceil(percentageAsFloat);
+                currentPercentage = (progress * 100) / (float)TextUtils.getInt(piecesField);
+                //currentPercentage = (int) Math.ceil(percentageAsFloat);
 
                 if(!TextUtils.isEmpty(weightField)){
                     float currentWeightAsFloat = (TextUtils.getInt(weightField) * progress) / (float)TextUtils.getInt(piecesField);
-                    int currentWeight = (int) Math.ceil(currentWeightAsFloat);
+                    //int currentWeight = (int) Math.ceil(currentWeightAsFloat);
                     currentWeightField.setText(String.valueOf(currentWeightAsFloat));
                 }
             }

@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILTER1_TEXT = "Frigorifero";
     private static final String FILTER2_TEXT = "Congelatore";
 
-
     // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
@@ -629,10 +628,18 @@ public class MainActivity extends AppCompatActivity {
         updateNoProductsWarning();
     }
 
-    // Avvia l'activity EditProduct per l'aggiunta
+    // Avvia l'activity EditProduct per l'aggiunta (legacy)
     public void addProduct(View view) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", "add");
+        intent.putExtra("action", EditProduct.Action.ADD);
+        intent.putExtra("filter", currentFilter);
+        startActivityForResult(intent, ADD_PRODUCT_REQUEST);
+    }
+
+    // Avvia l'activity EditProduct per l'aggiunta (new)
+    public void addProductWithoutConsumption(View view) {
+        Intent intent = new Intent(this, EditProduct.class);
+        intent.putExtra("action", EditProduct.Action.ADD_NO_CONSUMPTION);
         intent.putExtra("filter", currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
@@ -648,14 +655,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
         //intent.putExtra("filter", currentFilter);
-        intent.putExtra("action", "edit");
+        intent.putExtra("action", EditProduct.Action.EDIT);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 
     public void updateProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
-        intent.putExtra("action", "update");
+        intent.putExtra("action", EditProduct.Action.UPDATE);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 
