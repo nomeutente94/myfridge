@@ -521,7 +521,7 @@ public class MainActivity extends AppCompatActivity {
                 // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
                 if(!showConsumedProducts && !singleProducts.get(i).isConsumed()){
                     Date expiryDate = DateUtils.getActualExpiryDate(singleProducts.get(i));
-                    if(expiryDate!=null && expiryDate!=DateUtils.getNoExpiryDate()){
+                    if(expiryDate!=null && !expiryDate.equals(DateUtils.getNoExpiryDate())){
                         Date now = DateUtils.getCurrentDateWithoutTime();
                         if(expiryDate.before(now) || expiryDate.equals(now)){
                             storageNotifications[singleProducts.get(i).getActualStorageCondition()]++;
