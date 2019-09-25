@@ -309,9 +309,9 @@ public class EditProduct extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
 
-        if(action.equals("edit") || action.equals("update"))
+        if(action==Action.EDIT || action==Action.UPDATE)
             menu.add(0, R.id.resetConsumption, Menu.NONE, "Resetta solo consumazione ");
-        if(action.equals("edit")) {
+        if(action==Action.EDIT) {
             menu.add(0, R.id.reset, Menu.NONE, "Resetta");
             menu.add(0, R.id.delete, Menu.NONE, "Elimina");
         }
@@ -722,7 +722,7 @@ public class EditProduct extends AppCompatActivity {
 
         p.setPieces(TextUtils.getInt(piecesField));
 
-        if (action.equals("shopping") && getIntent().getSerializableExtra("productToEdit") == null){
+        if (action==Action.SHOPPING && getIntent().getSerializableExtra("productToEdit") == null){
             p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
             p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
         } else {
@@ -811,18 +811,18 @@ public class EditProduct extends AppCompatActivity {
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
 
-            if(!action.equals("shopping"))
+            if(action!=Action.SHOPPING)
                 openedBlock.setVisibility(View.VISIBLE);
 
-            if(!action.equals("update")){
+            if(action!=Action.UPDATE){
                 expiryDateBlock.setVisibility(View.VISIBLE);
                 expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
                 openedStorageConditionBlock.setVisibility(View.VISIBLE);
             }
 
-            if(!openedCheckBox.isChecked() && !action.equals("shopping"))
+            if(!openedCheckBox.isChecked() && action!=Action.SHOPPING)
                 currentWeightBlock.setVisibility(View.GONE);
-            else if(!action.equals("shopping"))
+            else if(action!=Action.SHOPPING)
                 openingDateBlock.setVisibility(View.VISIBLE);
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax())
@@ -839,7 +839,7 @@ public class EditProduct extends AppCompatActivity {
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
 
-            if(!action.equals("shopping")){
+            if(action!=Action.SHOPPING){
                 openedBlock.setVisibility(View.GONE);
                 openingDateBlock.setVisibility(View.GONE);
                 currentWeightBlock.setVisibility(View.VISIBLE);
@@ -896,7 +896,7 @@ public class EditProduct extends AppCompatActivity {
         storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
         openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
 
-        if (action.equals("shopping"))
+        if (action==Action.SHOPPING)
             storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO permettere di selezionare il valore di default
         else
             storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", FRIDGE_SELECTION));
