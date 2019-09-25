@@ -259,7 +259,7 @@ public abstract class DateUtils {
                     return false;
             }
         } else if(spinnerType==YEAR_SPINNER){
-            if(position>0){
+            if(position>=0){
                 int value = Integer.valueOf(entries.get(position));
                 if(value < minYear || value > maxYear)
                     return false;

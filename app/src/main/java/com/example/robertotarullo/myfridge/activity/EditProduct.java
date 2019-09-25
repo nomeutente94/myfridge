@@ -206,7 +206,8 @@ public class EditProduct extends AppCompatActivity {
                 currentPiecesField.setVisibility(View.GONE);
                 findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
-                // findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);
+                findViewById(R.id.currentPercentageFieldLabel).setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
+                currentPercentageField.setVisibility(View.VISIBLE);
 
                 setCurrentFormToInitial();
                 break;

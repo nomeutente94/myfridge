@@ -18,7 +18,7 @@ public class PiecesWatcher implements TextWatcher {
     private SeekBar currentWeightSlider;
     private TextView currentPiecesField;
     private EditText weightField, currentWeightField, currentPercentageField;
-    private View currentPiecesFieldLabel;
+    private View currentPiecesFieldLabel, currentPercentageFieldLabel;
 
     public PiecesWatcher(Activity activity){
        this.addButton = activity.findViewById(R.id.piecesAddButton);
@@ -30,6 +30,7 @@ public class PiecesWatcher implements TextWatcher {
        this.currentPiecesFieldLabel = activity.findViewById(R.id.currentPiecesFieldLabel);
        // this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
        this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
+       this.currentPercentageFieldLabel = activity.findViewById(R.id.currentPercentageFieldLabel);
     }
 
     @Override
@@ -46,7 +47,9 @@ public class PiecesWatcher implements TextWatcher {
         if(pieces>1){
             currentPiecesFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.VISIBLE);
-            //currentWeightSliderLabel.setVisibility(View.GONE);
+
+            currentPercentageFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contenente label + field
+            currentPercentageField.setVisibility(View.GONE);
 
             // setta lo slider in base al numero di pezzi
             currentWeightSlider.setTag("pieces");
@@ -67,8 +70,10 @@ public class PiecesWatcher implements TextWatcher {
         } else { // setta lo slider in base al peso, se non compilato in percentuale generica
             currentPiecesFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.GONE);
-            //if(TextUtils.isEmpty(weightField))
-                //currentWeightSliderLabel.setVisibility(View.VISIBLE);
+            if(TextUtils.isEmpty(weightField)){
+                currentPercentageFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
+                currentPercentageField.setVisibility(View.VISIBLE);
+            }
 
             currentPiecesField.setText(s.toString());
             if(!TextUtils.isEmpty(weightField)){

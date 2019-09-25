@@ -22,8 +22,8 @@ public class PriceWeightRelationWatcher implements TextWatcher {
     private final String PRICE_TAG = "priceField", WEIGHT_TAG = "weightField", PRICEPERKILO_TAG = "pricePerKiloField";
     private SeekBar currentWeightSlider;
     private EditText currentWeightField;
-    private View currentWeightFieldLabel;
-    //private TextView piecesField;
+    private View currentWeightFieldLabel, currentPercentageFieldLabel;
+    private TextView piecesField;
 
     public PriceWeightRelationWatcher(String type, EditText editText1, EditText editText2, Button clearButton1, Button clearButton2, Activity activity){
         this.type = type;
@@ -35,8 +35,9 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         this.currentWeightSlider = activity.findViewById(R.id.currentWeightSlider);
         this.currentWeightFieldLabel = activity.findViewById(R.id.currentWeightFieldLabel);
         this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
+        this.currentPercentageFieldLabel = activity.findViewById(R.id.currentPercentageFieldLabel);
         //this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
-        //this.piecesField = activity.findViewById(R.id.piecesField);
+        this.piecesField = activity.findViewById(R.id.piecesField);
     }
 
     @Override
@@ -53,8 +54,10 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
                 currentWeightFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
-                //if(TextUtils.getInt(piecesField)==1)
-                    //currentWeightSliderLabel.setVisibility(View.VISIBLE);
+                if(TextUtils.getInt(piecesField)==1){
+                    currentPercentageFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
+                    currentPercentageField.setVisibility(View.VISIBLE);
+                }
             }
 
             // Controlla e trova se c'è un campo calcolato/oscurato
@@ -83,7 +86,9 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
                 currentWeightFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.VISIBLE);
-                //currentWeightSliderLabel.setVisibility(View.GONE);
+
+                currentPercentageFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contenente label + field
+                currentPercentageField.setVisibility(View.GONE);
             }
 
             // Se si ha un campo non vuoto e abilitato e uno o non vuoto o disabilitato
