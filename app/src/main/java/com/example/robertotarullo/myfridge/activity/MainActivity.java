@@ -2,6 +2,7 @@ package com.example.robertotarullo.myfridge.activity;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -41,6 +42,11 @@ import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String FILTER0_TEXT = "Dispensa";
+    private static final String FILTER1_TEXT = "Frigorifero";
+    private static final String FILTER2_TEXT = "Congelatore";
+
 
     // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -507,26 +513,52 @@ public class MainActivity extends AppCompatActivity {
     private List<Pack> getPacks(List<SingleProduct> singleProducts) {
         List<Pack> packs = new ArrayList<>();
 
-        for (int i = 0; i < singleProducts.size(); i++) {                                           // Per ogni prodotto
-            if ((showConsumedProducts && singleProducts.get(i).isConsumed()) || (!showConsumedProducts && !singleProducts.get(i).isConsumed())) {
-                Pack p = new Pack();                                                                // Crea un nuovo pack
-                for (int j = 0; j < singleProducts.size(); j++) {                                   // Cerca tra tutti i prodotti
+        int[] storageNotifications = {0, 0, 0};
+
+        for (int i = 0; i < singleProducts.size(); i++) {                                                                                                   // Per ogni prodotto
+            if ((showConsumedProducts && singleProducts.get(i).isConsumed()) || (!showConsumedProducts && !singleProducts.get(i).isConsumed())) {           // Se rispetta la scelta di visualizzazione 'consumati'
+
+                // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
+                if(!showConsumedProducts && !singleProducts.get(i).isConsumed()){
+                    Date expiryDate = DateUtils.getActualExpiryDate(singleProducts.get(i));
+                    if(expiryDate!=null && expiryDate!=DateUtils.getNoExpiryDate()){
+                        Date now = DateUtils.getCurrentDateWithoutTime();
+                        if(expiryDate.before(now) || expiryDate.equals(now)){
+                            storageNotifications[singleProducts.get(i).getActualStorageCondition()]++;
+                        }
+                    }
+                }
+
+                Pack p = new Pack();                                                                                                                        // Crea un nuovo pack
+                for (int j = 0; j < singleProducts.size(); j++) {                                                                                           // Cerca tra tutti i prodotti
                     if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
-                        if (j != i && singleProducts.get(i).packEquals(singleProducts.get(j))) {    // .. se i due prodotti sono raggruppabili
-                            p.addProduct(singleProducts.get(j));                                    // .. sposta il prodotto nel pack
+                        if (j != i && singleProducts.get(i).packEquals(singleProducts.get(j))) {                                                            // .. se i due prodotti sono raggruppabili
+                            p.addProduct(singleProducts.get(j));                                                                                            // .. sposta il prodotto nel pack
                             singleProducts.remove(j);
                             j--;
                         }
                     }
                 }
-                if (!p.getProducts().isEmpty()) {                                                   // Se è stato raggruppato con almeno un altro prodotto
-                    p.addProduct(singleProducts.get(i));                                            // .. sposta il prodotto nel pack
+                if (!p.getProducts().isEmpty()) {                                                                                                           // Se è stato raggruppato con almeno un altro prodotto
+                    p.addProduct(singleProducts.get(i));                                                                                                    // .. sposta il prodotto nel pack
                     singleProducts.remove(i);
                     i--;
-                    packs.add(p);                                                                   // .. aggiungi il pack alla lista
+                    packs.add(p);                                                                                                                           // .. aggiungi il pack alla lista
                 }
             }
         }
+
+        // aggiorna notifica sui pulsanti dei filtri
+        filterButton0.setText(FILTER0_TEXT);
+        if(storageNotifications[0]>0)
+            filterButton0.setText(FILTER0_TEXT +  " (" + storageNotifications[0] + ")");
+        filterButton1.setText(FILTER1_TEXT);
+        if(storageNotifications[1]>0)
+            filterButton1.setText(FILTER1_TEXT +  " (" + storageNotifications[1] + ")");
+        filterButton2.setText(FILTER2_TEXT);
+        if(storageNotifications[2]>0)
+            filterButton2.setText(FILTER2_TEXT +  " (" + storageNotifications[2] + ")");
+
         return packs;
     }
 
