@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.example.robertotarullo.myfridge.utils.DateUtils;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
@@ -317,17 +319,18 @@ public class SingleProduct implements Product, Serializable {
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct==null)
             return false;
-        else return    singleProduct.isPackaged() == packaged                                       // packaged
-                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()// actualStorageCondition
-                    && Objects.equals(singleProduct.getName(), name)                                // name
-                    && Objects.equals(singleProduct.getBrand(), brand)                              // brand
-                    && singleProduct.getWeight() == weight                                          // weight
-                    && singleProduct.getPieces() == pieces                                          // pieces
-                    && singleProduct.getStorageCondition() == storageCondition                      // storageCondition
-                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition          // openedStorageCondition
-                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                    // expiryDate
-                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening      // expiringDaysAfterOpening
-                    && Objects.equals(singleProduct.getPackagingDate(), packagingDate);             // packagingDate
+        else return    singleProduct.isPackaged() == packaged                                                               // packaged
+                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()                        // actualStorageCondition
+                    && Objects.equals(singleProduct.getName(), name)                                                        // name
+                    && Objects.equals(singleProduct.getBrand(), brand)                                                      // brand
+                    && singleProduct.getWeight() == weight                                                                  // weight
+                    && singleProduct.getPieces() == pieces                                                                  // pieces
+                    && singleProduct.getStorageCondition() == storageCondition                                              // storageCondition
+                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition                                  // openedStorageCondition
+                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                                            // expiryDate
+                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening                              // expiringDaysAfterOpening
+                    && Objects.equals(singleProduct.getPackagingDate(), packagingDate)                                      // packagingDate
+                    && Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this));// actualExpiryDate
     }
 
     // ritorna true se raggruppabile
