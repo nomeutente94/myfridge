@@ -18,7 +18,7 @@ public class ConsumedDiscendingDateComparator implements Comparator<Product> {
         Date date2 = ((SingleProduct)p2).getConsumptionDate();
 
         if(date1!=null && date2!=null){
-            return date1.compareTo(date2);
+            return -date1.compareTo(date2);
         } else if(date1!=null)
             return -1;
         else if(date2!=null)
