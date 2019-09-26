@@ -547,7 +547,7 @@ public class MainActivity extends AppCompatActivity {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
         if(!showConsumedProducts)                                       // Raggruppa solo se non si visualizzano i prodotti consumati
-            groupedProducts.addAll(getPacks(groupedSingleProducts));    // Passa gli eventuali raggruppamenti di prodotti
+            groupedProducts.addAll(getPacks(groupedSingleProducts));    // Crea eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
         if (pack == null) {
@@ -581,29 +581,55 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
+                /*System.out.print("[");
+                for(SingleProduct product : singleProducts)
+                    System.out.print(" " + product.getId() + " ");
+                System.out.println("]");*/
+
                 Pack p = new Pack();                                                                                                                        // Crea un nuovo pack
-                for (int j = 0; j < singleProducts.size(); j++) {                                                                                           // Cerca tra tutti i prodotti
+                for (int j = i+1; j < singleProducts.size(); j++) {                                                                                         // Cerca tra tutti i prodotti
+
                     if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
                         boolean groupable;
                         if(action==Action.SELECT)
                             groupable = singleProducts.get(i).selectEquals(singleProducts.get(j));
                         else
                             groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
-                        if (j != i && groupable) {                                                                                                          // .. se i due prodotti sono raggruppabili
-                            p.addProduct(singleProducts.get(j));                                                                                            // .. sposta il prodotto nel pack
+                        if(groupable){
+                            // sposta il prodotto nel pack
+                            System.out.println(singleProducts.get(i).getId() + " e " + singleProducts.get(j).getId() + " sono raggruppabili, rimuovo " + singleProducts.get(j).getId());
+                            p.addProduct(singleProducts.get(j));
                             singleProducts.remove(j);
                             j--;
+                        } else {
+                            System.out.println(singleProducts.get(i).getId() + " e " + singleProducts.get(j).getId() + " non sono raggruppabili.");
                         }
                     }
                 }
-                if (!p.getProducts().isEmpty()) {                                                                                                           // Se è stato raggruppato con almeno un altro prodotto
-                    p.addProduct(singleProducts.get(i));                                                                                                    // .. sposta il prodotto nel pack
+
+                // System.out.println("Numero di raggruppamenti trovati per " + singleProducts.get(i).getId() + ": " + p.getProducts().size());
+            if (!p.getProducts().isEmpty()) {   // Se è stato raggruppato con almeno un altro prodotto
+                    System.out.println("Rimuovo " + singleProducts.get(i).getId());
+                    p.addProduct(singleProducts.get(i));  // .. sposta il prodotto nel pack
                     singleProducts.remove(i);
                     i--;
-                    packs.add(p);                                                                                                                           // .. aggiungi il pack alla lista
+                    packs.add(p);   // .. aggiungi il pack alla lista
                 }
             }
         }
+
+        /*System.out.print("Prodotti singoli: [");
+        for(SingleProduct product : singleProducts)
+            System.out.print(" " + product.getId() + " ");
+        System.out.println("]");
+
+        System.out.println("Packs:");
+        for(Pack pack : packs){
+            System.out.print("[");
+            for(SingleProduct product : pack.getProducts())
+                System.out.print(" " + product.getId() + " ");
+            System.out.println("]\n");
+        }*/
 
         // aggiorna notifica sui pulsanti dei filtri
         filterButton0.setText(FILTER0_TEXT);
@@ -648,8 +674,8 @@ public class MainActivity extends AppCompatActivity {
                     if (groupedProducts.get(i) instanceof SingleProduct) {
                         if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
                             filteredProducts.add(groupedProducts.get(i));
-                    } else {
-                        if ((groupedProducts.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
+                    } else {//if (groupedProducts.get(i) instanceof Pack)
+                        if ((groupedProducts.get(i)).getActualStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
                             filteredProducts.add(groupedProducts.get(i));
                     }
                 }

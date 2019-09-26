@@ -4,6 +4,8 @@ package com.example.robertotarullo.myfridge.bean;
 public interface Product {
     boolean isPackaged();
 
+    boolean isOpened();
+
     String getName();
 
     void setName(String name);
@@ -33,4 +35,6 @@ public interface Product {
     boolean isConsumed();
 
     void setConsumed(boolean consumed);
+
+    int getActualStorageCondition();
 }

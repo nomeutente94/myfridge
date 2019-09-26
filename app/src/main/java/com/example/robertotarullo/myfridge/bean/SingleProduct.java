@@ -94,18 +94,22 @@ public class SingleProduct implements Product, Serializable {
 
     public SingleProduct(){}
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getBrand() {
         return brand;
     }
 
+    @Override
     public void setBrand(String brand) {
         this.brand = brand;
     }
@@ -126,10 +130,12 @@ public class SingleProduct implements Product, Serializable {
         this.expiryDate = expiryDate;
     }
 
+    @Override
     public float getWeight() {
         return weight;
     }
 
+    @Override
     public void setWeight(float weight) {
         this.weight = weight;
     }
@@ -150,10 +156,12 @@ public class SingleProduct implements Product, Serializable {
         this.purchaseDate = purchaseDate;
     }
 
+    @Override
     public int getStorageCondition() {
         return storageCondition;
     }
 
+    @Override
     public void setStorageCondition(int storageCondition) {
         this.storageCondition = storageCondition;
     }
@@ -166,17 +174,19 @@ public class SingleProduct implements Product, Serializable {
         this.pointOfPurchaseId = pointOfPurchaseId;
     }
 
-    // TODO spostare in classe Utils esterna ?
+    @Override
     public int getActualStorageCondition(){
         if(opened)
             return openedStorageCondition;
         return storageCondition;
     }
 
+    @Override
     public int getPieces() {
         return pieces;
     }
 
+    @Override
     public void setPieces(int pieces) {
         this.pieces = pieces;
     }
@@ -197,10 +207,12 @@ public class SingleProduct implements Product, Serializable {
         this.percentageQuantity = percentageQuantity;
     }
 
+    @Override
     public boolean isConsumed() {
         return consumed;
     }
 
+    @Override
     public void setConsumed(boolean consumed) {
         this.consumed = consumed;
     }
@@ -221,6 +233,7 @@ public class SingleProduct implements Product, Serializable {
         this.id = id;
     }
 
+    @Override
     public boolean isOpened() {
         return opened;
     }
@@ -237,10 +250,12 @@ public class SingleProduct implements Product, Serializable {
         this.openingDate = openingDate;
     }
 
+    @Override
     public int getOpenedStorageCondition() {
         return openedStorageCondition;
     }
 
+    @Override
     public void setOpenedStorageCondition(int openedStorageCondition) {
         this.openedStorageCondition = openedStorageCondition;
     }
@@ -253,6 +268,7 @@ public class SingleProduct implements Product, Serializable {
         this.expiringDaysAfterOpening = expiringDaysAfterOpening;
     }
 
+    @Override
     public boolean isPackaged() {
         return packaged;
     }
@@ -299,19 +315,19 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
-        if(singleProduct!=null){
-            return     singleProduct.isPackaged() == packaged                                     // packaged
-                    && Objects.equals(singleProduct.getName(), name)                              // name
-                    && Objects.equals(singleProduct.getBrand(), brand)                            // brand
-                    && singleProduct.getWeight() == weight                                        // weight
-                    && singleProduct.getPieces() == pieces                                        // pieces
-                    && singleProduct.getStorageCondition() == storageCondition                    // storageCondition
-                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition        // openedStorageCondition
-                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                  // expiryDate
-                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening    // expiringDaysAfterOpening
-                    && singleProduct.getPackagingDate() == packagingDate;                         // packagingDate
-        } else
+        if(singleProduct==null)
             return false;
+        else return    singleProduct.isPackaged() == packaged                                       // packaged
+                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()// actualStorageCondition
+                    && Objects.equals(singleProduct.getName(), name)                                // name
+                    && Objects.equals(singleProduct.getBrand(), brand)                              // brand
+                    && singleProduct.getWeight() == weight                                          // weight
+                    && singleProduct.getPieces() == pieces                                          // pieces
+                    && singleProduct.getStorageCondition() == storageCondition                      // storageCondition
+                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition          // openedStorageCondition
+                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                    // expiryDate
+                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening      // expiringDaysAfterOpening
+                    && Objects.equals(singleProduct.getPackagingDate(), packagingDate);             // packagingDate
     }
 
     // ritorna true se raggruppabile
