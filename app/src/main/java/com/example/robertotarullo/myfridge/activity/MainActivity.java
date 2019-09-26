@@ -559,7 +559,7 @@ public class MainActivity extends AppCompatActivity {
     private void groupProducts(Pack pack) {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
-        if(!showConsumedProducts)                                       // Raggruppa solo se non si visualizzano i prodotti consumati
+        if(action == Action.PICK || !showConsumedProducts)              // Raggruppa solo se non si visualizzano i prodotti consumati
             groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
@@ -584,11 +584,13 @@ public class MainActivity extends AppCompatActivity {
     // Raggruppa prodotti in base a caratteristiche comuni spostandoli dall'array ricevuto
     private List<Pack> getPacks(List<SingleProduct> singleProducts) {
         List<Pack> packs = new ArrayList<>();
-
         int[] storageNotifications = {0, 0, 0};
 
-        for (int i = 0; i < singleProducts.size(); i++) {                                                                                                   // Per ogni prodotto
-            if ((showConsumedProducts && singleProducts.get(i).isConsumed()) || (!showConsumedProducts && !singleProducts.get(i).isConsumed())) {           // Se rispetta la scelta di visualizzazione 'consumati'
+        for (int i = 0; i < singleProducts.size(); i++) { // Per ogni prodotto
+            boolean toDisplay = action == Action.PICK ||
+                               (showConsumedProducts && singleProducts.get(i).isConsumed()) ||
+                               (!showConsumedProducts && !singleProducts.get(i).isConsumed());
+            if (toDisplay) {
 
                 // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
                 if(!showConsumedProducts && !singleProducts.get(i).isConsumed()){
@@ -602,22 +604,19 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Pack p = new Pack(); // Crea un nuovo pack
-                for (int j = i+1; j < singleProducts.size(); j++) { // Cerca tra tutti i prodotti
+                for (int j = i+1; j<singleProducts.size(); j++) { // Cerca tra tutti i prodotti
+                    boolean groupable;
+                    if(action == Action.PICK) {
+                        groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
+                    } else {
+                        groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
+                    }
 
-                    if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
-                        boolean groupable;
-                        if(action==Action.PICK) {
-                            groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
-                        } else {
-                            groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
-                        }
-
-                        if(groupable){
-                            // sposta il prodotto nel pack
-                            p.addProduct(singleProducts.get(j));
-                            singleProducts.remove(j);
-                            j--;
-                        }
+                    if(groupable){
+                        // sposta il prodotto nel pack
+                        p.addProduct(singleProducts.get(j));
+                        singleProducts.remove(j);
+                        j--;
                     }
                 }
 
