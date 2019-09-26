@@ -277,6 +277,25 @@ public class SingleProduct implements Product, Serializable {
         this.consumptionDate = consumptionDate;
     }
 
+    public void loseState(){
+        loseConsumptionState();
+
+        setPurchaseDate(null);
+        setPointOfPurchaseId(0);
+        setExpiryDate(null);
+        setPackagingDate(null);
+    }
+
+    public void loseConsumptionState(){
+        setCurrentWeight(0);
+        setPercentageQuantity(100);
+        setCurrentPieces(getPieces());
+        setConsumptionDate(null);
+        setConsumed(false);
+        setOpened(false);
+        setOpeningDate(null);
+    }
+
     // ritorna true se raggruppabile
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
@@ -293,7 +312,24 @@ public class SingleProduct implements Product, Serializable {
                     && singleProduct.getPackagingDate() == packagingDate;                         // packagingDate
         } else
             return false;
+    }
 
+    // ritorna true se raggruppabile
+    public boolean selectEquals(SingleProduct singleProductObj){
+        if(singleProductObj!=null){
+            return  singleProductObj.isPackaged() == packaged &&
+                    Objects.equals(singleProductObj.getName(), name) &&
+                    Objects.equals(singleProductObj.getBrand(), brand) &&
+                    singleProductObj.getPrice() == price &&
+                    singleProductObj.getPricePerKilo() == pricePerKilo &&
+                    singleProductObj.getWeight() == weight &&
+                    singleProductObj.getPieces() == pieces &&
+                    singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
+                    singleProductObj.getStorageCondition() == storageCondition &&
+                    //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId && // DISATTIVATO PERCHE' SI RIMUOVE CON LOSESTATE()
+                    singleProductObj.getOpenedStorageCondition() == openedStorageCondition;
+        } else
+            return false;
     }
 
     @Override

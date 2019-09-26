@@ -34,6 +34,7 @@ import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.comparator.AscendingDateComparator;
 import com.example.robertotarullo.myfridge.comparator.ConsumedDiscendingDateComparator;
+import com.example.robertotarullo.myfridge.comparator.NameComparator;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
@@ -42,6 +43,11 @@ import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
 public class MainActivity extends AppCompatActivity {
+
+    // Tipo di azione
+    public enum Action{
+        SELECT
+    }
 
     private static final String FILTER0_TEXT = "Dispensa";
     private static final String FILTER1_TEXT = "Frigorifero";
@@ -78,10 +84,15 @@ public class MainActivity extends AppCompatActivity {
     // Position dell'elemento su cui si è aperto l'utlimo popupmenu
     private int currentPopupPosition;
 
+    // action
+    private Action action;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        action = (Action) getIntent().getSerializableExtra("action");
 
         // Ottieni un riferimento al DB
         productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
@@ -111,10 +122,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if (showConsumedProducts)
-            menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra non consumati");
-        else
-            menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra consumati");
+        if(action!=Action.SELECT){
+            if (showConsumedProducts)
+                menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra non consumati");
+            else
+                menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra consumati");
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -178,16 +191,76 @@ public class MainActivity extends AppCompatActivity {
     // Specifica cosa fare quando l'utente tocca un item della lista
     private void initializeItemBehaviour(){
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            // TODO codice ripetuto con editProduct()
-            Product p = (Product)listView.getItemAtPosition(position);
+            if(action==Action.SELECT){
+                Product p = (Product)listView.getItemAtPosition(position);
 
-            if(p instanceof Pack && currentPackage==null) { // Se si è clickato un Pack
-                resetSearchBar();
-                setPackageView((Pack) p);
-            } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
-                updateProduct((SingleProduct)p);
-            else
-                Toast.makeText(getApplicationContext(), "Non puoi aggiornare lo stato di un prodotto consumato!", Toast.LENGTH_LONG).show();
+                //final SingleProduct[] clickedProduct = new SingleProduct[1];
+
+                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            Intent resultIntent = new Intent();
+
+                            SingleProduct clickedProduct = null;
+                            if(p instanceof SingleProduct)
+                                clickedProduct = (SingleProduct)p;
+                            else if(p instanceof Pack)
+                                clickedProduct = ((Pack) p).getProducts().get(0);
+
+                            resultIntent.putExtra("productId", clickedProduct.getId());
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                String msg = "Vuoi autocompilare il form dal prodotto selezionato? Eventuali dati inseriti non relativi allo stato andranno persi.\n";
+
+                SingleProduct clicked = null;
+                if(p instanceof SingleProduct)
+                    clicked = (SingleProduct)p;
+                else if(p instanceof Pack)
+                    clicked = ((Pack) p).getProducts().get(0);
+
+                msg += "\n- Confezionato: " + p.isPackaged();
+                if(clicked.getName()!=null)
+                    msg += "\n- Nome: " + clicked.getName();
+                if(clicked.getBrand()!=null)
+                    msg += "\n- Marca: " + clicked.getBrand();
+                if(clicked.getPrice()!=0)
+                    msg += "\n- Prezzo (€): " + clicked.getPrice();
+                if(clicked.getPricePerKilo()!=0)
+                    msg += "\n- Prezzo/kg: " + clicked.getPricePerKilo();
+                if(clicked.getWeight()!=0)
+                    msg += "\n- Peso (grammi): " + clicked.getWeight();
+                if(clicked.getPieces()!=0)
+                    msg += "\n- N. pezzi: " + clicked.getPieces();
+                if(clicked.getExpiringDaysAfterOpening()!=0)
+                    msg += "\n- Giorni entro cui consumare: " + clicked.getExpiringDaysAfterOpening();
+                msg += "\n- Modalità di conservazione: " + clicked.getStorageCondition();
+                msg += "\n- Modalità di conservazione dopo l'apertura: " + clicked.getOpenedStorageCondition();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma compilazione")
+                        .setPositiveButton("Conferma", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+
+            } else {
+                // TODO codice ripetuto con editProduct()
+                Product p = (Product)listView.getItemAtPosition(position);
+
+                if(p instanceof Pack && currentPackage==null) { // Se si è clickato un Pack
+                    resetSearchBar();
+                    setPackageView((Pack) p);
+                } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
+                    updateProduct((SingleProduct)p);
+                else
+                    Toast.makeText(getApplicationContext(), "Non puoi aggiornare lo stato di un prodotto consumato!", Toast.LENGTH_LONG).show();
+            }
         });
     }
 
@@ -371,9 +444,9 @@ public class MainActivity extends AppCompatActivity {
                     clonedProduct.setId(0);
 
                     if(radioButtonPartial.isChecked())
-                        softReset(clonedProduct);
+                        clonedProduct.loseConsumptionState();
                     else if(radioButtonMin.isChecked())
-                        hardReset(clonedProduct);
+                       clonedProduct.loseState();
 
                     currentFilter = clonedProduct.getActualStorageCondition();
 
@@ -403,26 +476,6 @@ public class MainActivity extends AppCompatActivity {
                .setPositiveButton("Conferma", dialogClickListener)
                .setNegativeButton("Annulla", dialogClickListener)
                .show();
-    }
-
-    // TODO spostare nel bean o in una classe di utils?
-    private void hardReset(SingleProduct p){
-        softReset(p);
-        p.setPurchaseDate(null);
-        p.setPointOfPurchaseId(0);
-        p.setExpiryDate(null);
-        p.setPackagingDate(null);
-    }
-
-    // TODO spostare nel bean o in una classe di utils?
-    private void softReset(SingleProduct p){
-        p.setCurrentWeight(0);
-        p.setPercentageQuantity(100);
-        p.setCurrentPieces(p.getPieces());
-        p.setConsumptionDate(null);
-        p.setConsumed(false);
-        p.setOpened(false);
-        p.setOpeningDate(null);
     }
 
     // Modifica la quantità dei duplicati tramite i relativi pulsanti
@@ -473,9 +526,9 @@ public class MainActivity extends AppCompatActivity {
                         searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
             }
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts);
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts, action);
         } else // Se la barra di ricerca è vuota resetta la view
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts(), showConsumedProducts);
+            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts(), showConsumedProducts, action);
 
         setAdapter(productsListAdapter);
     }
@@ -493,9 +546,9 @@ public class MainActivity extends AppCompatActivity {
     private void groupProducts(Pack pack) {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
-        if(!showConsumedProducts) // Non raggruppare se si visualizzano i prodotti consumati
-            groupedProducts.addAll(getPacks(groupedSingleProducts));      // Passa gli eventuali raggruppamenti di prodotti
-        groupedProducts.addAll(groupedSingleProducts);                // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
+        if(!showConsumedProducts)                                       // Raggruppa solo se non si visualizzano i prodotti consumati
+            groupedProducts.addAll(getPacks(groupedSingleProducts));    // Passa gli eventuali raggruppamenti di prodotti
+        groupedProducts.addAll(groupedSingleProducts);                  // Passa i singleProduct di cui non è stato trovato alcun raggruppamento
 
         if (pack == null) {
             if(currentFilter==0)
@@ -531,7 +584,12 @@ public class MainActivity extends AppCompatActivity {
                 Pack p = new Pack();                                                                                                                        // Crea un nuovo pack
                 for (int j = 0; j < singleProducts.size(); j++) {                                                                                           // Cerca tra tutti i prodotti
                     if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
-                        if (j != i && singleProducts.get(i).packEquals(singleProducts.get(j))) {                                                            // .. se i due prodotti sono raggruppabili
+                        boolean groupable;
+                        if(action==Action.SELECT)
+                            groupable = singleProducts.get(i).selectEquals(singleProducts.get(j));
+                        else
+                            groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
+                        if (j != i && groupable) {                                                                                                          // .. se i due prodotti sono raggruppabili
                             p.addProduct(singleProducts.get(j));                                                                                            // .. sposta il prodotto nel pack
                             singleProducts.remove(j);
                             j--;
@@ -563,29 +621,42 @@ public class MainActivity extends AppCompatActivity {
 
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilterView(int storageCondition) {
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
+        if(action==Action.SELECT){
+            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
+            findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
+        } else
+            findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
+
         if(showConsumedProducts)
             setTitle("Consumati"); // Resetta il titolo al ritorno da una packageView
+        else if(action==Action.SELECT)
+            setTitle("Seleziona un prodotto");
         else
             setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
         filteredProducts = new ArrayList<>();
-        for (int i = 0; i < groupedProducts.size(); i++) {
-            if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
-                // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
-                if (groupedProducts.get(i) instanceof SingleProduct) {
-                    if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
-                        filteredProducts.add(groupedProducts.get(i));
-                } else {
-                    if ((groupedProducts.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
-                        filteredProducts.add(groupedProducts.get(i));
+
+        if(action==Action.SELECT){
+            filteredProducts = groupedProducts;
+            sortByName(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
+        } else {
+            for (int i = 0; i < groupedProducts.size(); i++) {
+                if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
+                    // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
+                    if (groupedProducts.get(i) instanceof SingleProduct) {
+                        if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
+                            filteredProducts.add(groupedProducts.get(i));
+                    } else {
+                        if ((groupedProducts.get(i)).getStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
+                            filteredProducts.add(groupedProducts.get(i));
+                    }
                 }
             }
+            sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
         }
-        sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts, showConsumedProducts);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts, showConsumedProducts, action);
         setAdapter(productsListAdapter);
         filterBySearchBar();
     }
@@ -616,9 +687,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts, showConsumedProducts);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts, showConsumedProducts, action);
         setAdapter(productsListAdapter);
-        // TODO comunica tramite un textview il caso in cui non ci sia nessun prodotto da visualizzare, sia nel gruppo che non
     }
 
     // aggiunge adapter e aggiorna warning
@@ -682,6 +752,10 @@ public class MainActivity extends AppCompatActivity {
             Collections.sort(products, new ConsumedDiscendingDateComparator());
         else
             Collections.sort(products, new AscendingDateComparator());
+    }
+
+    private void sortByName(List<Product> products) {
+        Collections.sort(products, new NameComparator());
     }
 
     public void showPopup(View v) {

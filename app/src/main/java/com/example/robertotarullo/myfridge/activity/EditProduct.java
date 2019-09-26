@@ -52,6 +52,9 @@ import java.util.TreeSet;
 
 public class EditProduct extends AppCompatActivity {
 
+    private static final int SELECT_REQUEST = 1;
+
+    // Tipo di azione
     public enum Action{
         ADD,
         ADD_NO_CONSUMPTION,
@@ -231,7 +234,10 @@ public class EditProduct extends AppCompatActivity {
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
-                    runOnUiThread(() -> fillFieldsFromProduct(p));
+                    runOnUiThread(() -> {
+                        fillFieldsFromProduct(p);
+                        setCurrentFormToInitial();
+                    });
                 }).start();
                 break;
             case UPDATE:
@@ -254,7 +260,10 @@ public class EditProduct extends AppCompatActivity {
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
-                    runOnUiThread(() -> fillFieldsFromProduct(p));
+                    runOnUiThread(() -> {
+                        fillFieldsFromProduct(p);
+                        setCurrentFormToInitial();
+                    });
                 }).start();
                 break;
             case SHOPPING:
@@ -264,7 +273,10 @@ public class EditProduct extends AppCompatActivity {
                     quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
                     new Thread(() -> {
                         initializePointsOfPurchaseSpinner();
-                        runOnUiThread(() -> fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit")));
+                        runOnUiThread(() -> {
+                            fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+                            setCurrentFormToInitial();
+                        });
                     }).start();
                 // Inserimento dei prodotti dal carrello al database
                 } else if (getIntent().getSerializableExtra("cartProducts") != null) {
@@ -310,11 +322,15 @@ public class EditProduct extends AppCompatActivity {
         menu.clear();
 
         if(action==Action.EDIT || action==Action.UPDATE)
-            menu.add(0, R.id.resetConsumption, Menu.NONE, "Resetta solo consumazione ");
+            menu.add(0, R.id.resetConsumption, Menu.NONE, "Resetta consumazione ");
         if(action==Action.EDIT) {
-            menu.add(0, R.id.reset, Menu.NONE, "Resetta");
+            menu.add(0, R.id.reset, Menu.NONE, "Resetta intero stato");
             menu.add(0, R.id.delete, Menu.NONE, "Elimina");
         }
+        if(action==Action.ADD || action==Action.SHOPPING || action==Action.ADD_NO_CONSUMPTION) {
+            menu.add(0, R.id.fillFromInsertedProduct, Menu.NONE, "Compila da prodotto...");
+        }
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -396,6 +412,12 @@ public class EditProduct extends AppCompatActivity {
                         .setPositiveButton("Conferma", dialogClickListener)
                         .setNegativeButton("Annulla", dialogClickListener)
                         .show();
+                return true;
+            case R.id.fillFromInsertedProduct:
+                // permetti all'utente di scegliere un prodotto già inserito
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("action", MainActivity.Action.SELECT);
+                startActivityForResult(intent, SELECT_REQUEST);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -493,19 +515,35 @@ public class EditProduct extends AppCompatActivity {
     private void fillFieldsFromProduct(SingleProduct p) {
 
         // TODO Mettere a fattor comune con codice in case("add"), PiecesWatcher e PriceWeightRelationWatcher
+        if(p.getPieces()==1 && p.getWeight()==0) {
+            currentPercentageField.setVisibility(View.VISIBLE);
+            findViewById(R.id.currentPercentageFieldLabel).setVisibility(View.VISIBLE);
+        } else {
+            currentPercentageField.setVisibility(View.GONE);
+            findViewById(R.id.currentPercentageFieldLabel).setVisibility(View.GONE);
+        }
+
         if(p.getWeight()==0){
             findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentWeightField.setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.currentWeightFieldLabel).setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
+            currentWeightField.setVisibility(View.VISIBLE);
         }
+
         if(p.getPieces()==1){
             findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
             currentPiecesField.setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
+            currentPiecesField.setVisibility(View.VISIBLE);
+            currentPiecesField.setVisibility(View.VISIBLE);
         }
-        /*if(p.getPieces()==1 && p.getWeight()==0)
-            findViewById(R.id.currentWeightSliderLabel).setVisibility(View.VISIBLE);*/
 
         if(p.isConsumed())
             consumedCheckBox.setChecked(true);
+        else
+            consumedCheckBox.setChecked(false);
 
         TextUtils.editFieldNotFromUser(consumptionDateField, DateUtils.getFormattedDate(p.getConsumptionDate()));
 
@@ -521,6 +559,12 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.getWeight()>0)
             TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
+        else
+            currentWeightField.setText("");
+
+
+        CONTINUARE A SCRIVERE IL CASO ELSE
+
         currentPercentageField.setText(String.valueOf(p.getPercentageQuantity()));
 
         if(p.getExpiringDaysAfterOpening()>0)
@@ -578,8 +622,6 @@ public class EditProduct extends AppCompatActivity {
                 currentWeightSlider.setProgress(p.getCurrentPieces());
             }
         }
-
-        setCurrentFormToInitial();
     }
 
     // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
@@ -1020,5 +1062,34 @@ public class EditProduct extends AppCompatActivity {
         String temp = expiryDateField.getText().toString();
         expiryDateField.setTag(R.id.expirySwitchControl, DateUtils.EXPIRY_SWITCH_CONTROL_TAG);
         expiryDateField.setText(temp); // TODO controllare date illegali calcolate con expiryDays
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SELECT_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                long productId = data.getLongExtra("productId", 0);
+                new Thread(() -> {
+                    SingleProduct p = productDatabase.productDao().get(productId);
+                    p.loseState();
+                    runOnUiThread(() -> {
+                        // resetta tutti i campi che possono essere compilati (attributi non relativi allo stato)
+                        // gli spinner non si toccano perchè prenderanno il valore di p
+                        packagedCheckBox.setChecked(false);
+                        nameField.setText("");
+                        brandField.setText("");
+                        priceField.setText("");
+                        pricePerKiloField.setText("");
+                        weightField.setText("");
+                        piecesField.setText("1");
+                        expiryDaysAfterOpeningField.setText("");
+
+                        fillFieldsFromProduct(p);
+                    });
+                }).start();
+            }
+        }
     }
 }

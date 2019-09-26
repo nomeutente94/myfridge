@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.robertotarullo.myfridge.activity.MainActivity;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
@@ -31,11 +32,14 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     private Context context;
     private View optionsButton;
 
-    public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed) {
+    private MainActivity.Action action;
+
+    public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed, MainActivity.Action action) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
         this.showConsumed = showConsumed;
         this.context = context;
+        this.action = action;
     }
 
     @NonNull
@@ -43,8 +47,6 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     public View getView(int position, View v, @NonNull ViewGroup parent) {
         if (v == null)
             v = inflater.inflate(R.layout.list_element, null);
-
-
 
         p = getItem(position);
 
@@ -64,6 +66,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         setDate();
 
         optionsButton.setTag(position);
+
+        if(action==MainActivity.Action.SELECT){
+            dataTextView.setVisibility(View.GONE);
+            optionsButton.setVisibility(View.GONE);
+            nonConsumptionBar.setVisibility(View.GONE);
+        }
 
         return v;
     }
@@ -85,12 +93,19 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 typeTextView.setText("Fresco");
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
-            typeTextView.setText(String.valueOf(((Pack)p).getSize()));
 
-            if(p.isPackaged())
-                typeTextView.setText(typeTextView.getText() + " confezionati");
-            else
-                typeTextView.setText(typeTextView.getText() + " freschi");
+            if(action==MainActivity.Action.SELECT){
+                if(p.isPackaged())
+                    typeTextView.setText("Confezionato");
+                else
+                    typeTextView.setText("Fresco");
+            } else {
+                typeTextView.setText(String.valueOf(((Pack)p).getSize()));
+                if(p.isPackaged())
+                    typeTextView.setText(typeTextView.getText() + " confezionati");
+                else
+                    typeTextView.setText(typeTextView.getText() + " freschi");
+            }
         }
     }
 

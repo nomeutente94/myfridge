@@ -164,17 +164,22 @@ public abstract class TextUtils {
     public static void setText(String text, EditText field){
         if(text!=null)
             field.setText(text);
+        else
+            field.setText("");
     }
 
     public static void setPrice(float price, EditText field){
         if(price>0)
             field.setText(PriceUtils.getFormattedPrice(price));
+        else
+            field.setText("");
     }
 
     public static void setWeight(float weight, EditText field){
-        if(weight>0) {
+        if(weight>0)
             field.setText(PriceUtils.getFormattedWeight(weight));
-        }
+        else
+            field.setText("");
     }
 
     public static void setDate(Date date, EditText field){
