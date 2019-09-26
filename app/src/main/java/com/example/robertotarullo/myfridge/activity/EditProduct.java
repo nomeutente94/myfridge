@@ -562,13 +562,12 @@ public class EditProduct extends AppCompatActivity {
         else
             currentWeightField.setText("");
 
-
-        CONTINUARE A SCRIVERE IL CASO ELSE
-
         currentPercentageField.setText(String.valueOf(p.getPercentageQuantity()));
 
         if(p.getExpiringDaysAfterOpening()>0)
             TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
+        else
+            TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");
 
         TextUtils.setDate(p.getPurchaseDate(), purchaseDateField);
 
@@ -584,14 +583,16 @@ public class EditProduct extends AppCompatActivity {
         currentPiecesField.setText(String.valueOf(p.getCurrentPieces()));
 
         if(p.getExpiryDate()!=null) {
-            if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {
+            if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {                                         // se data di scadenza 'mai'
                 noExpiryCheckbox.setChecked(true);
-                TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");
+                TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");                           // svuota eventuale expiryDays
             } else {
-                TextUtils.editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate()));
-                if(!p.isPackaged())
-                    changeToExpiringDateMode(true); // Mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
+                TextUtils.editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate())); // se data di scadenza standard
+                if(!p.isPackaged())                                                                             // Se prodotto fresco...
+                    changeToExpiringDateMode(true);                                                             // .. mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
             }
+        } else {
+            TextUtils.editFieldNotFromUser(expiryDateField, "");
         }
 
         // Se si tratta di un prodotto confezionato
@@ -604,22 +605,28 @@ public class EditProduct extends AppCompatActivity {
                 if(p.getOpeningDate()!=null)
                     TextUtils.editFieldNotFromUser(openingDateField, DateUtils.getFormattedDate(p.getOpeningDate()));
             }
+        } else {
+            TextUtils.editFieldNotFromUser(openingDateField, "");
+            openedCheckBox.setChecked(false);
+            packagedCheckBox.setChecked(false);
         }
 
         // Se si tratta di un prodotto fresco o confezionato aperto
-        if(p.isOpened()){
-            if(p.getPieces()==1){
-                if(TextUtils.isEmpty(weightField))
-                    currentWeightSlider.setProgress(p.getPercentageQuantity());
-                else{
-                    currentWeightSlider.setTag("currentWeight");
-                    currentWeightSlider.setMax(TextUtils.getInt(weightField));
-                    currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
-                }
-            } else {
+        boolean isPackagedUnopened = !p.isOpened() && p.isPackaged();
+
+        if ((p.getPieces()==1 && p.getWeight()==0) || isPackagedUnopened){
+            currentWeightSlider.setTag("percentage");
+            currentWeightSlider.setMax(100);
+            currentWeightSlider.setProgress(p.getPercentageQuantity());
+        } else {
+            if (p.getPieces()>1) {
                 currentWeightSlider.setTag("pieces");
                 currentWeightSlider.setMax(p.getPieces());
                 currentWeightSlider.setProgress(p.getCurrentPieces());
+            } else if (p.getWeight()>0) {
+                currentWeightSlider.setTag("currentWeight");
+                currentWeightSlider.setMax(TextUtils.getInt(weightField));
+                currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
             }
         }
     }
@@ -815,14 +822,16 @@ public class EditProduct extends AppCompatActivity {
             p.setOpenedStorageCondition(p.getStorageCondition());
         }
 
-        if(p.isOpened()){ // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
-            // Memorizza la quantità percentuale
-            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField)));
-            // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField));
+        // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
+        if(p.isOpened()){
+            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField))); // Memorizza la quantità percentuale
+            // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField)); SOSTITUIRE LA RIGA SOPRA CON QUESTA DOPO AVER CAMBIATO NEL BEAN IL TIPO DI PERCENTAGEQUANTITY A FLOAT
         } else { // prodotto confezionato chiuso
             p.setPercentageQuantity(100);
             p.setCurrentPieces(p.getPieces());
-            if(!TextUtils.isEmpty(weightField))
+            if(TextUtils.isEmpty(weightField))
+                p.setCurrentWeight(0);
+            else
                 p.setCurrentWeight(p.getWeight());
         }
 

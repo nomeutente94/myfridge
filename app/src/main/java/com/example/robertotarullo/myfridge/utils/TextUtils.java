@@ -185,6 +185,8 @@ public abstract class TextUtils {
     public static void setDate(Date date, EditText field){
         if(date!=null)
             editFieldNotFromUser(field, DateUtils.getFormattedDate(date));
+        else
+            editFieldNotFromUser(field, "");
     }
 
     public static void editFieldNotFromUser(EditText dateField, String text){
@@ -199,6 +201,8 @@ public abstract class TextUtils {
                 if(((PointOfPurchase)spinner.getItemAtPosition(i)).getId()==id)
                     spinner.setSelection(i);
             }
+        } else {
+            spinner.setSelection(0);
         }
     }
 
