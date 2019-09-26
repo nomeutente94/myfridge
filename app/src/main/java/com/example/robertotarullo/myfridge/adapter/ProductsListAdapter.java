@@ -154,7 +154,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                         dataTextView.setText("Entro oggi");
                     } else if(now.after(date)) {
                         dataTextView.setTextColor(Color.RED);
-                        dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                        int expiryDays = DateUtils.getDaysByDateDiff(date, now);
+                        if(expiryDays==1)
+                            dataTextView.setText("Scaduto da 1 giorno");
+                        else
+                            dataTextView.setText("Scaduto da " + expiryDays + " giorni");
+                        //dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     } else {
                         dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     }
