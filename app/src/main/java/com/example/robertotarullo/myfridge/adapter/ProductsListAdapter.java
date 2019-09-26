@@ -67,7 +67,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
         optionsButton.setTag(position);
 
-        if(action==MainActivity.Action.SELECT){
+        if(action==MainActivity.Action.PICK){
             dataTextView.setVisibility(View.GONE);
             optionsButton.setVisibility(View.GONE);
             nonConsumptionBar.setVisibility(View.GONE);
@@ -94,7 +94,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
 
-            if(action==MainActivity.Action.SELECT){
+            if(action==MainActivity.Action.PICK){
                 if(p.isPackaged())
                     typeTextView.setText("Confezionato");
                 else

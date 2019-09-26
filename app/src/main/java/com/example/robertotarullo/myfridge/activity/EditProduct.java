@@ -416,7 +416,7 @@ public class EditProduct extends AppCompatActivity {
             case R.id.fillFromInsertedProduct:
                 // permetti all'utente di scegliere un prodotto già inserito
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("action", MainActivity.Action.SELECT);
+                intent.putExtra("action", MainActivity.Action.PICK);
                 startActivityForResult(intent, SELECT_REQUEST);
                 return true;
             default:
