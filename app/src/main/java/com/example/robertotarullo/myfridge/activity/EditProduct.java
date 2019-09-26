@@ -551,16 +551,17 @@ public class EditProduct extends AppCompatActivity {
 
         TextUtils.setText(p.getBrand(), brandField);
 
-        TextUtils.setPrice(p.getPrice(), priceField);
-
-        TextUtils.setPrice(p.getPricePerKilo(), pricePerKiloField);
-
-        TextUtils.setWeight(p.getWeight(), weightField);
+        if(p.getPricePerKilo()==0 || p.getWeight()==0)
+            TextUtils.setPrice(p.getPrice(), priceField);
+        if(p.getPrice()==0 || p.getWeight()==0)
+            TextUtils.setPrice(p.getPricePerKilo(), pricePerKiloField);
+        if(p.getPrice()==0 || p.getPricePerKilo()==0)
+            TextUtils.setWeight(p.getWeight(), weightField);
 
         if(p.getWeight()>0)
             TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
         else
-            currentWeightField.setText("");
+            TextUtils.setWeight(p.getWeight(), currentWeightField);
 
         currentPercentageField.setText(String.valueOf(p.getPercentageQuantity()));
 

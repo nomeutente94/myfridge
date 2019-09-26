@@ -44,7 +44,7 @@
             android:text="Mela verde"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20dp"/>
+            android:textSize="18dp"/>
         <TextView
             android:text="Prodotto fresco"
             android:id="@+id/elem_lista_tipo"

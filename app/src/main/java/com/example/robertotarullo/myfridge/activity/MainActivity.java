@@ -41,6 +41,7 @@ import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
+import com.example.robertotarullo.myfridge.utils.PriceUtils;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
@@ -238,23 +239,57 @@ public class MainActivity extends AppCompatActivity {
                 else if(p instanceof Pack)
                     clicked = ((Pack) p).getProducts().get(0);
 
-                msg += "\n- Confezionato: " + p.isPackaged();
-                if(clicked.getName()!=null)
-                    msg += "\n- Nome: " + clicked.getName();
+
+                if(p.isPackaged())
+                    msg += "\n- Tipo: Confezionato";
+                else
+                    msg += "\n- Tipo: Fresco";
+
+                msg += "\n- Nome: \"" + clicked.getName() + "\"";
+
                 if(clicked.getBrand()!=null)
-                    msg += "\n- Marca: " + clicked.getBrand();
+                    msg += "\n- Marca: \"" + clicked.getBrand() + "\"";
+                else
+                    msg += "\n- Marca: -";
+
                 if(clicked.getPrice()!=0)
-                    msg += "\n- Prezzo (€): " + clicked.getPrice();
+                    msg += "\n- Prezzo: €" + PriceUtils.getFormattedPrice(clicked.getPrice());
+                else
+                    msg += "\n- Prezzo: -";
+
                 if(clicked.getPricePerKilo()!=0)
-                    msg += "\n- Prezzo/kg: " + clicked.getPricePerKilo();
+                    msg += "\n- Prezzo/kg: €" + PriceUtils.getFormattedPrice(clicked.getPricePerKilo());
+                else
+                    msg += "\n- Prezzo/kg: -";
+
                 if(clicked.getWeight()!=0)
-                    msg += "\n- Peso (grammi): " + clicked.getWeight();
+                    msg += "\n- Peso: " + PriceUtils.getFormattedWeight(clicked.getWeight()) + "g";
+                else
+                    msg += "\n- Peso: -";
+
                 if(clicked.getPieces()!=0)
                     msg += "\n- N. pezzi: " + clicked.getPieces();
+                else
+                    msg += "\n- N. pezzi: Pezzo unico";
+
                 if(clicked.getExpiringDaysAfterOpening()!=0)
                     msg += "\n- Giorni entro cui consumare: " + clicked.getExpiringDaysAfterOpening();
-                msg += "\n- Modalità di conservazione: " + clicked.getStorageCondition();
-                msg += "\n- Modalità di conservazione dopo l'apertura: " + clicked.getOpenedStorageCondition();
+                else
+                    msg += "\n- Giorni entro cui consumare: -";
+
+                if(clicked.getStorageCondition()==0)
+                    msg += "\n- Conservazione: Dispensa";
+                else if(clicked.getStorageCondition()==1)
+                    msg += "\n- Conservazione: Frigorifero";
+                else if(clicked.getStorageCondition()==2)
+                    msg += "\n- Conservazione: Congelatore";
+
+                if(clicked.getOpenedStorageCondition()==0)
+                    msg += "\n- Conservazione dopo l'apertura: Dispensa";
+                else if(clicked.getOpenedStorageCondition()==1)
+                    msg += "\n- Conservazione dopo l'apertura: Frigorifero";
+                else if(clicked.getOpenedStorageCondition()==2)
+                    msg += "\n- Conservazione dopo l'apertura: Congelatore";
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
@@ -626,6 +661,7 @@ public class MainActivity extends AppCompatActivity {
                     i--;
                     packs.add(p);   // .. aggiungi il pack alla lista
                 }
+
             }
         }
 
