@@ -20,9 +20,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -112,6 +114,20 @@ public class MainActivity extends AppCompatActivity {
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
         pressOnFilter(filterButton1);
 
+
+        if(action==Action.PICK) {
+            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
+            findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
+
+            // Codice per togliere il margine
+            LinearLayout mylistviewBlock = findViewById(R.id.mylistviewBlock);
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
+            params.setMargins(0, 0, 0, 0);
+            mylistviewBlock.setLayoutParams(params);
+
+            setTitle("Seleziona un prodotto");
+        }
+
         // Inizializza la lista leggendo dal DB
         retrieveProductsFromDB(null);
 
@@ -194,8 +210,6 @@ public class MainActivity extends AppCompatActivity {
             if(action==Action.PICK){
                 Product p = (Product)listView.getItemAtPosition(position);
 
-                //final SingleProduct[] clickedProduct = new SingleProduct[1];
-
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
@@ -216,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
 
-                String msg = "Vuoi autocompilare il form dal prodotto selezionato? Eventuali dati inseriti non relativi allo stato andranno persi.\n";
+                String msg = "Vuoi autocompilare il form dal prodotto selezionato? Eventuali dati inseriti andranno persi.\n";
 
                 SingleProduct clicked = null;
                 if(p instanceof SingleProduct)
@@ -550,16 +564,8 @@ public class MainActivity extends AppCompatActivity {
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
         if(action == Action.PICK){ // salta il filtro e mostra tutti i prodotti
-            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
-            findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
-            findViewById(R.id.mylistviewBlock).setPadding(0, 0, 0, 0);
-
-            setTitle("Seleziona un prodotto");
-
             filteredProducts = groupedProducts;
-
-            //productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts, showConsumedProducts, action);
-            //setAdapter(productsListAdapter);
+            sortByName(filteredProducts);
             filterBySearchBar();
         } else {
             if (pack == null) {
@@ -595,35 +601,27 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                /*System.out.print("[");
-                for(SingleProduct product : singleProducts)
-                    System.out.print(" " + product.getId() + " ");
-                System.out.println("]");*/
-
-                Pack p = new Pack();                                                                                                                        // Crea un nuovo pack
-                for (int j = i+1; j < singleProducts.size(); j++) {                                                                                         // Cerca tra tutti i prodotti
+                Pack p = new Pack(); // Crea un nuovo pack
+                for (int j = i+1; j < singleProducts.size(); j++) { // Cerca tra tutti i prodotti
 
                     if ((showConsumedProducts && singleProducts.get(j).isConsumed()) || (!showConsumedProducts && !singleProducts.get(j).isConsumed())) {
                         boolean groupable;
-                        if(action==Action.PICK)
-                            groupable = singleProducts.get(i).selectEquals(singleProducts.get(j));
-                        else
+                        if(action==Action.PICK) {
+                            groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
+                        } else {
                             groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
+                        }
+
                         if(groupable){
                             // sposta il prodotto nel pack
-                            System.out.println(singleProducts.get(i).getId() + " e " + singleProducts.get(j).getId() + " sono raggruppabili, rimuovo " + singleProducts.get(j).getId());
                             p.addProduct(singleProducts.get(j));
                             singleProducts.remove(j);
                             j--;
-                        } else {
-                            System.out.println(singleProducts.get(i).getId() + " e " + singleProducts.get(j).getId() + " non sono raggruppabili.");
                         }
                     }
                 }
 
-                // System.out.println("Numero di raggruppamenti trovati per " + singleProducts.get(i).getId() + ": " + p.getProducts().size());
-            if (!p.getProducts().isEmpty()) {   // Se è stato raggruppato con almeno un altro prodotto
-                    System.out.println("Rimuovo " + singleProducts.get(i).getId());
+                if (!p.getProducts().isEmpty()) {   // Se è stato raggruppato con almeno un altro prodotto
                     p.addProduct(singleProducts.get(i));  // .. sposta il prodotto nel pack
                     singleProducts.remove(i);
                     i--;
@@ -631,19 +629,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
-        /*System.out.print("Prodotti singoli: [");
-        for(SingleProduct product : singleProducts)
-            System.out.print(" " + product.getId() + " ");
-        System.out.println("]");
-
-        System.out.println("Packs:");
-        for(Pack pack : packs){
-            System.out.print("[");
-            for(SingleProduct product : pack.getProducts())
-                System.out.print(" " + product.getId() + " ");
-            System.out.println("]\n");
-        }*/
 
         // aggiorna notifica sui pulsanti dei filtri
         filterButton0.setText(FILTER0_TEXT);
@@ -672,26 +657,19 @@ public class MainActivity extends AppCompatActivity {
 
         filteredProducts = new ArrayList<>();
 
-        if(action==Action.PICK){
-            filteredProducts = groupedProducts;
-            sortByName(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
-        } else {
-            for (int i = 0; i < groupedProducts.size(); i++) {
-                if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
-                    // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
-                    if (groupedProducts.get(i) instanceof SingleProduct) {
-                        if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
-                            filteredProducts.add(groupedProducts.get(i));
-                    } else {//if (groupedProducts.get(i) instanceof Pack)
-                        if ((groupedProducts.get(i)).getActualStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
-                            filteredProducts.add(groupedProducts.get(i));
-                    }
+        for (int i = 0; i < groupedProducts.size(); i++) {
+            if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
+                // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
+                if (groupedProducts.get(i) instanceof SingleProduct) {
+                    if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
+                        filteredProducts.add(groupedProducts.get(i));
+                } else {//if (groupedProducts.get(i) instanceof Pack)
+                    if ((groupedProducts.get(i)).getActualStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
+                        filteredProducts.add(groupedProducts.get(i));
                 }
             }
-            sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
         }
-        //productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, filteredProducts, showConsumedProducts, action);
-        //setAdapter(productsListAdapter);
+        sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
         filterBySearchBar();
     }
 

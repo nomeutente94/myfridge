@@ -331,7 +331,7 @@ public class SingleProduct implements Product, Serializable {
     }
 
     // ritorna true se raggruppabile
-    public boolean selectEquals(SingleProduct singleProductObj){
+    public boolean pickEquals(SingleProduct singleProductObj){
         if(singleProductObj!=null){
             return  singleProductObj.isPackaged() == packaged &&
                     Objects.equals(singleProductObj.getName(), name) &&
