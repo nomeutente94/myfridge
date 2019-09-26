@@ -30,6 +30,7 @@ import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapte
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
+import com.example.robertotarullo.myfridge.filter.NameBrandInputFilter;
 import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.watcher.CurrentWeightSliderListener;
 import com.example.robertotarullo.myfridge.watcher.DateWatcher;
@@ -194,6 +195,8 @@ public class EditProduct extends AppCompatActivity {
         // currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters
+        nameField.setFilters(new InputFilter[]{new NameBrandInputFilter()});
+        brandField.setFilters(new InputFilter[]{new NameBrandInputFilter()});
         expiryDaysAfterOpeningField.setFilters(new InputFilter[]{new DaysInputFilter()});
         priceField.setFilters(new InputFilter[]{new PriceInputFilter()});
         pricePerKiloField.setFilters(new InputFilter[]{new PriceInputFilter()});
