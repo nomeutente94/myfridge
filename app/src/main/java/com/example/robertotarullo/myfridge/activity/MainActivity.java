@@ -122,10 +122,11 @@ public class MainActivity extends AppCompatActivity {
         if(action==Action.PICK) {
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
+            resultsCount.setVisibility(View.GONE);
 
             LinearLayout mylistviewBlock = findViewById(R.id.mylistviewBlock);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
-            params.setMargins(0, 0, 0, 50);
+            params.setMargins(0, 0, 0, 0);
             mylistviewBlock.setLayoutParams(params);
 
             setTitle("Seleziona un prodotto");
