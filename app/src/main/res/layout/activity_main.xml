@@ -67,7 +67,10 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:padding="11dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
                     android:id="@+id/searchBarBlock"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"

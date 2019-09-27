@@ -26,7 +26,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     private static final String GREEN_BAR = "#8ac249", YELLOW_BAR = "#fec006", RED_BAR = "#f34236";
     private static final int HALF_CONSUMPTION = 50, LOW_CONSUMPTION = 25;
     private Product p;
-    private TextView quantityTextView, nameTextView, dataTextView, typeTextView;
+    private TextView quantityTextView, nameTextView, dataTextView, typeTextView, brandTextView;
     private LinearLayout consumptionBar, nonConsumptionBar;
     private Boolean showConsumed;
     private Context context;
@@ -56,12 +56,14 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         nonConsumptionBar = v.findViewById(R.id.elem_lista_non_consumption);
         dataTextView = v.findViewById(R.id.elem_lista_data);
         typeTextView = v.findViewById(R.id.elem_lista_tipo);
+        brandTextView = v.findViewById(R.id.elem_lista_brand);
 
         optionsButton = v.findViewById(R.id.imagePopup);
         //consumeItem = ((Activity) context).findViewById(R.id.consumeItem);
 
         setName();
-        setType();
+        setBrand();
+        //setType();
         setConsumption();
         setDate();
 
@@ -77,10 +79,15 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     }
 
     private void setName(){
-        if(p.getBrand()!=null)
-            nameTextView.setText(p.getName() + " " + p.getBrand());
-        else
-            nameTextView.setText(p.getName());
+        nameTextView.setText(p.getName());
+    }
+
+    private void setBrand(){
+        if(p.getBrand()!=null) {
+            brandTextView.setVisibility(View.VISIBLE);
+            brandTextView.setText(p.getBrand());
+        } else
+            brandTextView.setVisibility(View.GONE);
     }
 
     private void setType(){
