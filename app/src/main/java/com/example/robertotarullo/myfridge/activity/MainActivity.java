@@ -742,13 +742,16 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(productsListAdapter);
 
         // Aggiorna avviso
-        if (listView.getAdapter().getCount() == 0)
+        if (listView.getAdapter().getCount() == 0) {
             noProductsWarning.setVisibility(View.VISIBLE);
-        else
+            resultsCount.setVisibility(View.GONE);
+        } else {
             noProductsWarning.setVisibility(View.GONE);
+            resultsCount.setVisibility(View.VISIBLE);
 
-        // Aggiorna count
-        resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
+            // Aggiorna count
+            resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
+        }
     }
 
     // Avvia l'activity EditProduct per l'aggiunta (legacy)
