@@ -98,14 +98,13 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     }
 
     private void setBrand(){
-        if(p instanceof SingleProduct){
-            if(p.getBrand()!=null) {
-                brandTextView.setVisibility(View.VISIBLE);
-                brandTextView.setText(p.getBrand());
-            } else
-                brandTextView.setVisibility(View.GONE);
-        } else
+        if(p.getBrand()==null) {
+            brandTextView.setText("brand non specificato");
             brandTextView.setVisibility(View.GONE);
+        }else {
+            brandTextView.setVisibility(View.VISIBLE);
+            brandTextView.setText(p.getBrand());
+        }
     }
 
     private void setType(){

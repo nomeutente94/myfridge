@@ -98,6 +98,8 @@ public class SingleProduct implements Product, Serializable {
 
     @Override
     public String getName() {
+        if(name!=null && name.length()==0)
+            return null;
         return name;
     }
 
@@ -108,6 +110,8 @@ public class SingleProduct implements Product, Serializable {
 
     @Override
     public String getBrand() {
+        if(brand!=null && brand.length()==0)
+            return null;
         return brand;
     }
 

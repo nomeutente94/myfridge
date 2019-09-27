@@ -100,53 +100,70 @@
                     <LinearLayout
                         android:id="@+id/mylistviewBlock"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:layout_marginBottom="45dp">
+                        android:layout_marginBottom="70dp">
 
                         <ListView
                             android:id="@+id/mylistview"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" >
+                            android:layout_height="match_parent" >
                         </ListView>
 
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/buttonPanel"
-                        android:weightSum="3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
-                        android:orientation="horizontal">
+                        android:orientation="vertical">
 
-                        <Button
-                            android:layout_weight="1"
-                            android:onClick="addPointOfPurchase"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="Punti di acquisto"/>
+                        <TextView
+                            android:id="@+id/resultsCount"
+                            android:layout_width="match_parent"
+                            android:paddingLeft="5dp"
+                            android:paddingRight="5dp"
+                            android:text="Numero risultati: 0"
+                            android:layout_height="wrap_content">
+                        </TextView>
 
-                        <Button
-                            android:layout_weight="1"
-                            android:visibility="visible"
-                            android:onClick="startShoppingMode"
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:id="@+id/buttonPanel"
+                            android:weightSum="3"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Modalità Spesa"/>
+                            android:orientation="horizontal">
 
-                        <Button
-                            android:layout_weight="1"
-                            android:onClick="addProduct"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="Aggiungi nuovo"/>
+                            <Button
+                                android:layout_weight="1"
+                                android:onClick="addPointOfPurchase"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="Punti di acquisto"/>
+
+                            <Button
+                                android:layout_weight="1"
+                                android:visibility="visible"
+                                android:onClick="startShoppingMode"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="Modalità Spesa"/>
+
+                            <Button
+                                android:layout_weight="1"
+                                android:onClick="addProduct"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="Aggiungi nuovo"/>
+                        </LinearLayout>
+
                     </LinearLayout>
 
                 </RelativeLayout>
-            </LinearLayout>
-        </RelativeLayout>
 
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </LinearLayout>
 

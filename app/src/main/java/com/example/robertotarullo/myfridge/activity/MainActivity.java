@@ -82,7 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
     // Adapter lista
     private ProductsListAdapter productsListAdapter;
-    private TextView noProductsWarning;
+
+    // Elementi view
+    private TextView noProductsWarning, resultsCount;
 
     // Position dell'elemento su cui si è aperto l'utlimo popupmenu
     private int currentPopupPosition;
@@ -107,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         filterButton1 = findViewById(R.id.StorageConditionFilterButton1);
         filterButton2 = findViewById(R.id.StorageConditionFilterButton2);
         noProductsWarning = findViewById(R.id.noProductsWarning);
+        resultsCount = findViewById(R.id.resultsCount);
 
         // Inizializza la search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
@@ -120,10 +123,9 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
 
-            // Codice per togliere il margine
             LinearLayout mylistviewBlock = findViewById(R.id.mylistviewBlock);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
-            params.setMargins(0, 0, 0, 0);
+            params.setMargins(0, 0, 0, 50);
             mylistviewBlock.setLayoutParams(params);
 
             setTitle("Seleziona un prodotto");
@@ -576,10 +578,9 @@ public class MainActivity extends AppCompatActivity {
                         searchResults.add(getCurrentDisplayedProducts().get(i));
                 }
             }
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, searchResults, showConsumedProducts, action);
+            showProducts(searchResults);
         } else // Se la barra di ricerca è vuota resetta la view
-            productsListAdapter = new ProductsListAdapter(MainActivity.this, R.layout.list_element, getCurrentDisplayedProducts(), showConsumedProducts, action);
-        setAdapter(productsListAdapter);
+            showProducts(getCurrentDisplayedProducts());
     }
 
     // Aggiorna la lista dei prodotti dal DB e aggiorna la view
@@ -709,13 +710,6 @@ public class MainActivity extends AppCompatActivity {
         filterBySearchBar();
     }
 
-    private void updateNoProductsWarning() {
-        if (listView.getAdapter().getCount() == 0)
-            noProductsWarning.setVisibility(View.VISIBLE);
-        else
-            noProductsWarning.setVisibility(View.GONE);
-    }
-
     // Mostra nella view il contenuto di un raggruppamento (se non vuoto)
     private void setPackageView(Pack pack) {
         currentPackage = pack;
@@ -735,15 +729,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, packProducts, showConsumedProducts, action);
-        setAdapter(productsListAdapter);
+        showProducts(packProducts);
     }
 
     // aggiunge adapter e aggiorna warning
     // TODO cambia lista all'adapter esistente senza inizializzarlo ogni volta e metti un observer per aggiornare il warning
-    private void setAdapter(ProductsListAdapter adapter) {
-        listView.setAdapter(adapter);
-        updateNoProductsWarning();
+    private void showProducts(List<Product> productsToShow) {
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, productsToShow, showConsumedProducts, action);
+
+        // Mostra la lista
+        listView.setAdapter(productsListAdapter);
+
+        // Aggiorna avviso
+        if (listView.getAdapter().getCount() == 0)
+            noProductsWarning.setVisibility(View.VISIBLE);
+        else
+            noProductsWarning.setVisibility(View.GONE);
+
+        // Aggiorna count
+        resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
     }
 
     // Avvia l'activity EditProduct per l'aggiunta (legacy)

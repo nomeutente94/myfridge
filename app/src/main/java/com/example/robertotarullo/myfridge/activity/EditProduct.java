@@ -758,15 +758,21 @@ public class EditProduct extends AppCompatActivity {
         else
             p.setConsumptionDate(null);
 
-        StringBuilder name = new StringBuilder(nameField.getText().toString());
-        if(name.length()>0 && name.charAt(name.length()-1)==' ')
-            name.delete(name.length()-1, name.length());
-        p.setName(name.toString());
+        if(nameField.getText().length()>0){
+            StringBuilder name = new StringBuilder(nameField.getText().toString());
+            if(name.charAt(name.length()-1)==' ')
+                name.delete(name.length()-1, name.length());
+            p.setName(name.toString());
+        } else
+            p.setName(null);
 
-        StringBuilder brand = new StringBuilder(brandField.getText().toString());
-        if(brand.length()>0 && brand.charAt(brand.length()-1)==' ')
-            brand.delete(brand.length()-1, brand.length());
-        p.setBrand(brand.toString());
+        if(brandField.getText().length()>0){
+            StringBuilder brand = new StringBuilder(brandField.getText().toString());
+            if(brand.charAt(brand.length()-1)==' ')
+                brand.delete(brand.length()-1, brand.length());
+            p.setBrand(brand.toString());
+        } else
+            p.setBrand(null);
 
         if (priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
