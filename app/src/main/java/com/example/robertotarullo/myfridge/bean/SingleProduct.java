@@ -336,13 +336,18 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile
     public boolean pickEquals(SingleProduct singleProductObj){
         if(singleProductObj!=null){
+            boolean piecesCondition = singleProductObj.getPieces() == pieces;
+            if(!packaged)
+                piecesCondition = true;
+
             return  singleProductObj.isPackaged() == packaged &&
                     Objects.equals(singleProductObj.getName(), name) &&
                     Objects.equals(singleProductObj.getBrand(), brand) &&
                     singleProductObj.getPrice() == price &&
                     singleProductObj.getPricePerKilo() == pricePerKilo &&
                     singleProductObj.getWeight() == weight &&
-                    singleProductObj.getPieces() == pieces &&
+                    piecesCondition &&
+                    //singleProductObj.getPieces() == pieces && // disattivato perchè due prodotti uguali possono avere pezzi variabili se freschi
                     singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
                     singleProductObj.getStorageCondition() == storageCondition &&
                     //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId && // DISATTIVATO PERCHE' SI RIMUOVE CON LOSESTATE()

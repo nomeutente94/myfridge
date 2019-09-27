@@ -253,12 +253,12 @@ public class MainActivity extends AppCompatActivity {
                     msg += "\n- Marca: -";
 
                 if(clicked.getPrice()!=0)
-                    msg += "\n- Prezzo: €" + PriceUtils.getFormattedPrice(clicked.getPrice());
+                    msg += "\n- Prezzo: € " + PriceUtils.getFormattedPrice(clicked.getPrice());
                 else
                     msg += "\n- Prezzo: -";
 
                 if(clicked.getPricePerKilo()!=0)
-                    msg += "\n- Prezzo/kg: €" + PriceUtils.getFormattedPrice(clicked.getPricePerKilo());
+                    msg += "\n- Prezzo/kg: € " + PriceUtils.getFormattedPrice(clicked.getPricePerKilo());
                 else
                     msg += "\n- Prezzo/kg: -";
 
@@ -284,12 +284,14 @@ public class MainActivity extends AppCompatActivity {
                 else if(clicked.getStorageCondition()==2)
                     msg += "\n- Conservazione: Congelatore";
 
-                if(clicked.getOpenedStorageCondition()==0)
-                    msg += "\n- Conservazione dopo l'apertura: Dispensa";
-                else if(clicked.getOpenedStorageCondition()==1)
-                    msg += "\n- Conservazione dopo l'apertura: Frigorifero";
-                else if(clicked.getOpenedStorageCondition()==2)
-                    msg += "\n- Conservazione dopo l'apertura: Congelatore";
+                if(clicked.isPackaged()){
+                    if(clicked.getOpenedStorageCondition()==0)
+                        msg += "\n- Conservazione dopo l'apertura: Dispensa";
+                    else if(clicked.getOpenedStorageCondition()==1)
+                        msg += "\n- Conservazione dopo l'apertura: Frigorifero";
+                    else if(clicked.getOpenedStorageCondition()==2)
+                        msg += "\n- Conservazione dopo l'apertura: Congelatore";
+                }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
@@ -616,7 +618,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Raggruppa prodotti in base a caratteristiche comuni spostandoli dall'array ricevuto
+    // Raggruppa prodotti in base a caratteristiche comuni definite nel metodo packEquals() di SingleProduct
     private List<Pack> getPacks(List<SingleProduct> singleProducts) {
         List<Pack> packs = new ArrayList<>();
         int[] storageNotifications = {0, 0, 0};
@@ -643,6 +645,10 @@ public class MainActivity extends AppCompatActivity {
                     boolean groupable;
                     if(action == Action.PICK) {
                         groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
+                        if(singleProducts.get(i).getName().equals("Arance Valencia") && singleProducts.get(i).getName().equals(singleProducts.get(j).getName())){
+                            System.out.println(singleProducts.get(i));
+                            System.out.println(singleProducts.get(j));
+                        }
                     } else {
                         groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
                     }
