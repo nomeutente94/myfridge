@@ -38,7 +38,7 @@ public abstract class DateUtils {
     // data minima possibile globale
     public static final int MIN_DAY = 1;
     public static final int MIN_MONTH = 1;
-    public static final int MIN_YEAR = 1990; // la data 01/01/1970 porta a dei conflitti con la rappresentazione "mai" sulla data di scadenza
+    public static final int MIN_YEAR = 2000; // la data 01/01/1970 porta a dei conflitti con la rappresentazione "mai" sulla data di scadenza
 
     // data massima possibile globale
     public static final int MAX_DAY = 31;
@@ -472,7 +472,7 @@ public abstract class DateUtils {
         }
 
         if(max){
-            Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH, MAX_DAY));
+            Date maxDate = getDate(new GregorianCalendar(MAX_YEAR, MAX_MONTH-1, MAX_DAY));
 
             if(dateField==consumingDateField){
                 maxDate = getMin(getCurrentDateWithoutTime(), maxDate);    // consumingDate <= now
@@ -495,7 +495,7 @@ public abstract class DateUtils {
 
             return maxDate;
         } else {
-            Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH, MIN_DAY));
+            Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH-1, MIN_DAY));
 
             if(dateField==consumingDateField){
                 minDate = getMax(packagingDate, minDate);       // consumingDate >= packagingDate
