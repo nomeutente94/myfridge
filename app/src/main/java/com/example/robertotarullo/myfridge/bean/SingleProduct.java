@@ -296,13 +296,13 @@ public class SingleProduct implements Product, Serializable {
     }
 
     public void loseState(){
-        loseConsumptionState();
-
         setPurchaseDate(null);
         setPointOfPurchaseId(0); // TODO attributo proprio? Eliminare?
         setExpiryDate(null);
         setPackagingDate(null);
-        setOpeningDate(null); // anche per freschi
+        setOpeningDate(null);
+
+        loseConsumptionState();
     }
 
     public void loseConsumptionState(){
