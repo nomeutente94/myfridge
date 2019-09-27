@@ -109,6 +109,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" >
                         </ListView>
+
                     </LinearLayout>
 
                     <LinearLayout
@@ -141,7 +142,6 @@
                             android:layout_height="wrap_content"
                             android:text="Aggiungi nuovo"/>
                     </LinearLayout>
-
 
                 </RelativeLayout>
             </LinearLayout>

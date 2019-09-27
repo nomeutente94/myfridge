@@ -39,24 +39,29 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
             android:layout_width="match_parent"
-            android:layout_marginRight="40dp"
+            android:layout_marginEnd="65dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:id="@+id/elem_lista_nome"
                 android:text="Mela verde"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18dp"/>
             <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:id="@+id/elem_lista_brand"
-                android:text="Marca"
-                android:visibility="gone"
+                android:text="Melinda"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14dp"/>
             <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:visibility="gone"
                 android:text="Prodotto fresco"
                 android:id="@+id/elem_lista_tipo"
@@ -64,6 +69,8 @@
                 android:layout_height="wrap_content"
                 android:textSize="12dp"/>
             <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:text="200g"
                 android:visibility="gone"
                 android:id="@+id/elem_lista_quantita"
@@ -71,8 +78,10 @@
                 android:layout_height="wrap_content"
                 android:textSize="12dp"/>
             <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_marginTop="1dp"
-                android:text="13/09/2094"
+                android:text="Entro il 13/09/2094"
                 android:id="@+id/elem_lista_data"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -94,7 +103,7 @@
                 android:id="@+id/imagePopup"
                 android:background="@null"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:src="@drawable/ic_more_vert_black_24dp"
                 android:contentDescription="Shows product actions"
                 android:padding="20dp"
