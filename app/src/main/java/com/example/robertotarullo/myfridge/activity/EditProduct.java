@@ -751,48 +751,61 @@ public class EditProduct extends AppCompatActivity {
     private SingleProduct createProductFromFields() {
         SingleProduct p = new SingleProduct();
 
-        if (consumedCheckBox.isChecked()) {
-            p.setConsumed(true);
+        p.setConsumed(consumedCheckBox.isChecked());
+
+        if (consumedCheckBox.isChecked())
             p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
-        }
+        else
+            p.setConsumptionDate(null);
 
-        p.setName(nameField.getText().toString());
+        StringBuilder name = new StringBuilder(nameField.getText().toString());
+        if(name.length()>0 && name.charAt(name.length()-1)==' ')
+            name.delete(name.length()-1, name.length());
+        p.setName(name.toString());
 
-        if (!TextUtils.isEmpty(brandField))
-            p.setBrand(brandField.getText().toString());
+        StringBuilder brand = new StringBuilder(brandField.getText().toString());
+        if(brand.length()>0 && brand.charAt(brand.length()-1)==' ')
+            brand.delete(brand.length()-1, brand.length());
+        p.setBrand(brand.toString());
 
-        if (!TextUtils.isEmpty(priceField) && priceField.isEnabled())
+        if (priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
+        else
+            p.setPrice(0);
 
-        if (!TextUtils.isEmpty(weightField) && weightField.isEnabled())
+        if (weightField.isEnabled())
             p.setWeight(TextUtils.getFloat(weightField));
+        else
+            p.setWeight(0);
 
-        if (!TextUtils.isEmpty(currentWeightField))
-            p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
-
-        if (!TextUtils.isEmpty(pricePerKiloField) && pricePerKiloField.isEnabled())
+        if (pricePerKiloField.isEnabled())
             p.setPricePerKilo(TextUtils.getFloat(pricePerKiloField));
+        else
+            p.setPricePerKilo(0);
 
         p.setPieces(TextUtils.getInt(piecesField));
 
-        if (action==Action.SHOPPING && getIntent().getSerializableExtra("productToEdit") == null){
-            p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
-            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
+        if (action==Action.SHOPPING){
+            if(getIntent().getSerializableExtra("productToEdit") == null){ // modalità aggiunta di SHOPPING
+                p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
+                p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
+            }
         } else {
-            if(TextUtils.getDate(purchaseDateField)!=null)
-                p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+            p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
             if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
                 p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
+            else
+                p.setPointOfPurchaseId(0);
         }
 
         p.setPackagingDate(TextUtils.getDate(packagingDateField));
 
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
 
-        if(!TextUtils.isEmpty(expiryDaysAfterOpeningField) && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
+        if(expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));
-
-        p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
+        else
+            p.setExpiringDaysAfterOpening(0);
 
         // campi che dipendono dal tipo e dall'apertura del prodotto confezionato
         if(packagedCheckBox.isChecked()){
@@ -826,20 +839,19 @@ public class EditProduct extends AppCompatActivity {
                 p.setExpiryDate(TextUtils.getDate(expiryDateField));
             else
                 p.setExpiryDate(null);
+
             p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
         }
 
         // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
         if(p.isOpened()){
-            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField))); // Memorizza la quantità percentuale
-            // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField)); SOSTITUIRE LA RIGA SOPRA CON QUESTA DOPO AVER CAMBIATO NEL BEAN IL TIPO DI PERCENTAGEQUANTITY A FLOAT
+            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField))); // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField)); SOSTITUIRE LA RIGA SOPRA CON QUESTA DOPO AVER CAMBIATO NEL BEAN IL TIPO DI PERCENTAGEQUANTITY A FLOAT
+            p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
+            p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
         } else { // prodotto confezionato chiuso
             p.setPercentageQuantity(100);
-            p.setCurrentPieces(p.getPieces());
-            if(TextUtils.isEmpty(weightField))
-                p.setCurrentWeight(0);
-            else
-                p.setCurrentWeight(p.getWeight());
+            p.setCurrentPieces(TextUtils.getInt(piecesField));
+            p.setCurrentWeight(TextUtils.getFloat(weightField));
         }
 
         return p;
