@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,14 +21,15 @@ import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
 public class ProductsListAdapter extends ArrayAdapter<Product> {
     private LayoutInflater inflater;
     private static final String GREEN_BAR = "#8ac249", YELLOW_BAR = "#fec006", RED_BAR = "#f34236";
     private static final int HALF_CONSUMPTION = 50, LOW_CONSUMPTION = 25;
     private Product p;
-    private TextView quantityTextView, nameTextView, dataTextView, typeTextView, brandTextView;
-    private LinearLayout consumptionBar, nonConsumptionBar;
+    private TextView quantityTextView, nameTextView, dataTextView, typeTextView, brandTextView, descriptionTextView;
+    private LinearLayout consumptionBar, nonConsumptionBar, elementInfoBlock;
     private Boolean showConsumed;
     private Context context;
     private View optionsButton;
@@ -57,6 +59,8 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         dataTextView = v.findViewById(R.id.elem_lista_data);
         typeTextView = v.findViewById(R.id.elem_lista_tipo);
         brandTextView = v.findViewById(R.id.elem_lista_brand);
+        descriptionTextView = v.findViewById(R.id.elem_lista_descrizione);
+        elementInfoBlock = v.findViewById(R.id.list_element_info_block);
 
         optionsButton = v.findViewById(R.id.imagePopup);
         //consumeItem = ((Activity) context).findViewById(R.id.consumeItem);
@@ -65,14 +69,26 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         setBrand();
         //setType();
         setConsumption();
+        setDescription();
         setDate();
 
         optionsButton.setTag(position);
 
         if(action==MainActivity.Action.PICK){
+            // Codice per togliere il margine
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) elementInfoBlock.getLayoutParams();
+            params.setMarginEnd(params.getMarginStart());
+            elementInfoBlock.setLayoutParams(params);
+
             dataTextView.setVisibility(View.GONE);
             optionsButton.setVisibility(View.GONE);
             nonConsumptionBar.setVisibility(View.GONE);
+            descriptionTextView.setVisibility(View.VISIBLE);
+        } else {
+            dataTextView.setVisibility(View.VISIBLE);
+            optionsButton.setVisibility(View.VISIBLE);
+            nonConsumptionBar.setVisibility(View.VISIBLE);
+            descriptionTextView.setVisibility(View.GONE);
         }
 
         return v;
@@ -86,8 +102,9 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         if(p.getBrand()!=null) {
             brandTextView.setVisibility(View.VISIBLE);
             brandTextView.setText(p.getBrand());
-        } else
+        } else {
             brandTextView.setVisibility(View.GONE);
+        }
     }
 
     private void setType(){
@@ -173,6 +190,61 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 }
             } else
                 dataTextView.setText("Non specificata");
+        }
+    }
+
+    private void setDescription(){
+        if(action==MainActivity.Action.PICK){
+
+            SingleProduct currentProduct = null;
+            if(p instanceof SingleProduct)
+                currentProduct = (SingleProduct)p;
+            else if(p instanceof Pack)
+                currentProduct = ((Pack) p).getProducts().get(0);
+
+            StringBuilder msg = new StringBuilder();
+            if(currentProduct.isPackaged())
+                msg.append("Confezionato");
+            else
+                msg.append("Fresco");
+
+            msg.append(" - ");
+
+            if(currentProduct.getPrice()>0) {
+                msg.append("€").append(PriceUtils.getFormattedPrice(currentProduct.getPrice()));
+                msg.append(" - ");
+            }
+
+            if(currentProduct.getWeight()>0) {
+                msg.append(PriceUtils.getFormattedWeight(currentProduct.getWeight())).append("g");
+                msg.append(" - ");
+            }
+
+            if(currentProduct.getPieces()>1)
+                msg.append(currentProduct.getPieces()).append(" pezzi");
+            else
+                msg.append("Pezzo unico");
+
+            msg.append(" - ");
+
+            if(currentProduct.getStorageCondition()==0)
+                msg.append("Dispensa");
+            else if(currentProduct.getStorageCondition()==1)
+                msg.append("Frigorifero");
+            else if(currentProduct.getStorageCondition()==2)
+                msg.append("Congelatore");
+
+            if(currentProduct.isPackaged() && (currentProduct.getOpenedStorageCondition()!=currentProduct.getStorageCondition())){
+                msg.append("/");
+                if(currentProduct.getOpenedStorageCondition()==0)
+                    msg.append("Dispensa");
+                else if(currentProduct.getOpenedStorageCondition()==1)
+                    msg.append("Frigorifero");
+                else if(currentProduct.getOpenedStorageCondition()==2)
+                    msg.append("Congelatore");
+            }
+
+            descriptionTextView.setText(msg.toString());
         }
     }
 }

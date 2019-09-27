@@ -239,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
                 else if(p instanceof Pack)
                     clicked = ((Pack) p).getProducts().get(0);
 
-
                 if(p.isPackaged())
                     msg += "\n- Tipo: Confezionato";
                 else

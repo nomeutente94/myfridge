@@ -33,13 +33,15 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
+        android:minHeight="60dp"
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/list_element_info_block"
             android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
-            android:layout_width="match_parent"
             android:layout_marginEnd="65dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
@@ -83,6 +85,15 @@
                 android:layout_marginTop="1dp"
                 android:text="Entro il 13/09/2094"
                 android:id="@+id/elem_lista_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12dp"/>
+            <TextView
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:visibility="gone"
+                android:layout_marginTop="1dp"
+                android:id="@+id/elem_lista_descrizione"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="12dp"/>
