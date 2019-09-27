@@ -805,25 +805,28 @@ public class EditProduct extends AppCompatActivity {
 
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
-
-                if(TextUtils.getDate(openingDateField)!=null)
-                    p.setOpeningDate(TextUtils.getDate(openingDateField));
-            } else
-                p.setOpened(false); // non rimuovere
+                p.setOpeningDate(TextUtils.getDate(openingDateField));
+            } else {
+                p.setOpened(false);
+                p.setOpeningDate(null);
+            }
 
             p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
 
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
+            p.setPackaged(false);
             p.setOpened(true);
 
             if(p.getPackagingDate()!=null)
                 p.setOpeningDate(p.getPackagingDate());
-            else if(p.getPurchaseDate()!=null)
+            else //if(p.getPurchaseDate()!=null)
                 p.setOpeningDate(p.getPurchaseDate());
 
             if(expiryDateBlock.getVisibility()==View.VISIBLE)
                 p.setExpiryDate(TextUtils.getDate(expiryDateField));
-            p.setOpenedStorageCondition(p.getStorageCondition());
+            else
+                p.setExpiryDate(null);
+            p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
         }
 
         // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco

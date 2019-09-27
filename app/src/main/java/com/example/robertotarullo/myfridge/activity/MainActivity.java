@@ -645,10 +645,6 @@ public class MainActivity extends AppCompatActivity {
                     boolean groupable;
                     if(action == Action.PICK) {
                         groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
-                        if(singleProducts.get(i).getName().equals("Arance Valencia") && singleProducts.get(i).getName().equals(singleProducts.get(j).getName())){
-                            System.out.println(singleProducts.get(i));
-                            System.out.println(singleProducts.get(j));
-                        }
                     } else {
                         groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
                     }

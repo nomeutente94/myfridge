@@ -1,5 +1,7 @@
 package com.example.robertotarullo.myfridge.bean;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,5 +171,17 @@ public class Pack implements Product{
                 return false;
         }
         return true;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String packAsString = "[";
+        packAsString += "size: " + getSize() + ", ";
+        packAsString += "products: ";
+        for(SingleProduct p : getProducts())
+            packAsString += p;
+        packAsString += " ]";
+        return packAsString;
     }
 }

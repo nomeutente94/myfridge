@@ -299,9 +299,10 @@ public class SingleProduct implements Product, Serializable {
         loseConsumptionState();
 
         setPurchaseDate(null);
-        setPointOfPurchaseId(0);
+        setPointOfPurchaseId(0); // TODO attributo proprio? Eliminare?
         setExpiryDate(null);
         setPackagingDate(null);
+        setOpeningDate(null); // anche per freschi
     }
 
     public void loseConsumptionState(){
@@ -310,11 +311,13 @@ public class SingleProduct implements Product, Serializable {
         setCurrentPieces(getPieces());
         setConsumptionDate(null);
         setConsumed(false);
-        setOpened(false);
-        setOpeningDate(null);
+        if(packaged) {
+            setOpened(false);
+            setOpeningDate(null);
+        }
     }
 
-    // ritorna true se raggruppabile
+    // ritorna true se raggruppabile in un pack
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct==null)
@@ -333,7 +336,7 @@ public class SingleProduct implements Product, Serializable {
                     && Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this));// actualExpiryDate
     }
 
-    // ritorna true se raggruppabile
+    // ritorna true se raggruppabile in modalità PICK
     public boolean pickEquals(SingleProduct singleProductObj){
         if(singleProductObj!=null){
             boolean piecesCondition = singleProductObj.getPieces() == pieces;
@@ -346,11 +349,10 @@ public class SingleProduct implements Product, Serializable {
                     singleProductObj.getPrice() == price &&
                     singleProductObj.getPricePerKilo() == pricePerKilo &&
                     singleProductObj.getWeight() == weight &&
-                    piecesCondition &&
-                    //singleProductObj.getPieces() == pieces && // disattivato perchè due prodotti uguali possono avere pezzi variabili se freschi
+                    piecesCondition && // due prodotti freschi uguali possono avere pezzi variabili
                     singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
                     singleProductObj.getStorageCondition() == storageCondition &&
-                    //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId && // DISATTIVATO PERCHE' SI RIMUOVE CON LOSESTATE()
+                    //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId && // DISATTIVATO PERCHE' SI RIMUOVE CON LOSESTATE() // TODO attivare ovunque
                     singleProductObj.getOpenedStorageCondition() == openedStorageCondition;
         } else
             return false;
