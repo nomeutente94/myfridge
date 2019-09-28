@@ -625,6 +625,7 @@ public class MainActivity extends AppCompatActivity {
         int[] storageNotifications = {0, 0, 0};
 
         for (int i = 0; i < singleProducts.size(); i++) { // Per ogni prodotto
+
             boolean toDisplay = action == Action.PICK ||
                                (showConsumedProducts && singleProducts.get(i).isConsumed()) ||
                                (!showConsumedProducts && !singleProducts.get(i).isConsumed());
@@ -643,6 +644,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Pack p = new Pack(); // Crea un nuovo pack
                 for (int j = i+1; j<singleProducts.size(); j++) { // Cerca tra tutti i prodotti
+
                     boolean groupable;
                     if(action == Action.PICK) {
                         groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));

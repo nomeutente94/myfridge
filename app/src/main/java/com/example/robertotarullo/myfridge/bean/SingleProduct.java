@@ -98,8 +98,6 @@ public class SingleProduct implements Product, Serializable {
 
     @Override
     public String getName() {
-        if(name!=null && name.length()==0)
-            return null;
         return name;
     }
 
@@ -110,8 +108,6 @@ public class SingleProduct implements Product, Serializable {
 
     @Override
     public String getBrand() {
-        if(brand!=null && brand.length()==0)
-            return null;
         return brand;
     }
 
@@ -324,6 +320,21 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile in un pack
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
+        if(singleProduct.getName().equals("Hb") && name.equals("Hb")) {
+            System.out.println("1: " + (singleProduct.isPackaged() == packaged));
+            System.out.println("2: " + (singleProduct.getActualStorageCondition() == this.getActualStorageCondition()));
+            System.out.println("3: " + (Objects.equals(singleProduct.getName(), name) ));
+            System.out.println("4: " + (Objects.equals(singleProduct.getBrand(), brand)));
+            System.out.println("5: " + (singleProduct.getWeight() == weight));
+            System.out.println("6: " + (singleProduct.getPieces() == pieces));
+            System.out.println("7: " + (singleProduct.getStorageCondition() == storageCondition));
+            System.out.println("8: " + (singleProduct.getOpenedStorageCondition() == openedStorageCondition));
+            System.out.println("9: " + (Objects.equals(singleProduct.getExpiryDate(), expiryDate)));
+            System.out.println("10 " + (singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening));
+            System.out.println("11: " + (Objects.equals(singleProduct.getPackagingDate(), packagingDate)));
+            System.out.println("12: " + (Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this))));
+        }
+
         if(singleProduct==null)
             return false;
         else return    singleProduct.isPackaged() == packaged                                                               // packaged
@@ -398,8 +409,8 @@ public class SingleProduct implements Product, Serializable {
         String singleProductAsString = "[";
         singleProductAsString += "id: " + id + ", ";
         singleProductAsString += "packaged: " + packaged + ", ";
-        singleProductAsString += "name: " + name + ", ";
-        singleProductAsString += "brand: " + brand + ", ";
+        singleProductAsString += "name: \"" + name + "\", "; // TODO mostrare virgolette solo se name != null
+        singleProductAsString += "brand: \"" + brand + "\", "; // TODO mostrare virgolette solo se brand != null
         singleProductAsString += "price: " + price + ", ";
         singleProductAsString += "pricePerKilo: " + pricePerKilo + ", ";
         singleProductAsString += "weight: " + weight + ", ";

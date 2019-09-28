@@ -81,13 +81,18 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             descriptionTextView.setVisibility(View.VISIBLE);
         } else {
             dataTextView.setVisibility(View.VISIBLE);
-            optionsButton.setVisibility(View.VISIBLE);
             nonConsumptionBar.setVisibility(View.VISIBLE);
             descriptionTextView.setVisibility(View.GONE);
 
+            if(p instanceof Pack)
+                optionsButton.setVisibility(View.GONE);
+            else if(p instanceof SingleProduct) {
+                optionsButton.setTag(position);
+                optionsButton.setVisibility(View.VISIBLE);
+            }
+
             setConsumption();
             setDate();
-            optionsButton.setTag(position);
         }
 
         return v;
@@ -99,9 +104,8 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
     private void setBrand(){
         if(p.getBrand()==null) {
-            brandTextView.setText("brand non specificato");
             brandTextView.setVisibility(View.GONE);
-        }else {
+        } else {
             brandTextView.setVisibility(View.VISIBLE);
             brandTextView.setText(p.getBrand());
         }
@@ -185,7 +189,13 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                             dataTextView.setText("Scaduto da " + expiryDays + " giorni");
                         //dataTextView.setText("Scaduto il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     } else {
-                        dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
+                        int daysLeft = DateUtils.getDaysByDateDiff(now, date);
+                        if(daysLeft==1)
+                            dataTextView.setText("Entro domani");
+                        else if(daysLeft<=7)
+                            dataTextView.setText("Entro " + daysLeft + " giorni");
+                        else
+                            dataTextView.setText("Entro il " + DateUtils.getLanguageFormattedDate(date)); // TODO prevedere altre formattazioni data
                     }
                 }
             } else
