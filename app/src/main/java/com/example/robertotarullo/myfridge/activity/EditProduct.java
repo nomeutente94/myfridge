@@ -615,10 +615,7 @@ public class EditProduct extends AppCompatActivity {
             packagedCheckBox.setChecked(false);
         }
 
-        // Se si tratta di un prodotto fresco o confezionato aperto
-        boolean isPackagedUnopened = !p.isOpened() && p.isPackaged();
-
-        if ((p.getPieces()==1 && p.getWeight()==0) || isPackagedUnopened){
+        if ((p.getPieces()==1 && p.getWeight()==0)){
             currentWeightSlider.setTag("percentage");
             currentWeightSlider.setMax(100);
             currentWeightSlider.setProgress(p.getPercentageQuantity());
@@ -755,39 +752,29 @@ public class EditProduct extends AppCompatActivity {
 
         if (consumedCheckBox.isChecked())
             p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
-        else
-            p.setConsumptionDate(null);
 
         if(nameField.getText().length()>0){
             StringBuilder name = new StringBuilder(nameField.getText().toString());
             if(name.charAt(name.length()-1)==' ')
                 name.delete(name.length()-1, name.length());
             p.setName(name.toString());
-        } else
-            p.setName(null);
+        }
 
         if(brandField.getText().length()>0){
             StringBuilder brand = new StringBuilder(brandField.getText().toString());
             if(brand.charAt(brand.length()-1)==' ')
                 brand.delete(brand.length()-1, brand.length());
             p.setBrand(brand.toString());
-        } else
-            p.setBrand(null);
+        }
 
         if (priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
-        else
-            p.setPrice(0);
 
         if (weightField.isEnabled())
             p.setWeight(TextUtils.getFloat(weightField));
-        else
-            p.setWeight(0);
 
         if (pricePerKiloField.isEnabled())
             p.setPricePerKilo(TextUtils.getFloat(pricePerKiloField));
-        else
-            p.setPricePerKilo(0);
 
         p.setPieces(TextUtils.getInt(piecesField));
 
@@ -800,8 +787,6 @@ public class EditProduct extends AppCompatActivity {
             p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
             if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
                 p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
-            else
-                p.setPointOfPurchaseId(0);
         }
 
         p.setPackagingDate(TextUtils.getDate(packagingDateField));
@@ -810,8 +795,6 @@ public class EditProduct extends AppCompatActivity {
 
         if(expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));
-        else
-            p.setExpiringDaysAfterOpening(0);
 
         // campi che dipendono dal tipo e dall'apertura del prodotto confezionato
         if(packagedCheckBox.isChecked()){
@@ -860,6 +843,7 @@ public class EditProduct extends AppCompatActivity {
             p.setCurrentWeight(TextUtils.getFloat(weightField));
         }
 
+        System.out.println(p);
         return p;
     }
 

@@ -629,6 +629,7 @@ public class MainActivity extends AppCompatActivity {
             boolean toDisplay = action == Action.PICK ||
                                (showConsumedProducts && singleProducts.get(i).isConsumed()) ||
                                (!showConsumedProducts && !singleProducts.get(i).isConsumed());
+
             if (toDisplay) {
 
                 // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti

@@ -320,24 +320,8 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile in un pack
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
-        if(singleProduct.getName().equals("Hb") && name.equals("Hb")) {
-            System.out.println("1: " + (singleProduct.isPackaged() == packaged));
-            System.out.println("2: " + (singleProduct.getActualStorageCondition() == this.getActualStorageCondition()));
-            System.out.println("3: " + (Objects.equals(singleProduct.getName(), name) ));
-            System.out.println("4: " + (Objects.equals(singleProduct.getBrand(), brand)));
-            System.out.println("5: " + (singleProduct.getWeight() == weight));
-            System.out.println("6: " + (singleProduct.getPieces() == pieces));
-            System.out.println("7: " + (singleProduct.getStorageCondition() == storageCondition));
-            System.out.println("8: " + (singleProduct.getOpenedStorageCondition() == openedStorageCondition));
-            System.out.println("9: " + (Objects.equals(singleProduct.getExpiryDate(), expiryDate)));
-            System.out.println("10 " + (singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening));
-            System.out.println("11: " + (Objects.equals(singleProduct.getPackagingDate(), packagingDate)));
-            System.out.println("12: " + (Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this))));
-        }
-
-        if(singleProduct==null)
-            return false;
-        else return    singleProduct.isPackaged() == packaged                                                               // packaged
+        if(singleProduct!=null){
+            return     singleProduct.isPackaged() == packaged                                                               // packaged
                     && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()                        // actualStorageCondition
                     && Objects.equals(singleProduct.getName(), name)                                                        // name
                     && Objects.equals(singleProduct.getBrand(), brand)                                                      // brand
@@ -349,6 +333,8 @@ public class SingleProduct implements Product, Serializable {
                     && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening                              // expiringDaysAfterOpening
                     && Objects.equals(singleProduct.getPackagingDate(), packagingDate)                                      // packagingDate
                     && Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this));// actualExpiryDate
+        }
+        return false;
     }
 
     // ritorna true se raggruppabile in modalità PICK
@@ -367,10 +353,10 @@ public class SingleProduct implements Product, Serializable {
                     piecesCondition && // due prodotti freschi uguali possono avere pezzi variabili
                     singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
                     singleProductObj.getStorageCondition() == storageCondition &&
-                    //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId && // DISATTIVATO PERCHE' SI RIMUOVE CON LOSESTATE() // TODO attivare ovunque
+                    //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId
                     singleProductObj.getOpenedStorageCondition() == openedStorageCondition;
-        } else
-            return false;
+        }
+        return false;
     }
 
     @Override
