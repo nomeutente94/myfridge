@@ -265,6 +265,10 @@ public class EditProduct extends AppCompatActivity {
                     SingleProduct p = productDatabase.productDao().get(productToModifyId);
                     runOnUiThread(() -> {
                         fillFieldsFromProduct(p);
+
+                        if(!p.isOpened() && p.isPackaged())
+                            TextUtils.setDate(DateUtils.getCurrentDateWithoutTime(), openingDateField);
+
                         setCurrentFormToInitial();
                     });
                 }).start();
@@ -852,9 +856,6 @@ public class EditProduct extends AppCompatActivity {
             currentWeightBlock.setVisibility(View.VISIBLE);
             openingDateBlock.setVisibility(View.VISIBLE);
             currentWeightSlider.setVisibility(View.VISIBLE);
-
-            if(action==Action.UPDATE)
-                TextUtils.setDate(DateUtils.getCurrentDateWithoutTime(), openingDateField);
         } else {
             currentWeightBlock.setVisibility(View.GONE);
             openingDateBlock.setVisibility(View.GONE);
