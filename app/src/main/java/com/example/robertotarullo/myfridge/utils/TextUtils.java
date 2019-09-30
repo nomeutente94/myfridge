@@ -209,4 +209,19 @@ public abstract class TextUtils {
     public static boolean isDateFieldValidable(EditText dateField){
         return !DateUtils.isDateEmpty(dateField) && dateField.getTag(R.id.warningEdit) == null;
     }
+
+    public static String getNameWithoutExtraSpaces(EditText nameField){
+        if(nameField==null)
+            return null;
+        else {
+            if (nameField.getText().length() > 0) {
+                StringBuilder name = new StringBuilder(nameField.getText().toString());
+                if (name.charAt(name.length() - 1) == ' ')
+                    name.delete(name.length() - 1, name.length());
+                return name.toString();
+            }
+        }
+
+        return null;
+    }
 }

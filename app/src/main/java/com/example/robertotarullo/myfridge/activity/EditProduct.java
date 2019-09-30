@@ -757,19 +757,9 @@ public class EditProduct extends AppCompatActivity {
         if (consumedCheckBox.isChecked())
             p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
 
-        if(nameField.getText().length()>0){
-            StringBuilder name = new StringBuilder(nameField.getText().toString());
-            if(name.charAt(name.length()-1)==' ')
-                name.delete(name.length()-1, name.length());
-            p.setName(name.toString());
-        }
+        p.setName(TextUtils.getNameWithoutExtraSpaces(nameField));
 
-        if(brandField.getText().length()>0){
-            StringBuilder brand = new StringBuilder(brandField.getText().toString());
-            if(brand.charAt(brand.length()-1)==' ')
-                brand.delete(brand.length()-1, brand.length());
-            p.setBrand(brand.toString());
-        }
+        p.setBrand(TextUtils.getNameWithoutExtraSpaces(brandField));
 
         if (priceField.isEnabled())
             p.setPrice(TextUtils.getFloat(priceField));
@@ -812,26 +802,20 @@ public class EditProduct extends AppCompatActivity {
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
                 p.setOpeningDate(TextUtils.getDate(openingDateField));
-            } else {
-                p.setOpened(false);
-                p.setOpeningDate(null);
             }
 
             p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
 
         } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
-            p.setPackaged(false);
             p.setOpened(true);
 
             if(p.getPackagingDate()!=null)
                 p.setOpeningDate(p.getPackagingDate());
-            else //if(p.getPurchaseDate()!=null)
+            else
                 p.setOpeningDate(p.getPurchaseDate());
 
             if(expiryDateBlock.getVisibility()==View.VISIBLE)
                 p.setExpiryDate(TextUtils.getDate(expiryDateField));
-            else
-                p.setExpiryDate(null);
 
             p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
         }
@@ -847,7 +831,6 @@ public class EditProduct extends AppCompatActivity {
             p.setCurrentWeight(TextUtils.getFloat(weightField));
         }
 
-        System.out.println(p);
         return p;
     }
 
