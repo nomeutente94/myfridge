@@ -852,6 +852,9 @@ public class EditProduct extends AppCompatActivity {
             currentWeightBlock.setVisibility(View.VISIBLE);
             openingDateBlock.setVisibility(View.VISIBLE);
             currentWeightSlider.setVisibility(View.VISIBLE);
+
+            if(action==Action.UPDATE)
+                TextUtils.setDate(DateUtils.getCurrentDateWithoutTime(), openingDateField);
         } else {
             currentWeightBlock.setVisibility(View.GONE);
             openingDateBlock.setVisibility(View.GONE);
@@ -931,10 +934,11 @@ public class EditProduct extends AppCompatActivity {
     }
 
     private void initializeConsumedCheckBox(boolean addListener){
-        if(consumedCheckBox.isChecked())
+        if(consumedCheckBox.isChecked()) {
             consumptionDateBlock.setVisibility(View.VISIBLE);
-        else
+        } else {
             consumptionDateBlock.setVisibility(View.GONE);
+        }
 
         if(addListener)
             consumedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeConsumedCheckBox(false));
