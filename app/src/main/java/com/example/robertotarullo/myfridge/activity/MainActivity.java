@@ -122,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
         if(action==Action.PICK) {
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
-            resultsCount.setVisibility(View.GONE);
 
             LinearLayout mylistviewBlock = findViewById(R.id.mylistviewBlock);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
@@ -626,9 +625,7 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < singleProducts.size(); i++) { // Per ogni prodotto
 
-            boolean toDisplay = action == Action.PICK ||
-                               (showConsumedProducts && singleProducts.get(i).isConsumed()) ||
-                               (!showConsumedProducts && !singleProducts.get(i).isConsumed());
+            boolean toDisplay = action == Action.PICK || (showConsumedProducts && singleProducts.get(i).isConsumed()) || (!showConsumedProducts && !singleProducts.get(i).isConsumed());
 
             if (toDisplay) {
 
@@ -745,15 +742,19 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(productsListAdapter);
 
         // Aggiorna avviso
-        if (listView.getAdapter().getCount() == 0) {
-            noProductsWarning.setVisibility(View.VISIBLE);
+        if(action == Action.PICK){
             resultsCount.setVisibility(View.GONE);
         } else {
-            noProductsWarning.setVisibility(View.GONE);
-            resultsCount.setVisibility(View.VISIBLE);
+            if (listView.getAdapter().getCount() == 0) {
+                noProductsWarning.setVisibility(View.VISIBLE);
+                resultsCount.setVisibility(View.GONE);
+            } else {
+                noProductsWarning.setVisibility(View.GONE);
+                resultsCount.setVisibility(View.VISIBLE);
 
-            // Aggiorna count
-            resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
+                // Aggiorna count
+                resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
+            }
         }
     }
 
