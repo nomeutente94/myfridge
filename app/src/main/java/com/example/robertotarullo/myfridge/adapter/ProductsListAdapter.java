@@ -235,6 +235,21 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
         msg.append(" - ");
 
+        if(currentProduct.getExpiringDaysAfterOpening()>0) {
+            if(currentProduct.getExpiringDaysAfterOpening()==1){
+                if(currentProduct.isPackaged())
+                    msg.append(currentProduct.getExpiringDaysAfterOpening()).append(" giorno dall'apertura");
+                else
+                    msg.append(currentProduct.getExpiringDaysAfterOpening()).append(" giorno");
+            } else {
+                if(currentProduct.isPackaged())
+                    msg.append(currentProduct.getExpiringDaysAfterOpening()).append(" giorni dall'apertura");
+                else
+                    msg.append(currentProduct.getExpiringDaysAfterOpening()).append(" giorni");
+            }
+            msg.append(" - ");
+        }
+
         if(currentProduct.getStorageCondition()==0)
             msg.append("Dispensa");
         else if(currentProduct.getStorageCondition()==1)
