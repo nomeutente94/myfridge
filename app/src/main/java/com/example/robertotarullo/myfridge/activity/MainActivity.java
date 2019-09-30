@@ -744,6 +744,7 @@ public class MainActivity extends AppCompatActivity {
         // Aggiorna avviso
         if(action == Action.PICK){
             resultsCount.setVisibility(View.GONE);
+            noProductsWarning.setVisibility(View.GONE);
         } else {
             if (listView.getAdapter().getCount() == 0) {
                 noProductsWarning.setVisibility(View.VISIBLE);
