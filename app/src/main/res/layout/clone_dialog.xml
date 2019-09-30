@@ -40,18 +40,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:text="Conserva lo stato"/>
+                android:text="Crea una copia identica"/>
             <RadioButton
                 android:id="@+id/radio_clone_partial"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="Conserva tutto eccetto la consumazione"/>
+                android:text="Perdi solo la consumazione"/>
             <RadioButton
                 android:id="@+id/radio_clone_min"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Non conservare lo stato"/>
+                android:text="Perdi tutto, crea prodotto nuovo"/>
         </RadioGroup>
 
     </LinearLayout>
