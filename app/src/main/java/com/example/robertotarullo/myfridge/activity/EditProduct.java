@@ -53,7 +53,7 @@ import java.util.TreeSet;
 
 public class EditProduct extends AppCompatActivity {
 
-    private static final int SELECT_REQUEST = 1;
+    private static final int PICK_REQUEST = 1;
 
     // Tipo di azione
     public enum Action{
@@ -420,7 +420,7 @@ public class EditProduct extends AppCompatActivity {
                 // permetti all'utente di scegliere un prodotto già inserito
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("action", MainActivity.Action.PICK);
-                startActivityForResult(intent, SELECT_REQUEST);
+                startActivityForResult(intent, PICK_REQUEST);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -1086,7 +1086,7 @@ public class EditProduct extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SELECT_REQUEST) {
+        if (requestCode == PICK_REQUEST) {
             if (resultCode == RESULT_OK) {
                 long productId = data.getLongExtra("productId", 0);
                 new Thread(() -> {
