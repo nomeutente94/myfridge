@@ -106,33 +106,50 @@ public class PriceWeightRelationWatcher implements TextWatcher {
 
     /**
      * @param s è il campo modificato
-     * @param editText1 è il campo già compilato
-     * @param editText2 è il campo di cui si calcola il risultato
+     * @param editText1 è il campo già compilato di cui si usa il valore
+     * @param editText2 è il campo di cui si vuole calcolare il valore
      */
     private void reflectToField(Editable s, EditText editText1, EditText editText2){
         float value = 0;
 
-        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){                 // Se si calcola weight...
-            if(type.equals(PRICE_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))           // price e pricePerKilo
-                value = (TextUtils.getFloat(s) * 1000) / TextUtils.getFloat(editText1);         // -> weight
-            else if(type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(PRICE_TAG))      // pricePerKilo e price
-                value = (TextUtils.getFloat(editText1) * 1000) / TextUtils.getFloat(s);         // -> weight
+        // Se si calcola weight...
+        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){
 
-            if(!PriceUtils.getFormattedWeight(value).equals(PriceUtils.getFormattedWeight(TextUtils.getFloat(editText2)))) { // Cambia solo se il valore è diverso dal precedente, per evitare loop nel textwatcher
+            // price e pricePerKilo
+            if(type.equals(PRICE_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))
+                value = PriceUtils.getWeight(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
+
+            // pricePerKilo e price
+            else if(type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(PRICE_TAG))
+                value = PriceUtils.getWeight(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
+
+            // Cambia valore solo se diverso dal precedente, per evitare loop nel textwatcher
+            if(!PriceUtils.getFormattedWeight(value).equals(PriceUtils.getFormattedWeight(TextUtils.getFloat(editText2)))) {
                 editText2.setText(PriceUtils.getFormattedWeight(value));
                 setWeight(Math.round(value));
             }
-        } else {                                                                                // Se si calcola prezzo o prezzo/kg
-            if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))         // weight e pricePerKilo
-                value = (TextUtils.getFloat(editText1) * TextUtils.getFloat(s)) / 1000;         // -> price
-            else if (type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(WEIGHT_TAG))    // pricePerKilo e weight
-                value = (TextUtils.getFloat(s) * TextUtils.getFloat(editText1)) / 1000;         // -> price
-            else if (type.equals(PRICE_TAG) && editText1.getTag().equals(WEIGHT_TAG))           // price e weight
-                value = (TextUtils.getFloat(s) * 1000) / TextUtils.getFloat(editText1);         // -> pricePerKilo
-            else if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICE_TAG))           // weight e price
-                value = (TextUtils.getFloat(editText1) * 1000) / TextUtils.getFloat(s);         // -> pricePerKilo
 
-            if(!PriceUtils.getFormattedPrice(value).equals(PriceUtils.getFormattedPrice(TextUtils.getFloat(editText2)))) // Cambia solo se il valore è diverso dal precedente, per evitare loop nel textwatcher
+        // Se si calcola prezzo o prezzo/kg...
+        } else {
+
+            // weight e pricePerKilo -> price
+            if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))
+                value = PriceUtils.getPrice(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
+
+            // pricePerKilo e weight -> price
+            else if (type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(WEIGHT_TAG))
+                value = PriceUtils.getPrice(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
+
+            // price e weight -> pricePerKilo
+            else if (type.equals(PRICE_TAG) && editText1.getTag().equals(WEIGHT_TAG))
+                value = PriceUtils.getPricePerKilo(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
+
+            // weight e price  -> pricePerKilo
+            else if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICE_TAG))
+                value = PriceUtils.getPricePerKilo(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
+
+            // Cambia solo se il valore è diverso dal precedente, per evitare loop nel textwatcher
+            if(!PriceUtils.getFormattedPrice(value).equals(PriceUtils.getFormattedPrice(TextUtils.getFloat(editText2))))
                 editText2.setText(PriceUtils.getFormattedPrice(value));
         }
     }

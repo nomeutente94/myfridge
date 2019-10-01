@@ -26,4 +26,16 @@ public abstract class PriceUtils {
         else
             return String.valueOf(Math.round(weight));
     }
+
+    public static float getWeight(float price, float pricePerKilo){
+        return (price * 1000) / pricePerKilo;
+    }
+
+    public static float getPrice(float pricePerKilo, float weight){
+        return (pricePerKilo * weight) / 1000;
+    }
+
+    public static float getPricePerKilo(float price, float weight){
+        return (price * 1000) / weight;
+    }
 }
