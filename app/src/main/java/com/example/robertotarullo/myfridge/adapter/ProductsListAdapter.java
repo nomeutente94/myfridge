@@ -214,17 +214,31 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         if(currentProduct.isPackaged())
             msg.append("Confezionato");
         else
-            msg.append("Fresco");
+            msg.append("Non confezionato");
 
         msg.append(" - ");
 
         if(currentProduct.getPrice()>0) {
             msg.append("€").append(PriceUtils.getFormattedPrice(currentProduct.getPrice()));
             msg.append(" - ");
+        } else if(currentProduct.getWeight()>0 && currentProduct.getPricePerKilo()>0){
+            msg.append("€").append(PriceUtils.getFormattedPrice(PriceUtils.getPrice(currentProduct.getPricePerKilo(), currentProduct.getWeight())));
+            msg.append(" - ");
+        }
+
+        if(currentProduct.getPricePerKilo()>0){
+            msg.append("€").append(PriceUtils.getFormattedPrice(currentProduct.getPricePerKilo())).append("/kg");
+            msg.append(" - ");
+        } else if(currentProduct.getWeight()>0 && currentProduct.getPrice()>0){
+            msg.append("€").append(PriceUtils.getFormattedPrice(PriceUtils.getPricePerKilo(currentProduct.getPrice(), currentProduct.getWeight()))).append("/kg");
+            msg.append(" - ");
         }
 
         if(currentProduct.getWeight()>0) {
             msg.append(PriceUtils.getFormattedWeight(currentProduct.getWeight())).append("g");
+            msg.append(" - ");
+        } else if(currentProduct.getPrice()>0 && currentProduct.getPricePerKilo()>0){
+            msg.append(PriceUtils.getFormattedWeight(PriceUtils.getWeight(currentProduct.getPrice(), currentProduct.getPricePerKilo()))).append("g");
             msg.append(" - ");
         }
 

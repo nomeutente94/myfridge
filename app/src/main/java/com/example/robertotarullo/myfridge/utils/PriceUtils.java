@@ -3,6 +3,7 @@ package com.example.robertotarullo.myfridge.utils;
 import java.text.DecimalFormat;
 
 public abstract class PriceUtils {
+
     // Ritorna il valore con due decimali, sotto forma di stringa
     public static String getFormattedPrice(float price){
         if(price==0)

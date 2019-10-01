@@ -233,9 +233,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
 
-                String msg = "Vuoi autocompilare il form dal prodotto selezionato? Eventuali dati inseriti andranno persi.\n";
+                String msg = "Eventuali dati presenti nei campi andranno persi, sei sicuro di voler autocompilare il form dal prodotto selezionato?";
 
-                SingleProduct clicked = null;
+                /*SingleProduct clicked = null;
                 if(p instanceof SingleProduct)
                     clicked = (SingleProduct)p;
                 else if(p instanceof Pack)
@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
                         msg += "\n- Conservazione dopo l'apertura: Frigorifero";
                     else if(clicked.getOpenedStorageCondition()==2)
                         msg += "\n- Conservazione dopo l'apertura: Congelatore";
-                }
+                }*/
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
