@@ -228,6 +228,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             msg.append(" - ");
         }
 
+        // TODO controlla se il valore è uguale per tutti i freschi del pack
         if(currentProduct.getPieces()>1)
             msg.append(currentProduct.getPieces()).append(" pezzi");
         else
