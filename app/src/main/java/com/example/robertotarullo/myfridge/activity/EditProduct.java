@@ -1086,9 +1086,10 @@ public class EditProduct extends AppCompatActivity {
                 long productId = data.getLongExtra("productId", 0);
                 new Thread(() -> {
                     SingleProduct p = productDatabase.productDao().get(productId);
-                    p.loseState();
+                    p.loseState(); // perdi lo stato
                     runOnUiThread(() -> {
                         // resetta tutti i campi che possono essere compilati (attributi non relativi allo stato)
+                        // TODO necessario se si resetta anche dopo ?
                         // gli spinner non si toccano perchè prenderanno il valore di p
                         packagedCheckBox.setChecked(false);
                         nameField.setText("");

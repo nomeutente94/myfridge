@@ -341,8 +341,8 @@ public class SingleProduct implements Product, Serializable {
     public boolean pickEquals(SingleProduct singleProductObj){
         if(singleProductObj!=null){
             boolean piecesCondition = singleProductObj.getPieces() == pieces;
-            if(!packaged)
-                piecesCondition = true;
+            /*if(!packaged)
+                piecesCondition = true;*/
 
             return  singleProductObj.isPackaged() == packaged &&
                     Objects.equals(singleProductObj.getName(), name) &&
