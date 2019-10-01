@@ -247,8 +247,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             msg.append(currentProduct.getPieces()).append(" pezzi");
         else
             msg.append("Pezzo unico");
-
         msg.append(" - ");
+
+        if(currentProduct.getExpiryDate()!=null && currentProduct.getExpiryDate().equals(DateUtils.getNoExpiryDate())){
+            msg.append("Non scade mai");
+            msg.append(" - ");
+        }
 
         if(currentProduct.getExpiringDaysAfterOpening()>0) {
             if(currentProduct.getExpiringDaysAfterOpening()==1){
