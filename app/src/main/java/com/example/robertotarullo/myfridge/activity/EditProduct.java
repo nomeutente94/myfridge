@@ -447,7 +447,6 @@ public class EditProduct extends AppCompatActivity {
 
         packagingDateField.setText(""); // Resetta data di confezionamento
         purchaseDateField.setText(""); // Resetta data di acquisto
-        noExpiryCheckbox.setChecked(false); // Resetta data di scadenza
         expiryDateField.setText("");
         pointOfPurchaseSpinner.setSelection(0); // Resetta punto di acquisto // TODO resetta solo se si tratta di un prodotto che si può comprare anche altrove ?
     }

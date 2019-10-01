@@ -298,7 +298,8 @@ public class SingleProduct implements Product, Serializable {
     public void loseState(){
         setPurchaseDate(null);
         setPointOfPurchaseId(0); // TODO attributo proprio? Eliminare?
-        setExpiryDate(null);
+        if(!expiryDate.equals(DateUtils.getNoExpiryDate()))
+            setExpiryDate(null);
         setPackagingDate(null);
         setOpeningDate(null);
 
