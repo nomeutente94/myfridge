@@ -847,13 +847,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //resetSearchBar();
-
-        showConsumedProducts = false; // TODO controllare per quali casi
-
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 currentFilter = data.getIntExtra("filter", currentFilter);
+                showConsumedProducts = false; // TODO controllare per quali casi
                 retrieveProductsFromDB(null);
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
@@ -862,10 +859,12 @@ public class MainActivity extends AppCompatActivity {
                     currentFilter = data.getIntExtra("filter", currentFilter);
                     pressOnFilter(null);
                 }
+                showConsumedProducts = false; // TODO controllare per quali casi
                 retrieveProductsFromDB(null);
             }
         } else if (requestCode == SHOPPING_REQUEST) {
             if (resultCode == RESULT_OK) {
+                showConsumedProducts = false; // TODO controllare per quali casi
                 retrieveProductsFromDB(null);
             }
         }
