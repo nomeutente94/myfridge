@@ -70,6 +70,7 @@ public class EditProduct extends AppCompatActivity {
     public static final int FRIDGE_DEFAULT_CELSIUS = 5, FREEZER_DEFAULT_CELSIUS = -18, ROOM_DEFAULT_CELSIUS = 20;  // ideale (4-6) per frigo
     public static final int ROOM_SELECTION = 0, FRIDGE_SELECTION = 1, FREEZER_SELECTION = 2;
     public static final int MAX_QUANTITY = 99, MIN_QUANTITY = 1, MAX_PIECES = 99, MIN_PIECES = 1;
+    private final boolean DEFAULT_EXPIRY_DATE_MODE = false;
 
     // Intent
     private Action action;
@@ -171,7 +172,7 @@ public class EditProduct extends AppCompatActivity {
         initializeStorageSpinners();
 
         // variabili di controllo del form
-        expiryDateMode = false; // TODO configurabile: valore iniziale a preferenza dell'utente
+        expiryDateMode = DEFAULT_EXPIRY_DATE_MODE; // TODO configurabile: valore iniziale a preferenza dell'utente
 
         // Comportamenti delle checkbox
         initializeOpenedCheckBox(true);
@@ -606,6 +607,7 @@ public class EditProduct extends AppCompatActivity {
             if(p.getExpiryDate().equals(DateUtils.getNoExpiryDate())) {                                         // se data di scadenza 'mai'
                 noExpiryCheckbox.setChecked(true);
                 TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");                           // svuota eventuale expiryDays
+                TextUtils.editFieldNotFromUser(expiryDateField, "");                                       // svuota eventuale expiryDate
             } else {
                 TextUtils.editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate())); // se data di scadenza standard
                 if(!p.isPackaged())                                                                             // Se prodotto fresco...
@@ -613,6 +615,8 @@ public class EditProduct extends AppCompatActivity {
             }
         } else {
             TextUtils.editFieldNotFromUser(expiryDateField, "");
+            noExpiryCheckbox.setChecked(false);
+            changeToExpiringDateMode(DEFAULT_EXPIRY_DATE_MODE); // TODO CONFIGURABILE DA utente nelle impostazioni
         }
 
         // Se si tratta di un prodotto confezionato
