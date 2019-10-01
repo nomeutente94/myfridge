@@ -10,6 +10,7 @@ public class NameComparator implements Comparator<Product> {
     public int compare(Product p1, Product p2){
         if(p1.getName().compareTo(p2.getName())==0){
 
+            // I null vengono mostrati prima!!!
             if(p1.getBrand()==null && p2.getBrand()==null)
                 return 0;
             else if(p1.getBrand()!=null && p2.getBrand()==null)

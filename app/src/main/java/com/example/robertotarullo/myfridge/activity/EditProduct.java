@@ -560,12 +560,14 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.getPricePerKilo()==0 || p.getWeight()==0)
             TextUtils.setPrice(p.getPrice(), priceField);
+
         if(p.getPrice()==0 || p.getWeight()==0)
             TextUtils.setPrice(p.getPricePerKilo(), pricePerKiloField);
+
         if(p.getPrice()==0 || p.getPricePerKilo()==0)
             TextUtils.setWeight(p.getWeight(), weightField);
 
-        if(p.getWeight()>0)
+        if(p.getWeight()>0 && p.getCurrentWeight()>0)
             TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
         else
             TextUtils.setWeight(p.getWeight(), currentWeightField);
