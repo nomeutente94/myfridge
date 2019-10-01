@@ -1,0 +1,45 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:paddingTop="20dp"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerInParent="true">
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <RadioButton
+                android:checked="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:id="@+id/radio_reset_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Resetta solo la consumazione"/>
+            <RadioButton
+                android:id="@+id/radio_reset_partial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Resetta l'intero stato"/>
+            <RadioButton
+                android:visibility="gone"
+                android:id="@+id/radio_reset_complete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Resetta tutti i campi del form"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+</RelativeLayout>

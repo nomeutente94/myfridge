@@ -8,10 +8,7 @@
         android:title="Elimina prodotto" />
     <item
         android:id="@+id/reset"
-        android:title="Resetta stato" />
-    <item
-        android:id="@+id/resetConsumption"
-        android:title="Resetta consumazione" />
+        android:title="Resetta stato..." />
     <item
         android:id="@+id/fillFromInsertedProduct"
         android:title="Compila da prodotto..." />

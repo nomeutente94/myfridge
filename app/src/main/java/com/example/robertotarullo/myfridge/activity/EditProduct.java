@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -328,10 +329,9 @@ public class EditProduct extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
 
-        if(action==Action.EDIT || action==Action.UPDATE)
-            menu.add(0, R.id.resetConsumption, Menu.NONE, "Resetta consumazione ");
-        if(action==Action.EDIT) {
-            menu.add(0, R.id.reset, Menu.NONE, "Resetta intero stato");
+        menu.add(0, R.id.reset, Menu.NONE, "Resetta...");
+
+        if(action==Action.EDIT || action==Action.UPDATE) {
             menu.add(0, R.id.delete, Menu.NONE, "Elimina");
         }
         if(action==Action.ADD || action==Action.SHOPPING || action==Action.ADD_NO_CONSUMPTION) {
@@ -374,52 +374,63 @@ public class EditProduct extends AppCompatActivity {
 
                 return true;
             case R.id.reset:
-                dialogClickListener = (dialog, which) -> {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            hardReset();
+                if(action==Action.UPDATE){
+                    dialogClickListener = (dialog, which) -> {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                resetConsumptionState();
                             /*new Thread(() -> {
                                 // modifica su db ?
                             }).start();*/
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    };
 
-                msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione. Inoltre verrano resettati:\n\n" +
-                      "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto";
+                    msg = "Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione.";
 
-                builder = new AlertDialog.Builder(this);
-                builder.setMessage(msg)
-                        .setTitle("Conferma ripristino (Hard reset)")
-                        .setPositiveButton("Conferma", dialogClickListener)
-                        .setNegativeButton("Annulla", dialogClickListener)
-                        .show();
-                return true;
-            case R.id.resetConsumption:
-                dialogClickListener = (dialog, which) -> {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            softReset();
+                    builder = new AlertDialog.Builder(this);
+                    builder.setMessage(msg)
+                            .setTitle("Conferma ripristino consumazione")
+                            .setPositiveButton("Conferma", dialogClickListener)
+                            .setNegativeButton("Annulla", dialogClickListener)
+                            .show();
+                    return true;
+                } else {
+                    View resetDialogView = getLayoutInflater().inflate(R.layout.lose_state_dialog, null);
+
+                    RadioButton radioButtonPartial = resetDialogView.findViewById(R.id.radio_reset_partial);
+                    RadioButton radioButtonMin = resetDialogView.findViewById(R.id.radio_reset_min);
+
+                    dialogClickListener = (dialog, which) -> {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                if(radioButtonPartial.isChecked())
+                                    resetState();
+                                else if(radioButtonMin.isChecked())
+                                    resetConsumptionState();
+
                             /*new Thread(() -> {
                                 // modifica su db ?
                             }).start();*/
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    };
 
-                msg = "Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione.";
+                    //msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione. Inoltre verrano resettati:\n\n" +
+                    //        "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto";
 
-                builder = new AlertDialog.Builder(this);
-                builder.setMessage(msg)
-                        .setTitle("Conferma ripristino (Soft reset)")
-                        .setPositiveButton("Conferma", dialogClickListener)
-                        .setNegativeButton("Annulla", dialogClickListener)
-                        .show();
-                return true;
+                    builder = new AlertDialog.Builder(this);
+                    builder.setView(resetDialogView)
+                           .setTitle("Conferma ripristino stato")
+                           .setPositiveButton("Conferma", dialogClickListener)
+                           .setNegativeButton("Annulla", dialogClickListener)
+                           .show();
+                    return true;
+                }
             case R.id.fillFromInsertedProduct:
                 // permetti all'utente di scegliere un prodotto già inserito
                 Intent intent = new Intent(this, MainActivity.class);
@@ -431,8 +442,8 @@ public class EditProduct extends AppCompatActivity {
         }
     }
 
-    private void hardReset(){
-        softReset();
+    private void resetState(){
+        resetConsumptionState();
 
         packagingDateField.setText(""); // Resetta data di confezionamento
         purchaseDateField.setText(""); // Resetta data di acquisto
@@ -441,7 +452,7 @@ public class EditProduct extends AppCompatActivity {
         pointOfPurchaseSpinner.setSelection(0); // Resetta punto di acquisto // TODO resetta solo se si tratta di un prodotto che si può comprare anche altrove ?
     }
 
-    private void softReset(){
+    private void resetConsumptionState(){
         // Resetta consumazione
         consumptionDateField.setText("");
         consumedCheckBox.setChecked(false);
