@@ -116,12 +116,6 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         // Inizializza gli spinner
         populateSpinners(true);
 
-        // Inizializza la data selezionata
-        if(TextUtils.getDate(dateField)==null)
-            DateUtils.setYearDate(yearSpinner, DateUtils.getCurrentDateWithoutTime()); // Setta l'anno a quello corrente
-        else
-            DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField)); // Setta alla data presente nell'elemento del form
-
         // Listener per spinner giorno/mese/anno
         SpinnerInteractionListener dayListener = new SpinnerInteractionListener(DateUtils.DAY_SPINNER);
         daySpinner.setOnTouchListener(dayListener);
@@ -150,20 +144,33 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         int maxDay = DateUtils.MAX_DAY;
         int minMonth = DateUtils.MIN_MONTH;
         int maxMonth = DateUtils.MAX_MONTH;
+        int maxYear = maxDate.get(Calendar.YEAR);
+        int minYear = minDate.get(Calendar.YEAR);
 
         int currentYear;
         int currentMonth;
 
         // Inizializzo all'apertura della dialog
         if(fromField){
+
+            // Se il campo è vuoto
             if(TextUtils.getDate(dateField)==null) {
                 currentYear = DateUtils.getCalendar(DateUtils.getCurrentDateWithoutTime()).get(Calendar.YEAR); // ritorna anno corrente
+
+                if(currentYear>maxYear)
+                    currentYear = maxYear;
+                else if(currentYear<minYear)
+                    currentYear = minYear;
+
                 currentMonth = 0; // mese non selezionato
+
+            // Se il campo non è vuoto
             } else {
                 currentYear = getCurrentYear();
                 currentMonth = getCurrentMonth();
             }
-        // Inizializzo dai campi correnti
+
+        // Aggiornamento a seguito di un'azione dell'utente
         } else {
             currentYear = getCurrentSpinnerYear();
             currentMonth = getCurrentSpinnerMonth();
@@ -193,8 +200,15 @@ public class SpinnerDatePickerFragment extends DialogFragment {
 
         daySpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getDays(minDay, maxDay), DateUtils.DAY_SPINNER));
         monthSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getMonths(minMonth, maxMonth), DateUtils.MONTH_SPINNER));
-        if(fromField)
-            yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getYears(minDate.get(Calendar.YEAR), maxDate.get(Calendar.YEAR)), DateUtils.YEAR_SPINNER));
+        if(fromField) {
+            yearSpinner.setAdapter(new DateSpinnerAdapter(this.getActivity(), R.layout.date_spinner_item, getYears(minYear, maxYear), DateUtils.YEAR_SPINNER));
+
+            // Inizializza la data selezionata
+            if(TextUtils.getDate(dateField)==null) // Setta l'anno a quello corrente // TODO o a quello più vicino
+                DateUtils.setYearDate(yearSpinner, String.valueOf(currentYear));
+            else // Setta alla data presente nell'elemento del form
+                DateUtils.setDate(daySpinner, monthSpinner, yearSpinner, TextUtils.getDate(dateField));
+        }
     }
 
     @Override

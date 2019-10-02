@@ -110,11 +110,30 @@ public abstract class DateUtils {
 
 
     public static void setYearDate(Spinner spinner, Date date){
-        int position = 0;
+
         SimpleDateFormat format = new SimpleDateFormat("yyyy");
 
+        setYearDate(spinner, format.format(date));
+
+        /*// Setta all'anno più vicino a quello voluto
+        else {
+            int min = Math.abs(Integer.valueOf(spinner.getItemAtPosition(0).toString()) - Integer.valueOf(format.format(date)));
+            int posMin = 0;
+            for(int i=1; i<spinner.getAdapter().getCount(); i++){
+                int diff = Math.abs(Integer.valueOf(spinner.getItemAtPosition(i).toString()) - Integer.valueOf(format.format(date)));
+                if(diff < min) {
+                    min = diff;
+                    posMin = i;
+                }
+            }
+            spinner.setSelection(posMin);
+        }*/
+    }
+
+    public static void setYearDate(Spinner spinner, String year){
+        int position = 0;
         for(int i=0; i<spinner.getAdapter().getCount() && position == 0; i++){
-            if(format.format(date).equals(spinner.getItemAtPosition(i)))
+            if(year.equals(spinner.getItemAtPosition(i)))
                 position = i;
         }
 
