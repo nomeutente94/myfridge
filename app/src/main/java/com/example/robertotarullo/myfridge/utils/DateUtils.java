@@ -337,7 +337,7 @@ public abstract class DateUtils {
         dateAsString += String.valueOf(cal.get(Calendar.DAY_OF_MONTH)) + " ";
 
         String month = String.valueOf(cal.get(Calendar.MONTH)+1);
-        String monthAsString = "error_month";
+        String monthAsString = "error_month"; // TODO !!
 
         if(month.equals("1"))
             monthAsString = "Gen";
