@@ -272,12 +272,8 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         String yearAsString = yearSpinner.getSelectedItem().toString();
 
         if(dateField==packagingDateField){
-            if(
-                (daySpinnerPosition >0 && monthSpinnerPosition >0 && yearSpinnerPosition >0) && // Se tutti i campi sono compilati
-                (DateUtils.isDateValid(dayAsString, monthAsString, yearAsString)) // Se è stato compilato 29/02 ma l'anno non è bisestile
-            ){
+            if(daySpinnerPosition>0 && monthSpinnerPosition>0 && DateUtils.isDateValid(dayAsString, monthAsString, yearAsString)) // Se è stato compilato 29/02 ma l'anno non è bisestile
                 return DateUtils.getDate(daySpinner, monthSpinner, yearSpinner);
-            }
         }
         return null;
     }
@@ -286,21 +282,15 @@ public class SpinnerDatePickerFragment extends DialogFragment {
     private Date getExpiryDate(){
         int daySpinnerPosition = daySpinner.getSelectedItemPosition();
         int monthSpinnerPosition = monthSpinner.getSelectedItemPosition();
-        int yearSpinnerPosition = yearSpinner.getSelectedItemPosition();
 
         String dayAsString = daySpinner.getSelectedItem().toString();
         String monthAsString = monthSpinner.getSelectedItem().toString();
         String yearAsString = yearSpinner.getSelectedItem().toString();
 
         if(dateField==expiryDateField){
-            if(
-                (daySpinnerPosition>0 && monthSpinnerPosition==0 && yearSpinnerPosition==0) || // Se è stato compilato solo il giorno di scadenza
-                (daySpinnerPosition==0 && monthSpinnerPosition>0 && yearSpinnerPosition==0) || // Se è stato compilato solo il mese di scadenza
-                ((daySpinnerPosition>0 && monthSpinnerPosition>0 && yearSpinnerPosition==0) && (!DateUtils.isDateValid(dayAsString, monthAsString, DateUtils.getCurrentYear()))) || // TODO Se è stato compilato 29/02 ma l'anno corrente non è bisestile // TODO settare anno corrente
-                ((daySpinnerPosition>0 && monthSpinnerPosition>0 && yearSpinnerPosition>0) && (!DateUtils.isDateValid(dayAsString, monthAsString, yearAsString))) // TODO Se è stato compilato 29/02 ma l'anno non è bisestile
-            ){
+            // Se la data non è compilata ma il giorno sì oppure data non valida
+            if((daySpinnerPosition>0 && monthSpinnerPosition==0) || (daySpinnerPosition>0 && monthSpinnerPosition>0 && !DateUtils.isDateValid(dayAsString, monthAsString, yearAsString)))
                 return null;
-            }
         }
         return DateUtils.getExpiryDate(daySpinner, monthSpinner, yearSpinner);
     }

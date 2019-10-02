@@ -80,7 +80,7 @@ public class EditProduct extends AppCompatActivity {
     // Variabili per i suggerimenti dei campi
     private Set<String> nameSuggestionsList, brandSuggestionsList;
 
-    // views
+    // Views
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField, consumptionDateField, currentPercentageField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
@@ -89,13 +89,13 @@ public class EditProduct extends AppCompatActivity {
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
 
-    // variabili di controllo del form
+    // Variabili di controllo del form
     private boolean expiryDateMode;
 
-    // dichiarazione dei blocchi che hanno regole per la visibilità
+    // Dichiarazione dei blocchi che hanno regole per la visibilità
     private LinearLayout openingDateBlock, expiryDateBlock, openedCheckBoxBlock, openedStorageConditionBlock, currentWeightBlock, quantityBlock, expiryDaysAfterOpeningBlock, pointOfPurchaseBlock, purchaseDateBlock, consumedCheckboxBlock, consumptionDateBlock, openedBlock;
 
-    // dichiarazione delle variabili di database
+    // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
     @Override
@@ -144,7 +144,7 @@ public class EditProduct extends AppCompatActivity {
         expiryDaysAfterOpeningLabel = findViewById(R.id.expiryDaysAfterOpeningFieldLabel);
         confirmButton = findViewById(R.id.addButton);
 
-        // riferimenti ai blocchi che hanno regole per la visibilità
+        // Riferimenti ai blocchi che hanno regole per la visibilità
         openingDateBlock = findViewById(R.id.openingDateBlock);
         expiryDateBlock = findViewById(R.id.expiryDateBlock);
         openedCheckBoxBlock = findViewById(R.id.openedCheckBoxBlock);
@@ -158,20 +158,20 @@ public class EditProduct extends AppCompatActivity {
         consumptionDateBlock = findViewById(R.id.consumptionDateBlock);
         openedBlock = findViewById(R.id.openedBlock);
 
-        // riferimenti ai pulsanti clear di campi coinvolti in relazioni
+        // Riferimenti ai pulsanti clear di campi coinvolti in relazioni
         priceClearButton = findViewById(R.id.priceClearButton);
         pricePerKiloClearButton = findViewById(R.id.pricePerKiloClearButton);
         weightClearButton = findViewById(R.id.weightClearButton);
 
         action = (Action) getIntent().getSerializableExtra("action");
 
-        // inizializza gli array per i suggerimenti
+        // Inizializza gli array per i suggerimenti
         initializeSuggestions();
 
         // Popola spinners
         initializeStorageSpinners();
 
-        // variabili di controllo del form
+        // Variabili di controllo del form
         expiryDateMode = DEFAULT_EXPIRY_DATE_MODE; // TODO configurabile: valore iniziale a preferenza dell'utente
 
         // Comportamenti delle checkbox
@@ -933,6 +933,10 @@ public class EditProduct extends AppCompatActivity {
 
         if(addListener)
             noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox(false));
+        else {
+            if(!noExpiryCheckbox.isChecked())
+                validateExpiryDate();
+        }
     }
 
     private void initializeConsumedCheckBox(boolean addListener){

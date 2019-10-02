@@ -322,20 +322,20 @@ public class SingleProduct implements Product, Serializable {
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
         if(singleProduct!=null){
-            return     singleProduct.isPackaged() == packaged                                                               // packaged
-                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()                        // actualStorageCondition
-                    && Objects.equals(singleProduct.getName(), name)                                                        // name
-                    && Objects.equals(singleProduct.getBrand(), brand)                                                      // brand
-                    && singleProduct.getWeight() == price                                                                   // price
-                    && singleProduct.getWeight() == pricePerKilo                                                            // pricePerKilo
-                    && singleProduct.getWeight() == weight                                                                  // weight
-                    && singleProduct.getPieces() == pieces                                                                  // pieces
-                    && singleProduct.getStorageCondition() == storageCondition                                              // storageCondition
-                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition                                  // openedStorageCondition
-                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)                                            // expiryDate
-                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening                              // expiringDaysAfterOpening
-                    && Objects.equals(singleProduct.getPackagingDate(), packagingDate)                                      // packagingDate
-                    && Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this));// actualExpiryDate
+            return     singleProduct.isPackaged() == packaged
+                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()
+                    && Objects.equals(singleProduct.getName(), name)
+                    && Objects.equals(singleProduct.getBrand(), brand)
+                    && singleProduct.getWeight() == price
+                    && singleProduct.getWeight() == pricePerKilo
+                    && singleProduct.getWeight() == weight
+                    && singleProduct.getPieces() == pieces
+                    && singleProduct.getStorageCondition() == storageCondition
+                    && singleProduct.getOpenedStorageCondition() == openedStorageCondition
+                    && Objects.equals(singleProduct.getExpiryDate(), expiryDate)
+                    && singleProduct.getExpiringDaysAfterOpening() == expiringDaysAfterOpening
+                    && Objects.equals(singleProduct.getPackagingDate(), packagingDate)
+                    && Objects.equals(DateUtils.getActualExpiryDate(singleProduct), DateUtils.getActualExpiryDate(this));
         }
         return false;
     }
