@@ -546,15 +546,26 @@ public abstract class DateUtils {
         List<String> errorMessages = new ArrayList<>();
 
         if(!((CheckBox)activity.findViewById(R.id.noExpiryCheckbox)).isChecked()){
+            boolean opened = ((CheckBox)activity.findViewById(R.id.openedCheckBox)).isChecked();
+            boolean packaged = ((CheckBox)activity.findViewById(R.id.packagedCheckBox)).isChecked();
+
             Date purchaseDate = TextUtils.getDate(activity.findViewById(R.id.purchaseDateField));
             Date expiryDate = TextUtils.getDate(activity.findViewById(R.id.expiryDateField));
-            Date openingDate = TextUtils.getDate(activity.findViewById(R.id.openingDateField));
             Date packagingDate = TextUtils.getDate(activity.findViewById(R.id.packagingDateField));
             Date consumingDate = TextUtils.getDate(activity.findViewById(R.id.consumptionDateField));
             int expiryDays = TextUtils.getInt((EditText)activity.findViewById(R.id.expiryDaysAfterOpeningField));
-            boolean packaged = ((CheckBox)activity.findViewById(R.id.packagedCheckBox)).isChecked();
-            boolean opened = ((CheckBox)activity.findViewById(R.id.openedCheckBox)).isChecked();
 
+            // Prendi solo il campo mostrato dallo switch
+            if(!packaged){
+                if(!activity.findViewById(R.id.expiryDateField).isEnabled())
+                    expiryDate = null;
+                else if(!activity.findViewById(R.id.expiryDaysAfterOpeningField).isEnabled())
+                    expiryDays = 0;
+            }
+
+            Date openingDate = null;
+            if(opened || !packaged)
+                openingDate = TextUtils.getDate(activity.findViewById(R.id.openingDateField));
 
             if(!packaged || opened){
                 Date estimatedExpiryDate;
