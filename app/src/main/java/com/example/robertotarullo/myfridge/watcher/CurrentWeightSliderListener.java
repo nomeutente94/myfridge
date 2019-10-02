@@ -1,6 +1,7 @@
 package com.example.robertotarullo.myfridge.watcher;
 
 import android.app.Activity;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -12,6 +13,7 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
 
     private EditText weightField, currentWeightField, currentPercentageField;
     private TextView piecesField, currentPiecesField;
+    private CheckBox openedCheckBox;
 
     public CurrentWeightSliderListener(Activity activity){
         this.weightField = activity.findViewById(R.id.weightField);
@@ -19,6 +21,7 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
         this.piecesField = activity.findViewById(R.id.piecesField);
         this.currentPiecesField = activity.findViewById(R.id.currentPiecesField);
         this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
+        this.openedCheckBox = activity.findViewById(R.id.openedCheckBox);
     }
 
     @Override
@@ -47,17 +50,16 @@ public class CurrentWeightSliderListener implements SeekBar.OnSeekBarChangeListe
             if(fromUser)
                 currentPercentageField.setText(String.valueOf(currentPercentage));
         } else {
-            seekBar.setProgress(1);
+            seekBar.setProgress(1); // TODO decimali?
         }
     }
 
     @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
+    public void onStartTrackingTouch(SeekBar seekBar) {}
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
+        if(seekBar.getProgress()<seekBar.getMax())
+            openedCheckBox.setChecked(true);
     }
 }

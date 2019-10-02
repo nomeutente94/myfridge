@@ -855,13 +855,14 @@ public class EditProduct extends AppCompatActivity {
 
     private void initializeOpenedCheckBox(boolean addListener) {
         if(openedCheckBox.isChecked()) {
-            currentWeightBlock.setVisibility(View.VISIBLE);
             openingDateBlock.setVisibility(View.VISIBLE);
-            currentWeightSlider.setVisibility(View.VISIBLE);
+            //currentWeightBlock.setVisibility(View.VISIBLE);
+
         } else {
-            currentWeightBlock.setVisibility(View.GONE);
             openingDateBlock.setVisibility(View.GONE);
-            currentWeightSlider.setVisibility(View.GONE);
+            //currentWeightBlock.setVisibility(View.GONE);
+            currentWeightSlider.setProgress(currentWeightSlider.getMax());
+            currentPercentageField.setText("100");
         }
 
         if(addListener)
@@ -874,7 +875,6 @@ public class EditProduct extends AppCompatActivity {
         if(packagedCheckBox.isChecked()){
             changeToExpiryDateButton.setVisibility(View.GONE);
             changeToExpiryDaysButton.setVisibility(View.GONE);
-            //noExpiryCheckbox.setVisibility(View.VISIBLE);
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
 
@@ -887,9 +887,9 @@ public class EditProduct extends AppCompatActivity {
                 openedStorageConditionBlock.setVisibility(View.VISIBLE);
             }
 
-            if(!openedCheckBox.isChecked() && action!=Action.SHOPPING)
-                currentWeightBlock.setVisibility(View.GONE);
-            else if(action!=Action.SHOPPING)
+            /*if(!openedCheckBox.isChecked() && action!=Action.SHOPPING)
+                currentWeightBlock.setVisibility(View.GONE);*/
+            if(action!=Action.SHOPPING && openedCheckBox.isChecked())
                 openingDateBlock.setVisibility(View.VISIBLE);
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax())
@@ -900,7 +900,6 @@ public class EditProduct extends AppCompatActivity {
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
             changeToExpiryDaysButton.setVisibility(View.VISIBLE);
-            //noExpiryCheckbox.setVisibility(View.GONE);
             storageConditionSpinnerLabel.setText("Modalità di conservazione");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
@@ -908,7 +907,7 @@ public class EditProduct extends AppCompatActivity {
             if(action!=Action.SHOPPING){
                 openedBlock.setVisibility(View.GONE);
                 openingDateBlock.setVisibility(View.GONE);
-                currentWeightBlock.setVisibility(View.VISIBLE);
+                //currentWeightBlock.setVisibility(View.VISIBLE);
             }
 
             openedStorageConditionBlock.setVisibility(View.GONE);
@@ -1091,6 +1090,18 @@ public class EditProduct extends AppCompatActivity {
         expiryDateField.setText(temp); // TODO controllare date illegali calcolate con expiryDays
     }
 
+    // TODO continuare implementazione
+    private void resetFormFields(){
+        packagedCheckBox.setChecked(false);
+        nameField.setText("");
+        brandField.setText("");
+        priceField.setText("");
+        pricePerKiloField.setText("");
+        weightField.setText("");
+        piecesField.setText("1");
+        expiryDaysAfterOpeningField.setText("");
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1105,15 +1116,8 @@ public class EditProduct extends AppCompatActivity {
                         // resetta tutti i campi che possono essere compilati (attributi non relativi allo stato)
                         // TODO necessario se si resetta anche dopo ?
                         // gli spinner non si toccano perchè prenderanno il valore di p
-                        packagedCheckBox.setChecked(false);
-                        nameField.setText("");
-                        brandField.setText("");
-                        priceField.setText("");
-                        pricePerKiloField.setText("");
-                        weightField.setText("");
-                        piecesField.setText("1");
-                        expiryDaysAfterOpeningField.setText("");
 
+                        resetFormFields();
                         fillFieldsFromProduct(p);
                     });
                 }).start();
