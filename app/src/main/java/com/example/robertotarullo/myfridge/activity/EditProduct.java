@@ -3,6 +3,7 @@ package com.example.robertotarullo.myfridge.activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.Menu;
@@ -985,10 +986,24 @@ public class EditProduct extends AppCompatActivity {
     private void enableNoExpiryCheckBoxBehaviour(boolean enable){
         expiryDateField.setEnabled(!enable);
         findViewById(R.id.expiryDateClearButton).setEnabled(!enable);
+        findViewById(R.id.expiryDateFieldLabel).setEnabled(!enable);
         expiryDaysAfterOpeningField.setEnabled(!enable);
         findViewById(R.id.expiryDaysAfterOpeningClearButton).setEnabled(!enable);
+        findViewById(R.id.expiryDaysAfterOpeningFieldLabel).setEnabled(!enable);
         changeToExpiryDateButton.setEnabled(!enable);
         changeToExpiryDaysButton.setEnabled(!enable);
+
+        if(enable) {
+            expiryDateField.setHint("Mai");
+            expiryDaysAfterOpeningField.setHint(" - ");
+            expiryDateField.setHintTextColor(Color.parseColor("#d8d8d8"));
+            expiryDaysAfterOpeningField.setHintTextColor(Color.parseColor("#d8d8d8"));
+        } else {
+            expiryDateField.setHint("Data non impostata");
+            expiryDaysAfterOpeningField.setHint("0");
+            expiryDateField.setHintTextColor(Color.parseColor("#a7a7a7"));
+            expiryDaysAfterOpeningField.setHintTextColor(Color.parseColor("#a7a7a7"));
+        }
     }
 
     private void initializeStorageSpinners() {
