@@ -18,20 +18,23 @@
             <Spinner
                 android:id="@+id/expiryDateDaySpinner"
                 android:tag="expiryDateDaySpinner"
-                android:dropDownWidth="70dp"
+                android:dropDownWidth="80dp"
                 android:layout_width="110dp"
+                android:paddingRight="10dp"
                 android:layout_height="wrap_content"/>
             <Spinner
                 android:id="@+id/expiryDateMonthSpinner"
                 android:tag="expiryDateMonthSpinner"
-                android:dropDownWidth="70dp"
+                android:dropDownWidth="80dp"
                 android:layout_width="110dp"
+                android:paddingRight="10dp"
                 android:layout_height="wrap_content"/>
             <Spinner
                 android:id="@+id/expiryDateYearSpinner"
                 android:tag="expiryDateYearSpinner"
-                android:dropDownWidth="70dp"
+                android:dropDownWidth="80dp"
                 android:layout_width="110dp"
+                android:paddingRight="10dp"
                 android:layout_height="wrap_content"/>
 
         </LinearLayout>
