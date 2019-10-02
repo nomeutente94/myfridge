@@ -35,7 +35,6 @@ import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.filter.NameBrandInputFilter;
 import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
 import com.example.robertotarullo.myfridge.watcher.CurrentWeightSliderListener;
-import com.example.robertotarullo.myfridge.watcher.DateWatcher;
 import com.example.robertotarullo.myfridge.watcher.PiecesWatcher;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
@@ -653,13 +652,7 @@ public class EditProduct extends AppCompatActivity {
         }
     }
 
-    private void insertProduct(){
-        // Esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
-        onWeightFocusLost();
-        onPriceFocusLost(priceField);
-        onPriceFocusLost(pricePerKiloField);
-
-        SingleProduct newProduct = createProductFromFields();
+    private void insertProduct(SingleProduct newProduct){
 
         new Thread(() -> {
             int insertCount = 0; // counter inserimenti
@@ -720,13 +713,15 @@ public class EditProduct extends AppCompatActivity {
             setFocusAndScrollToView(findViewById(R.id.nameBlock));
         } else {
             // Mostra warning in caso di date sospette
-            List<String> dateWarnings = DateUtils.getDateWarningsFromForm(this);
+            SingleProduct formProduct = createProductFromFields();
+
+            List<String> dateWarnings = DateUtils.getDateWarnings(formProduct);
             if(dateWarnings.size()>0){
 
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
-                            insertProduct();
+                            insertProduct(formProduct);
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             break;
@@ -748,7 +743,7 @@ public class EditProduct extends AppCompatActivity {
                         .setNegativeButton("Annulla", dialogClickListener) // TODO Specializzare in base al tipo di modifica
                         .show();
             } else
-                insertProduct();
+                insertProduct(formProduct);
         }
     }
 
@@ -799,6 +794,11 @@ public class EditProduct extends AppCompatActivity {
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields() {
+        // Esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
+        onWeightFocusLost();
+        onPriceFocusLost(priceField);
+        onPriceFocusLost(pricePerKiloField);
+
         SingleProduct p = new SingleProduct();
 
         p.setConsumed(consumedCheckBox.isChecked());

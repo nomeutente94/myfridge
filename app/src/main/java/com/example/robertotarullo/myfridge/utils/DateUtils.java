@@ -542,85 +542,56 @@ public abstract class DateUtils {
         }
     }
 
-    public static List<String> getDateWarningsFromForm(Activity activity){
+    public static List<String> getDateWarnings(SingleProduct p){
         List<String> errorMessages = new ArrayList<>();
 
-        if(!((CheckBox)activity.findViewById(R.id.noExpiryCheckbox)).isChecked()){
-            boolean opened = ((CheckBox)activity.findViewById(R.id.openedCheckBox)).isChecked();
-            boolean packaged = ((CheckBox)activity.findViewById(R.id.packagedCheckBox)).isChecked();
+        // TODO controllare da prodotto creare da createProductFromFields
 
-            Date purchaseDate = TextUtils.getDate(activity.findViewById(R.id.purchaseDateField));
-            Date expiryDate = TextUtils.getDate(activity.findViewById(R.id.expiryDateField));
-            Date packagingDate = TextUtils.getDate(activity.findViewById(R.id.packagingDateField));
-            Date consumingDate = TextUtils.getDate(activity.findViewById(R.id.consumptionDateField));
-            int expiryDays = TextUtils.getInt((EditText)activity.findViewById(R.id.expiryDaysAfterOpeningField));
+        if(p.getExpiryDate()!=null && !p.getExpiryDate().equals(getNoExpiryDate())){
 
-            // Prendi solo il campo mostrato dallo switch
-            if(!packaged){
-                if(!activity.findViewById(R.id.expiryDateField).isEnabled())
-                    expiryDate = null;
-                else if(!activity.findViewById(R.id.expiryDaysAfterOpeningField).isEnabled())
-                    expiryDays = 0;
+            boolean estimatedDate = false;  // TODO usare per mostrare all'utente un messaggio che faccia capire che la data di scadenza controllata è calcolata
+
+            if(p.getExpiringDaysAfterOpening()>0 && ((p.isPackaged() && p.isOpened() && p.getOpeningDate()!=null) || (!p.isPackaged() && (p.getPurchaseDate()!=null || p.getPackagingDate()!=null)))) {
+                estimatedDate = true;
+                if(p.isPackaged() && p.getExpiryDate()!=null && getActualExpiryDate(p).equals(p.getExpiryDate()))
+                    estimatedDate = false;
             }
-
-            Date openingDate = null;
-            if(opened || !packaged)
-                openingDate = TextUtils.getDate(activity.findViewById(R.id.openingDateField));
-
-            if(!packaged || opened){
-                Date estimatedExpiryDate;
-
-                if(packaged)
-                    estimatedExpiryDate = openingDate;
-                else {
-                    estimatedExpiryDate = purchaseDate;
-                    if(packagingDate!=null)
-                        estimatedExpiryDate = packagingDate;
-                }
-
-                expiryDate = getActualExpiryDate(estimatedExpiryDate, expiryDate, expiryDays);
-            }
-
-            boolean estimatedDate = false;
-            if(expiryDays>0 &&
-              ((packaged && opened) || (!packaged && (purchaseDate!=null || packagingDate!=null))))
-                estimatedDate = true; // TODO usare per mostrare all'utente un messaggio che faccia capire che la data di scadenza controllata è calcolata
 
             // purchaseDate >= expiryDate
-            if(purchaseDate!=null && expiryDate!=null){
-                if(purchaseDate.after(expiryDate))
+            if(p.getPurchaseDate()!=null && getActualExpiryDate(p)!=null){
+                if(p.getPurchaseDate().after(getActualExpiryDate(p)))
                     errorMessages.add("La data di acquisto è successiva alla data di scadenza");
-                else if(purchaseDate.equals(expiryDate))
+                else if(p.getPurchaseDate().equals(getActualExpiryDate(p)))
                     errorMessages.add("La data di acquisto è uguale alla data di scadenza");
             }
 
             // openingDate >= expiryDate
-            if(packaged && openingDate!=null && expiryDate!=null){
-                if(openingDate.after(expiryDate))
+            if(p.isPackaged() && p.getOpeningDate()!=null && getActualExpiryDate(p)!=null){
+                if(p.getOpeningDate().after(getActualExpiryDate(p)))
                     errorMessages.add("La data d'apertura è successiva alla data di scadenza");
-                else if(openingDate.equals(expiryDate))
+                else if(p.getOpeningDate().equals(getActualExpiryDate(p)))
                     errorMessages.add("La data d'apertura è uguale alla data di scadenza");
             }
 
             // packagingDate == expiryDate
-            if(packagingDate!=null && expiryDate!=null){
-                if(packagingDate.equals(expiryDate))
+            if(p.getPackagingDate()!=null && getActualExpiryDate(p)!=null){
+                if(p.getPackagingDate().equals(getActualExpiryDate(p)))
                     errorMessages.add("La data di produzione/lotto è uguale alla data di scadenza");
             }
 
             // consumingDate >= expiryDate
-            if(consumingDate!=null && expiryDate!=null){
-                if(consumingDate.after(expiryDate))
+            if(p.getConsumptionDate()!=null && getActualExpiryDate(p)!=null){
+                if(p.getConsumptionDate().after(getActualExpiryDate(p)))
                     errorMessages.add("La data di consumazione è successiva alla data di scadenza");
-                else if(consumingDate.equals(expiryDate))
+                else if(p.getConsumptionDate().equals(getActualExpiryDate(p)))
                     errorMessages.add("La data di consumazione è uguale alla data di scadenza");
             }
 
             // expiryDate <= now
-            if(expiryDate!=null){
-                if(expiryDate.equals(DateUtils.getCurrentDateWithoutTime()))
+            if(getActualExpiryDate(p)!=null){
+                if(getActualExpiryDate(p).equals(DateUtils.getCurrentDateWithoutTime()))
                     errorMessages.add("La data di scadenza è uguale alla data odierna");
-                else if(expiryDate.before(DateUtils.getCurrentDateWithoutTime()))
+                else if(getActualExpiryDate(p).before(DateUtils.getCurrentDateWithoutTime()))
                     errorMessages.add("La data di scadenza è precedente alla data odierna");
             }
 
