@@ -187,14 +187,14 @@ public class EditProduct extends AppCompatActivity {
         priceField.addTextChangedListener(new PriceWeightRelationWatcher(priceField.getTag().toString(), pricePerKiloField, weightField, pricePerKiloClearButton, weightClearButton, this));
         pricePerKiloField.addTextChangedListener(new PriceWeightRelationWatcher(pricePerKiloField.getTag().toString(), priceField, weightField, priceClearButton, weightClearButton, this));
         weightField.addTextChangedListener(new PriceWeightRelationWatcher(weightField.getTag().toString(), priceField, pricePerKiloField, priceClearButton, pricePerKiloClearButton, this));
-        purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField, this));
-        openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
-        expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
-        packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
+        //purchaseDateField.addTextChangedListener(new DateWatcher(purchaseDateField, this));
+        //openingDateField.addTextChangedListener(new DateWatcher(openingDateField, this));
+        //expiryDateField.addTextChangedListener(new DateWatcher(expiryDateField, this));
+        //packagingDateField.addTextChangedListener(new DateWatcher(packagingDateField, this));
         currentWeightSlider.setOnSeekBarChangeListener(new CurrentWeightSliderListener(this));
         quantityField.addTextChangedListener(new QuantityWatcher(addQuantityButton, subtractQuantityButton));
         piecesField.addTextChangedListener(new PiecesWatcher(this));
-        // currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
+        //currentPiecesField.addTextChangedListener(new CurrentPiecesWatcher(piecesField, currentPiecesBlock));
 
         // InputFilters
         nameField.setFilters(new InputFilter[]{new NameBrandInputFilter()});
@@ -209,7 +209,7 @@ public class EditProduct extends AppCompatActivity {
         weightField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onWeightFocusLost(); });
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
-        expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
+        //expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
 
         switch (action) {
             case ADD_NO_CONSUMPTION:
@@ -652,70 +652,102 @@ public class EditProduct extends AppCompatActivity {
         }
     }
 
-    // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
-    public void onConfirmButtonClick(View view) {
-        // esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
+    private void insertProduct(){
+        // Esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
         onWeightFocusLost();
         onPriceFocusLost(priceField);
         onPriceFocusLost(pricePerKiloField);
-        // TODO perdita focus giorni rimanenti ?
 
+        SingleProduct newProduct = createProductFromFields();
+
+        new Thread(() -> {
+            int insertCount = 0; // counter inserimenti
+            Intent resultIntent = new Intent();
+
+            switch (action) {
+                case UPDATE:  // Se si tratta di un aggiornamento
+                    newProduct.setId(productToModifyId);
+                    if (productDatabase.productDao().update(newProduct) > 0) {
+                        insertCount = 1;
+                        String msg = "Prodotti aggiornati: " + insertCount + "\nProdotti non aggiornati: " + (1 - insertCount); // TODO adattare a update
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                    }
+                    break;
+                case EDIT:  // Se si tratta di una modifica
+                    newProduct.setId(productToModifyId);
+                    if (productDatabase.productDao().update(newProduct) > 0) {
+                        insertCount = 1;
+                        String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (1 - insertCount); // TODO adattare a edit
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                    }
+                    break;
+                case ADD:  // Se si tratta di un'aggiunta
+                    List<SingleProduct> productsToAdd = new ArrayList<>();
+                    for (int i = 0; i < TextUtils.getInt(quantityField); i++)
+                        productsToAdd.add(newProduct);
+                    insertCount = addProducts(productsToAdd);
+                    break;
+                case SHOPPING:  // Se si tratta della modalità spesa
+                    if (getIntent().getSerializableExtra("productToEdit") != null) {
+                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
+                        resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
+                        resultIntent.putExtra("editedProduct", newProduct);
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    } else {
+                        resultIntent.putExtra("newProduct", newProduct);
+                        resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }
+                    break;
+            }
+
+            if(insertCount>0){
+                resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
+                setResult(RESULT_OK, resultIntent);
+                finish();
+            }
+        }).start();
+    }
+
+    // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
+    public void onConfirmButtonClick(View view) {
         // Il campo nome è obbligatorio
         if (TextUtils.isEmpty(nameField)) {
             Toast.makeText(getApplicationContext(), "Il campo nome non può essere vuoto", Toast.LENGTH_LONG).show();
             setFocusAndScrollToView(findViewById(R.id.nameBlock));
         } else {
-            SingleProduct newProduct = createProductFromFields();
+            // Mostra warning in caso di date sospette
+            List<String> dateWarnings = DateUtils.getDateWarningsFromForm(this);
+            if(dateWarnings.size()>0){
 
-            new Thread(() -> {
-                int insertCount = 0; // counter inserimenti
-                Intent resultIntent = new Intent();
+                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                    switch (which){
+                        case DialogInterface.BUTTON_POSITIVE:
+                            insertProduct();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
 
-                switch (action) {
-                    case UPDATE:  // Se si tratta di un aggiornamento
-                        newProduct.setId(productToModifyId);
-                        if (productDatabase.productDao().update(newProduct) > 0) {
-                            insertCount = 1;
-                            String msg = "Prodotti aggiornati: " + insertCount + "\nProdotti non aggiornati: " + (1 - insertCount); // TODO adattare a update
-                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
-                        }
-                        break;
-                    case EDIT:  // Se si tratta di una modifica
-                        newProduct.setId(productToModifyId);
-                        if (productDatabase.productDao().update(newProduct) > 0) {
-                            insertCount = 1;
-                            String msg = "Prodotti modificati: " + insertCount + "\nProdotti non modificati: " + (1 - insertCount); // TODO adattare a edit
-                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
-                        }
-                        break;
-                    case ADD:  // Se si tratta di un'aggiunta
-                        List<SingleProduct> productsToAdd = new ArrayList<>();
-                        for (int i = 0; i < TextUtils.getInt(quantityField); i++)
-                            productsToAdd.add(newProduct);
-                        insertCount = addProducts(productsToAdd);
-                        break;
-                    case SHOPPING:  // Se si tratta della modalità spesa
-                        if (getIntent().getSerializableExtra("productToEdit") != null) {
-                            resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
-                            resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
-                            resultIntent.putExtra("editedProduct", newProduct);
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                        } else {
-                            resultIntent.putExtra("newProduct", newProduct);
-                            resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                        }
-                        break;
+                StringBuilder msg = new StringBuilder("Sono state rilevate una o più incoerenze sui valori inseriti nei campi:\n\n");
+                for(int i=0; i<dateWarnings.size(); i++){
+                    msg.append("- ");
+                    msg.append(dateWarnings.get(i));
+                    msg.append(";\n");
                 }
+                msg.append("\nSei sicuro di voler continuare comunque?"); // TODO Specializzare in base al tipo di modifica
 
-                if(insertCount>0){
-                    resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
-                }
-            }).start();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg.toString())
+                        .setTitle("Incoerenze rilevate") // TODO Specializzare in base al tipo di modifica
+                        .setPositiveButton("Continua", dialogClickListener) // TODO Specializzare in base al tipo di modifica
+                        .setNegativeButton("Annulla", dialogClickListener) // TODO Specializzare in base al tipo di modifica
+                        .show();
+            } else
+                insertProduct();
         }
     }
 
@@ -933,10 +965,10 @@ public class EditProduct extends AppCompatActivity {
 
         if(addListener)
             noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox(false));
-        else {
+        /*else {
             if(!noExpiryCheckbox.isChecked())
                 validateExpiryDate();
-        }
+        }*/
     }
 
     private void initializeConsumedCheckBox(boolean addListener){
@@ -1071,7 +1103,7 @@ public class EditProduct extends AppCompatActivity {
         else if(view==changeToExpiryDaysButton)
             expiryDateMode = false;
         changeToExpiringDateMode(expiryDateBlock.getVisibility()==View.GONE && expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE);
-        validateExpiryDate();
+        //validateExpiryDate();
     }
 
     private void changeToExpiringDateMode(boolean expiringDateMode){
@@ -1088,11 +1120,11 @@ public class EditProduct extends AppCompatActivity {
 
     // Trigger manuale dell'onchange per mostrare eventuali warning sulla scadenza
     // Considera sia expiryDays che expiryDate
-    private void validateExpiryDate(){
+    /*private void validateExpiryDate(){
         String temp = expiryDateField.getText().toString();
         expiryDateField.setTag(R.id.expirySwitchControl, DateUtils.EXPIRY_SWITCH_CONTROL_TAG);
         expiryDateField.setText(temp); // TODO controllare date illegali calcolate con expiryDays
-    }
+    }*/
 
     // TODO continuare implementazione
     private void resetFormFields(){

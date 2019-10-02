@@ -124,8 +124,8 @@ public class DateWatcher implements TextWatcher {
         msg = new StringBuilder("La data di produzione/lotto selezionata è");
         if(packagingDate!=null){
             if(expiryDate!=null){
-            if(packagingDate.equals(expiryDate))                                    // packagingDate == expiryDate
-                errorMessages.add("uguale alla data di scadenza");
+                if(packagingDate.equals(expiryDate))                                // packagingDate == expiryDate
+                    errorMessages.add("uguale alla data di scadenza");
             }
 
             if(isExpiryDateBlockHidden)
@@ -136,12 +136,12 @@ public class DateWatcher implements TextWatcher {
     private void checkConsumingDate(){
         msg = new StringBuilder("La data di consumazione selezionata è");
         if(consumingDate!=null){
-        if(expiryDate!=null){                                                       // consumingDate >= expiryDate
-            if(consumingDate.after(expiryDate))
-                errorMessages.add("successiva alla data di scadenza");
-            else if(consumingDate.equals(expiryDate))
-                errorMessages.add("uguale alla data di scadenza");
-        }
+            if(expiryDate!=null){                                                   // consumingDate >= expiryDate
+                if(consumingDate.after(expiryDate))
+                    errorMessages.add("successiva alla data di scadenza");
+                else if(consumingDate.equals(expiryDate))
+                    errorMessages.add("uguale alla data di scadenza");
+            }
         }
     }
 

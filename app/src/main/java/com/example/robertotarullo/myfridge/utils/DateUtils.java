@@ -15,6 +15,7 @@ import com.example.robertotarullo.myfridge.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -517,21 +518,78 @@ public abstract class DateUtils {
             Date minDate = getDate(new GregorianCalendar(MIN_YEAR, MIN_MONTH-1, MIN_DAY));
 
             if(dateField==consumingDateField){
-                minDate = getMax(packagingDate, minDate);       // consumingDate >= packagingDate
-                minDate = getMax(openingDate, minDate);         // consumingDate >= openingDate
-                minDate = getMax(purchaseDate, minDate);        // consumingDate >= purchaseDate
+                minDate = getMax(packagingDate, minDate);                   // consumingDate >= packagingDate
+                minDate = getMax(openingDate, minDate);                     // consumingDate >= openingDate
+                minDate = getMax(purchaseDate, minDate);                    // consumingDate >= purchaseDate
             } else if(dateField==expiryDateField){
-                minDate = getMax(packagingDate, minDate);       // expiryDate >= packagingDate
+                minDate = getMax(packagingDate, minDate);                   // expiryDate >= packagingDate
             } else if(dateField==packagingDateField){
                 // nessun vincolo
             } else if(dateField==openingDateField){
-                minDate = getMax(packagingDate, minDate);       // openingDate >= packagingDate
-                minDate = getMax(purchaseDate, minDate);        // openingDate >= purchaseDate
+                minDate = getMax(packagingDate, minDate);                   // openingDate >= packagingDate
+                minDate = getMax(purchaseDate, minDate);                    // openingDate >= purchaseDate
             } else if(dateField==purchaseDateField){
-                minDate = getMax(packagingDate, minDate);       // purchaseDate >= packagingDate
+                minDate = getMax(packagingDate, minDate);                   // purchaseDate >= packagingDate
             }
 
             return minDate;
         }
+    }
+
+    public static List<String> getDateWarningsFromForm(Activity editProductActivity){
+        List<String> errorMessages = new ArrayList<>();
+
+        Date purchaseDate = TextUtils.getDate(editProductActivity.findViewById(R.id.purchaseDateField));
+        Date expiryDate = TextUtils.getDate(editProductActivity.findViewById(R.id.expiryDateField));
+        Date openingDate = TextUtils.getDate(editProductActivity.findViewById(R.id.openingDateField));
+        Date packagingDate = TextUtils.getDate(editProductActivity.findViewById(R.id.packagingDateField));
+        Date consumingDate = TextUtils.getDate(editProductActivity.findViewById(R.id.consumptionDateField));
+        int expiryDays = TextUtils.getInt((EditText)editProductActivity.findViewById(R.id.expiryDaysAfterOpeningField));
+
+        // TODO fare controlli da prodotto generato da createProductFromFields()?
+
+        // TODO non controllare campi oscurati
+
+        // TODO controlla le 5 condizioni sottostanti in caso di data di scadenza effettiva calcolata da (expiryDays + packaging/opening/purchase)
+
+        // purchaseDate >= expiryDate
+        if(purchaseDate!=null && expiryDate!=null){
+            if(purchaseDate.after(expiryDate))
+                errorMessages.add("La data di acquisto è successiva alla data di scadenza");
+            else if(purchaseDate.equals(expiryDate))
+                errorMessages.add("La data di acquisto è uguale alla data di scadenza");
+        }
+
+        // openingDate >= expiryDate
+        if(openingDate!=null && expiryDate!=null){
+            if(openingDate.after(expiryDate))
+                errorMessages.add("La data d'apertura è successiva alla data di scadenza");
+            else if(openingDate.equals(expiryDate))
+                errorMessages.add("La data d'apertura è uguale alla data di scadenza");
+        }
+
+        // packagingDate == expiryDate
+        if(packagingDate!=null && expiryDate!=null){
+            if(packagingDate.equals(expiryDate))
+                errorMessages.add("La data di produzione/lotto è uguale alla data di scadenza");
+        }
+
+        // consumingDate >= expiryDate
+        if(consumingDate!=null && expiryDate!=null){
+            if(consumingDate.after(expiryDate))
+                errorMessages.add("La data di consumazione è successiva alla data di scadenza");
+            else if(consumingDate.equals(expiryDate))
+                errorMessages.add("La data di consumazione è uguale alla data di scadenza");
+        }
+
+        // expiryDate <= now
+        if(expiryDate!=null){
+            if(expiryDate.equals(DateUtils.getCurrentDateWithoutTime()))
+                errorMessages.add("La data di scadenza è uguale alla data odierna");
+            else if(expiryDate.before(DateUtils.getCurrentDateWithoutTime()))
+                errorMessages.add("La data di scadenza è precedente alla data odierna");
+        }
+
+        return errorMessages;
     }
 }
