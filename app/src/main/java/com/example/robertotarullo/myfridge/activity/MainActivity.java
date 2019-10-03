@@ -41,7 +41,6 @@ import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
-import com.example.robertotarullo.myfridge.utils.PriceUtils;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
@@ -771,6 +770,7 @@ public class MainActivity extends AppCompatActivity {
     public void addProduct(View view) {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", EditProduct.Action.ADD);
+        intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
         intent.putExtra("filter", currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
@@ -778,7 +778,8 @@ public class MainActivity extends AppCompatActivity {
     // Avvia l'activity EditProduct per l'aggiunta (new)
     public void addProductWithoutConsumption(View view) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", EditProduct.Action.ADD_NO_CONSUMPTION);
+        intent.putExtra("action", EditProduct.Action.ADD);
+        intent.putExtra("actionType", EditProduct.ActionType.NO_CONSUMPTION);
         intent.putExtra("filter", currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
@@ -795,13 +796,15 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("id", p.getId());
         //intent.putExtra("filter", currentFilter);
         intent.putExtra("action", EditProduct.Action.EDIT);
+        intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 
     public void updateProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
-        intent.putExtra("action", EditProduct.Action.UPDATE);
+        intent.putExtra("action", EditProduct.Action.EDIT);
+        intent.putExtra("actionType", EditProduct.ActionType.UPDATE);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 

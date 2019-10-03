@@ -79,7 +79,8 @@ public class Cart extends AppCompatActivity {
     public void editSingleProduct(int position){
         // TODO modifica prodotto con EditProduct con i campi di action "shopping" e compilando i campi col prodotto cliccato
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", EditProduct.Action.SHOPPING);
+        intent.putExtra("action", EditProduct.Action.EDIT);
+        intent.putExtra("actionType", EditProduct.ActionType.SHOPPING);
         intent.putExtra("position", position);
         intent.putExtra("quantity", quantities.get(position));
         intent.putExtra("productToEdit", (SingleProduct)listView.getItemAtPosition(position));
@@ -126,7 +127,8 @@ public class Cart extends AppCompatActivity {
                         // TODO aggiungere qui i prodotti (o in una classe esterna) invece di delegare il compito ad EditProduct?
                         Intent intent = new Intent(this, EditProduct.class);
                         intent.putExtra("cartProducts", cartProducts);
-                        intent.putExtra("action", EditProduct.Action.SHOPPING);
+                        intent.putExtra("action", EditProduct.Action.INSERT);
+                        intent.putExtra("actiontType", EditProduct.ActionType.SHOPPING);
                         startActivityForResult(intent, 3);
 
                         break;
@@ -149,7 +151,8 @@ public class Cart extends AppCompatActivity {
 
     public void addProduct(View view){
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", EditProduct.Action.SHOPPING);
+        intent.putExtra("action", EditProduct.Action.ADD);
+        intent.putExtra("actionType", EditProduct.ActionType.SHOPPING);
         intent.putExtra("pointOfPurchaseId", getIntent().getLongExtra("pointOfPurchaseId",0));
         intent.putExtra("suggestions", listToDisplay);
         startActivityForResult(intent, 1);

@@ -543,10 +543,10 @@ public abstract class DateUtils {
         }
     }
 
-    public static List<String> getDateWarnings(SingleProduct p, EditProduct.Action action){
+    public static List<String> getDateWarnings(SingleProduct p, EditProduct.ActionType actionType){
         List<String> errorMessages = new ArrayList<>();
 
-        if(action != EditProduct.Action.UPDATE){
+        if(actionType != EditProduct.ActionType.UPDATE){
             if(p.getExpiryDate()==null || !p.getExpiryDate().equals(getNoExpiryDate())){
 
                 Date actualExpiryDate = null;

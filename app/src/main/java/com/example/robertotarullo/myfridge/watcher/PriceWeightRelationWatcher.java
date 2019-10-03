@@ -36,7 +36,6 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         this.currentWeightFieldLabel = activity.findViewById(R.id.currentWeightFieldLabel);
         this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
         this.currentPercentageFieldLabel = activity.findViewById(R.id.currentPercentageFieldLabel);
-        //this.currentWeightSliderLabel = activity.findViewById(R.id.currentWeightSliderLabel);
         this.piecesField = activity.findViewById(R.id.piecesField);
     }
 
