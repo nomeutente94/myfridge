@@ -707,6 +707,7 @@ public class EditProduct extends AppCompatActivity {
 
     // Metodo chiamato alla pressione del tasto di conferma, che può essere l'aggiunta o la modifica del prodotto
     public void onConfirmButtonClick(View view) {
+
         // Il campo nome è obbligatorio
         if (TextUtils.isEmpty(nameField)) {
             Toast.makeText(getApplicationContext(), "Il campo nome non può essere vuoto", Toast.LENGTH_LONG).show();
@@ -715,7 +716,7 @@ public class EditProduct extends AppCompatActivity {
             // Mostra warning in caso di date sospette
             SingleProduct formProduct = createProductFromFields();
 
-            List<String> dateWarnings = DateUtils.getDateWarnings(formProduct);
+            List<String> dateWarnings = DateUtils.getDateWarnings(formProduct, action);
             if(dateWarnings.size()>0){
 
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
