@@ -29,8 +29,11 @@ public abstract class TextUtils {
 
     // Prova a ritornare il valore del testo nel campo come int
     public static int getInt(EditText field){
-        try{
-            return Integer.valueOf(field.getText().toString());
+        try {
+            if(field.getText().toString().equals("0"))
+                return -1;
+            else
+                return Integer.valueOf(field.getText().toString());
         } catch (NumberFormatException e){
             return 0;
         }

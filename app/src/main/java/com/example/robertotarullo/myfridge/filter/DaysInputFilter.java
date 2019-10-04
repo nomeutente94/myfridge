@@ -13,12 +13,12 @@ public class DaysInputFilter implements InputFilter {
     // including an empty string if appropriate, or null to accept the original replacement
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
 
-        // Impedisci più di 4 cifre intere
+        // Numero limitato di cifre intere
         if(dest.length() >= MAX_INT_DIGITS)
             return "";
 
         // Impedisci lo zero al primo posto
-        if (source.equals("0") && dstart==0) {
+        if (source.equals("0") && dest.toString().equals("0")) {
             return "";
         }
 

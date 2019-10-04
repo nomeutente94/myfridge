@@ -590,6 +590,8 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.getExpiringDaysAfterOpening()>0)
             TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, String.valueOf(p.getExpiringDaysAfterOpening()));
+        else if(p.getExpiringDaysAfterOpening()==-1)
+            TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "0");
         else
             TextUtils.editFieldNotFromUser(expiryDaysAfterOpeningField, "");
 
@@ -843,7 +845,6 @@ public class EditProduct extends AppCompatActivity {
 
         if(expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled() && !noExpiryCheckbox.isChecked())
             p.setExpiringDaysAfterOpening(TextUtils.getInt(expiryDaysAfterOpeningField));
-
 
         // campi che dipendono dal tipo e dall'apertura del prodotto confezionato
         if(packagedCheckBox.isChecked()){

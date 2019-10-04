@@ -57,8 +57,17 @@ public abstract class DateUtils {
                 productToCheck = ((Pack)p).getProducts().get(0); // TODO si dà per scontato che tutti i prodotti di un gruppo abbiano la stessa data di scadenza
 
             // prodotto confezionato aperto oppure prodotto fresco
-            if(!productToCheck.isPackaged() || productToCheck.isOpened())
-                return getActualExpiryDate(productToCheck.getOpeningDate(), productToCheck.getExpiryDate(), productToCheck.getExpiringDaysAfterOpening());
+            if(!productToCheck.isPackaged() || productToCheck.isOpened()) {
+
+                int expiryDays = productToCheck.getExpiringDaysAfterOpening();
+
+                if(productToCheck.getExpiringDaysAfterOpening()==0)
+                    expiryDays = -1;
+                else if(productToCheck.getExpiringDaysAfterOpening()==-1)
+                    expiryDays = 0;
+
+                return getActualExpiryDate(productToCheck.getOpeningDate(), productToCheck.getExpiryDate(), expiryDays);
+            }
 
             return productToCheck.getExpiryDate();
         }
@@ -66,10 +75,13 @@ public abstract class DateUtils {
     }
 
     public static Date getActualExpiryDate(Date estimatedExpiryDate, Date expiryDate, int expiryDays){
-        if(estimatedExpiryDate!=null && expiryDays>0) { // se data e giorni sono specificati
-            Date resultDate = getDateByAddingDays(estimatedExpiryDate, expiryDays);
-            if(expiryDate==null || resultDate.before(expiryDate))
-                return resultDate;
+        if(estimatedExpiryDate!=null){
+            if(expiryDays>0) { // se data e giorni sono specificati
+                Date resultDate = getDateByAddingDays(estimatedExpiryDate, expiryDays);
+                if(expiryDate==null || resultDate.before(expiryDate))
+                    return resultDate;
+            } else if(expiryDays==0)
+                return estimatedExpiryDate;
         }
         return expiryDate;
     }
@@ -298,11 +310,15 @@ public abstract class DateUtils {
 
     // aggiunge giorni ad una data e la ritorna
     public static Date getDateByAddingDays(Date date, int days){
-        if(date!=null && days>0){
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(date);
-            calendar.add(Calendar.DATE, days);
-            return calendar.getTime();
+        if(date!=null){
+            if(days>0){
+                Calendar calendar = new GregorianCalendar();
+                calendar.setTime(date);
+                calendar.add(Calendar.DATE, days);
+                return calendar.getTime();
+            } else if(days==0) {
+                return date;
+            }
         }
         return null;
     }
@@ -491,10 +507,8 @@ public abstract class DateUtils {
 
         // TODO codice ripetuto in DateWatcher
         if(context.findViewById(R.id.expiryDateBlock).getVisibility() == View.VISIBLE && !((CheckBox)context.findViewById(R.id.packagedCheckBox)).isChecked()) { // se prodotto fresco con data di scadenza visibile
-            //isExpiryDateBlockHidden = false;
             expiryDate = TextUtils.getDate(expiryDateField);
         } else {
-            //isExpiryDateBlockHidden = true;
             expiryDate = DateUtils.getDateByAddingDays(packagingDate, TextUtils.getInt((EditText) context.findViewById(R.id.expiryDaysAfterOpeningField)));
         }
 
@@ -594,7 +608,7 @@ public abstract class DateUtils {
                 }
 
 
-                if(p.isPackaged() && p.getOpeningDate()!=null){
+                if(p.isPackaged() && p.isOpened() && p.getOpeningDate()!=null){
 
                     // openingDate >= expiryDate
                     if(p.getExpiryDate()!=null){
