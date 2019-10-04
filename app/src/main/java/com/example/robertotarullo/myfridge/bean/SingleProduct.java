@@ -343,17 +343,13 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile in modalità PICK
     public boolean pickEquals(SingleProduct singleProductObj){
         if(singleProductObj!=null){
-            boolean piecesCondition = singleProductObj.getPieces() == pieces;
-            /*if(!packaged)
-                piecesCondition = true;*/
-
             return  singleProductObj.isPackaged() == packaged &&
                     Objects.equals(singleProductObj.getName(), name) &&
                     Objects.equals(singleProductObj.getBrand(), brand) &&
                     singleProductObj.getPrice() == price &&
                     singleProductObj.getPricePerKilo() == pricePerKilo &&
                     singleProductObj.getWeight() == weight &&
-                    piecesCondition && // due prodotti freschi uguali possono avere pezzi variabili
+                    singleProductObj.getPieces() == pieces && // due prodotti freschi uguali possono avere pezzi variabili
                     singleProductObj.getExpiringDaysAfterOpening() == expiringDaysAfterOpening &&
                     singleProductObj.getStorageCondition() == storageCondition &&
                     //singleProductObj.getPointOfPurchaseId() == pointOfPurchaseId
@@ -394,6 +390,7 @@ public class SingleProduct implements Product, Serializable {
 
     @NonNull
     @Override
+    // TODO mostrare 0 come unset e -1 come 0
     public String toString() {
         String singleProductAsString = "[";
         singleProductAsString += "id: " + id + ", ";
