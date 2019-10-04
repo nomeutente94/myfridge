@@ -7,7 +7,7 @@ import androidx.room.TypeConverters;
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 
-@Database(entities = {SingleProduct.class, PointOfPurchase.class}, version = 1)
+@Database(entities = {SingleProduct.class, PointOfPurchase.class}, version = 2)
 @TypeConverters({DateConverter.class})
 public abstract class ProductDatabase extends RoomDatabase {
     public abstract SingleProductDao productDao();

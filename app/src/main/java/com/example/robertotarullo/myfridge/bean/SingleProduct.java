@@ -50,7 +50,7 @@ public class SingleProduct implements Product, Serializable {
     private float currentWeight;
 
     // Indica la percentuale generale attuale rimanente del prodotto (default 100)
-    private int percentageQuantity;
+    private float percentageQuantity;
 
     // Indica il numero totale di pezzi, 1 se non ve n'è più di uno, 0 se non specificato
     private int pieces;
@@ -76,7 +76,7 @@ public class SingleProduct implements Product, Serializable {
     // Indica l'id del punto di acquisto
     private long pointOfPurchaseId;
 
-    // Indica se il prodotto è stato esaurito o meno, diverso da percentageQuantity=0
+    // Indica se il prodotto è stato esaurito o meno
     private boolean consumed;
 
     // Data di scadenza indicata sulla confezione del prodotto
@@ -201,11 +201,11 @@ public class SingleProduct implements Product, Serializable {
         this.currentPieces = currentPieces;
     }
 
-    public int getPercentageQuantity() {
+    public float getPercentageQuantity() {
         return percentageQuantity;
     }
 
-    public void setPercentageQuantity(int percentageQuantity) {
+    public void setPercentageQuantity(float percentageQuantity) {
         this.percentageQuantity = percentageQuantity;
     }
 

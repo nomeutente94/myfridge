@@ -643,7 +643,7 @@ public class EditProduct extends AppCompatActivity {
         if ((p.getPieces()==1 && p.getWeight()==0)){
             currentWeightSlider.setTag("percentage");
             currentWeightSlider.setMax(100);
-            currentWeightSlider.setProgress(p.getPercentageQuantity());
+            currentWeightSlider.setProgress((int) Math.ceil(p.getPercentageQuantity()));
         } else {
             if (p.getPieces()>1) {
                 currentWeightSlider.setTag("pieces");
@@ -880,7 +880,7 @@ public class EditProduct extends AppCompatActivity {
 
         // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
         if(p.isOpened()){
-            p.setPercentageQuantity((int) Math.ceil(TextUtils.getFloat(currentPercentageField))); // TODO p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField)); SOSTITUIRE LA RIGA SOPRA CON QUESTA DOPO AVER CAMBIATO NEL BEAN IL TIPO DI PERCENTAGEQUANTITY A FLOAT
+            p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField));
             p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
             p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
         } else { // prodotto confezionato chiuso
