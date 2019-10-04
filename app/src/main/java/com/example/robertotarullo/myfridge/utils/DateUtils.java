@@ -628,7 +628,7 @@ public abstract class DateUtils {
                 if(actualExpiryDate!=null){
                     if(actualExpiryDate.equals(DateUtils.getCurrentDateWithoutTime()))
                         errorMessages.add("La data di scadenza (calcolata) è uguale alla data odierna");
-                    else if(p.getExpiryDate().before(DateUtils.getCurrentDateWithoutTime()))
+                    else if(actualExpiryDate.before(DateUtils.getCurrentDateWithoutTime()))
                         errorMessages.add("La data di scadenza (calcolata) è precedente alla data odierna");
                 }
             }

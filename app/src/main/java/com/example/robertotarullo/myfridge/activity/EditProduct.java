@@ -213,18 +213,21 @@ public class EditProduct extends AppCompatActivity {
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
         //expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
 
+        System.out.println(action);
+        System.out.println(actionType);
+
         switch (action) {
             case ADD:
-                if(actionType == ActionType.NO_CONSUMPTION)
-                    hideConsumptionFields();
-                else if(actionType == ActionType.SHOPPING)
-                    hideNonShoppingFields();
-
                 new Thread(() -> {
                     initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                 }).start();
 
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
+
+                if(actionType == ActionType.NO_CONSUMPTION)
+                    hideConsumptionFields();
+                else if(actionType == ActionType.SHOPPING)
+                    hideNonShoppingFields();
 
                 findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentPiecesField.setVisibility(View.GONE);
@@ -267,6 +270,7 @@ public class EditProduct extends AppCompatActivity {
                         break;
                     case SHOPPING: // Modifica di un prodotto nel carrello
                         initializeFormLabels("Modifica prodotto", "Salva");
+                        hideNonShoppingFields();
                         quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
                         new Thread(() -> {
                             initializePointsOfPurchaseSpinner();
@@ -275,9 +279,6 @@ public class EditProduct extends AppCompatActivity {
                                 setCurrentFormToInitial();
                             });
                         }).start();
-
-                        hideNonShoppingFields();
-                        setCurrentFormToInitial();
                         break;
                     default: // modifica completa
                         initializeFormLabels("Modifica prodotto", "Salva");
@@ -297,9 +298,10 @@ public class EditProduct extends AppCompatActivity {
                         }).start();
                         break;
                 }
+                break;
             case INSERT:
                 // Inserimento dei prodotti dal carrello al database
-                if (actionType == ActionType.SHOPPING && action == Action.INSERT) {
+                if (actionType == ActionType.SHOPPING) {
                     new Thread(() -> {
                         if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts() e modificare di conseguenza onconfirmbuttonclick
                             Intent resultIntent = new Intent();
@@ -473,9 +475,6 @@ public class EditProduct extends AppCompatActivity {
     // Mostra avviso nel caso di campi che modificano il prodotto
     @Override
     public void onBackPressed() {
-        System.out.println(startingForm.toString());
-        System.out.println(getCurrentForm().toString());
-
         if(startingForm.equals(getCurrentForm()))
             super.onBackPressed();
         else {

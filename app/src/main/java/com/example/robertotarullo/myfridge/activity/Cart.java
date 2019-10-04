@@ -128,7 +128,7 @@ public class Cart extends AppCompatActivity {
                         Intent intent = new Intent(this, EditProduct.class);
                         intent.putExtra("cartProducts", cartProducts);
                         intent.putExtra("action", EditProduct.Action.INSERT);
-                        intent.putExtra("actiontType", EditProduct.ActionType.SHOPPING);
+                        intent.putExtra("actionType", EditProduct.ActionType.SHOPPING);
                         startActivityForResult(intent, 3);
 
                         break;
@@ -176,7 +176,7 @@ public class Cart extends AppCompatActivity {
             quantities.add(occurences);
         }
 
-        productsListAdapter = new CartListAdapter(this, R.layout.list_element, listToDisplay, quantities);
+        productsListAdapter = new CartListAdapter(this, R.layout.list_cart_element, listToDisplay, quantities);
         listView.setAdapter(productsListAdapter);
 
         float total = 0;
