@@ -543,7 +543,7 @@ public abstract class DateUtils {
         }
     }
 
-    public static List<String> getDateWarnings(SingleProduct p, EditProduct.ActionType actionType){
+    public static List<String> getDateWarnings(SingleProduct p, EditProduct.Action action, EditProduct.ActionType actionType){
         List<String> errorMessages = new ArrayList<>();
 
         if(actionType != EditProduct.ActionType.UPDATE){
@@ -556,6 +556,8 @@ public abstract class DateUtils {
                     if(p.isPackaged() && p.getExpiryDate()!=null && actualExpiryDate.equals(p.getExpiryDate()))
                         actualExpiryDate = null;
                 }
+
+                // TODO Scegliere appropriatamente quali controlli effettuare in base a action e actionType
 
                 if(p.getPackagingDate()!=null){
 
@@ -612,8 +614,7 @@ public abstract class DateUtils {
 
                 }
 
-                // Controllare solo in caso di aggiunta
-                //TODO if(action==EditProduct.Action.ADD || action==EditProduct.Action.ADD_NO_CONSUMPTION || action==EditProduct.Action.SHOPPING){ // TODO escludere modifica shopping
+                //TODO if(action==EditProduct.Action.ADD && actionType!=EditProduct.ActionType.SHOPPING){ // Controllare solo in caso di aggiunta tranne che per aggiunta shopping
 
                 // expiryDate <= now
                 if(p.getExpiryDate()!=null){

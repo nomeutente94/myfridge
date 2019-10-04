@@ -723,7 +723,7 @@ public class EditProduct extends AppCompatActivity {
             // Mostra warning in caso di date sospette
             SingleProduct formProduct = createProductFromFields();
 
-            List<String> dateWarnings = DateUtils.getDateWarnings(formProduct, actionType);
+            List<String> dateWarnings = DateUtils.getDateWarnings(formProduct, action, actionType);
             if(dateWarnings.size()>0){
 
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
