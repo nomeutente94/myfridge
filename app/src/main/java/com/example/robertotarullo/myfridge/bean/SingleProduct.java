@@ -326,8 +326,8 @@ public class SingleProduct implements Product, Serializable {
                     && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()
                     && Objects.equals(singleProduct.getName(), name)
                     && Objects.equals(singleProduct.getBrand(), brand)
-                    && singleProduct.getWeight() == price
-                    && singleProduct.getWeight() == pricePerKilo
+                    && singleProduct.getPrice() == price
+                    && singleProduct.getPricePerKilo() == pricePerKilo
                     && singleProduct.getWeight() == weight
                     && singleProduct.getPieces() == pieces
                     && singleProduct.getStorageCondition() == storageCondition
