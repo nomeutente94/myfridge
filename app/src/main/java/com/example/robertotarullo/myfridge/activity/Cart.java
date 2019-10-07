@@ -14,10 +14,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.robertotarullo.myfridge.adapter.CartListAdapter;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 public class Cart extends AppCompatActivity {
 
@@ -33,6 +35,9 @@ public class Cart extends AppCompatActivity {
     // Adapter lista
     private CartListAdapter productsListAdapter;
     private TextView noProductsWarning;
+
+    private long pointOfPurchaseId;
+    private Date purchaseDate;
 
     @Override
     public void onBackPressed() {
@@ -67,6 +72,9 @@ public class Cart extends AppCompatActivity {
         listView = findViewById(R.id.mylistview);
         noProductsWarning = findViewById(R.id.noProductsWarning);
         totalPriceText = findViewById(R.id.totalPriceText);
+
+        pointOfPurchaseId = getIntent().getLongExtra("pointOfPurchaseId",0);
+        purchaseDate = DateUtils.getCurrentDateWithoutTime();
 
         cartProducts = new ArrayList<>();
         updateList();
@@ -125,6 +133,12 @@ public class Cart extends AppCompatActivity {
                 switch (which){
                     case DialogInterface.BUTTON_POSITIVE:
                         // TODO aggiungere qui i prodotti (o in una classe esterna) invece di delegare il compito ad EditProduct?
+
+                        for(int i=0; i<cartProducts.size(); i++){
+                            cartProducts.get(i).setPurchaseDate(purchaseDate);
+                            cartProducts.get(i).setPointOfPurchaseId(pointOfPurchaseId);
+                        }
+
                         Intent intent = new Intent(this, EditProduct.class);
                         intent.putExtra("cartProducts", cartProducts);
                         intent.putExtra("action", EditProduct.Action.INSERT);
@@ -153,7 +167,7 @@ public class Cart extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("action", EditProduct.Action.ADD);
         intent.putExtra("actionType", EditProduct.ActionType.SHOPPING);
-        intent.putExtra("pointOfPurchaseId", getIntent().getLongExtra("pointOfPurchaseId",0));
+        //intent.putExtra("pointOfPurchaseId", getIntent().getLongExtra("pointOfPurchaseId",0));
         intent.putExtra("suggestions", listToDisplay);
         startActivityForResult(intent, 1);
     }

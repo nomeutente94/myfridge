@@ -273,13 +273,8 @@ public class EditProduct extends AppCompatActivity {
                         initializeFormLabels("Modifica prodotto", "Salva");
                         hideNonShoppingFields();
                         quantityField.setText(String.valueOf(getIntent().getIntExtra("quantity", 1)));
-                        new Thread(() -> {
-                            initializePointsOfPurchaseSpinner();
-                            runOnUiThread(() -> {
-                                fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
-                                setCurrentFormToInitial();
-                            });
-                        }).start();
+                        fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
+                        setCurrentFormToInitial();
                         break;
                     default: // modifica completa
                         initializeFormLabels("Modifica prodotto", "Salva");
@@ -831,14 +826,9 @@ public class EditProduct extends AppCompatActivity {
 
         p.setPieces(TextUtils.getInt(piecesField));
 
-        if (actionType==ActionType.SHOPPING){
-            p.setPurchaseDate(DateUtils.getCurrentDateWithoutTime()); // TODO settare anche l'ora se implementata
-            p.setPointOfPurchaseId(getIntent().getLongExtra("pointOfPurchaseId", 0));
-        } else {
-            p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
-            if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
-                p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
-        }
+        p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+        if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
+            p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
 
         p.setPackagingDate(TextUtils.getDate(packagingDateField));
 
