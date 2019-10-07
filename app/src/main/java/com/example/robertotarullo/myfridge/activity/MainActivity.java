@@ -48,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     // Tipo di azione
     public enum Action{
-        PICK
+        PICK,
+        CONSUMED,
+        DEFAULT
     }
 
     private static final String FILTER0_TEXT = "Dispensa";
@@ -67,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     // Variabili di stato
     private int currentFilter; // Determina la modalità di conservazione corrente
     private Pack currentPackage; // Riferimento alla confezione correntemente visualizzata, null se non si sta visualizzando una confezione
-    private boolean showConsumedProducts; // Determina se mostrare i prodotti consumati
 
     // Dichiarazione delle liste di prodotti
     private List<SingleProduct> singleProducts; // Lista di tutti i prodotti
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private int currentPopupPosition;
 
     // action
-    private Action action;
+    private Action action = Action.DEFAULT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,9 +112,8 @@ public class MainActivity extends AppCompatActivity {
         noProductsWarning = findViewById(R.id.noProductsWarning);
         resultsCount = findViewById(R.id.resultsCount);
 
-        showConsumedProducts = getIntent().getBooleanExtra("showConsumedProducts", false);
 
-        if(showConsumedProducts){
+        if(action==Action.CONSUMED){
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
         }
 
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if(action!=Action.PICK && !showConsumedProducts){
+        if(action==null){ // TODO DEFAULT
             menu.add(0, R.id.showConsumed, Menu.NONE, "Storico consumazioni");
         }
         return super.onPrepareOptionsMenu(menu);
@@ -156,14 +156,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showConsumed:
-                //showConsumedProducts = !showConsumedProducts;
-
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("showConsumedProducts", true);
+                intent.putExtra("action", Action.CONSUMED);
                 startActivityForResult(intent, CONSUMED_REQUEST);
-
-                //groupProducts(null);
-                //filterBySearchBar();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -603,7 +598,7 @@ public class MainActivity extends AppCompatActivity {
     private void groupProducts(Pack pack) {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
-        if(action == Action.PICK || !showConsumedProducts)              // Raggruppa solo se non si visualizzano i prodotti consumati
+        if(action == Action.PICK || action == Action.DEFAULT)              // Raggruppa solo se non si visualizzano i prodotti consumati
             groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
@@ -627,7 +622,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Controlla se il prodotto rispetta le condizioni di consumazione e tipo di lista
     private boolean isProductToDisplay(SingleProduct p){
-        return action == Action.PICK || (showConsumedProducts && p.isConsumed()) || (!showConsumedProducts && !p.isConsumed());
+        return action == Action.PICK || (action==Action.CONSUMED && p.isConsumed()) || (action!=Action.CONSUMED && !p.isConsumed());
     }
 
     // Raggruppa prodotti in base a caratteristiche comuni definite nel metodo packEquals() di SingleProduct
@@ -643,7 +638,7 @@ public class MainActivity extends AppCompatActivity {
             if (toDisplay) {
 
                 // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
-                if(!showConsumedProducts && !singleProducts.get(i).isConsumed()){
+                if(action==Action.DEFAULT){
                     Date expiryDate = DateUtils.getActualExpiryDate(singleProducts.get(i));
                     if(expiryDate!=null && !expiryDate.equals(DateUtils.getNoExpiryDate())){
                         Date now = DateUtils.getCurrentDateWithoutTime();
@@ -701,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
     private void setFilterView(int storageCondition) {
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
 
-        if(showConsumedProducts)
+        if(action==Action.CONSUMED)
             setTitle("Storico consumazioni"); // Resetta il titolo al ritorno da una packageView
         else
             setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
@@ -711,7 +706,7 @@ public class MainActivity extends AppCompatActivity {
         filteredProducts = new ArrayList<>();
 
         for (int i = 0; i < groupedProducts.size(); i++) {
-            if ((showConsumedProducts && groupedProducts.get(i).isConsumed()) || (!showConsumedProducts && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
+            if ((action==Action.CONSUMED && groupedProducts.get(i).isConsumed()) || (action!=Action.CONSUMED && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
                 // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
                 if (groupedProducts.get(i) instanceof SingleProduct) {
                     if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
@@ -737,7 +732,7 @@ public class MainActivity extends AppCompatActivity {
 
         packProducts = new ArrayList<>();
         for (int i = 0; i < pack.getProducts().size(); i++) {
-            if (showConsumedProducts){
+            if (action==Action.CONSUMED){
                 packProducts.add(pack.getProducts().get(i));
             } else {
                 if (!pack.getProducts().get(i).isConsumed())
@@ -751,7 +746,7 @@ public class MainActivity extends AppCompatActivity {
     // aggiunge adapter e aggiorna warning
     // TODO cambia lista all'adapter esistente senza inizializzarlo ogni volta e metti un observer per aggiornare il warning
     private void showProducts(List<Product> productsToShow) {
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, productsToShow, showConsumedProducts, action);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, productsToShow, action==Action.CONSUMED, action);
 
         // Mostra la lista
         listView.setAdapter(productsListAdapter);
@@ -804,7 +799,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("id", p.getId());
         //intent.putExtra("filter", currentFilter);
         intent.putExtra("action", EditProduct.Action.EDIT);
-        if(showConsumedProducts)
+        if(action==Action.CONSUMED)
             intent.putExtra("actionType", EditProduct.ActionType.CONSUMED);
         else
             intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
@@ -831,7 +826,7 @@ public class MainActivity extends AppCompatActivity {
 
     // ordina dalla data più recente alla più lontana
     private void sortByAscendingDate(List<Product> products) {
-        if(showConsumedProducts)
+        if(action==Action.CONSUMED)
             Collections.sort(products, new ConsumedDiscendingDateComparator());
         else
             Collections.sort(products, new AscendingDateComparator());
