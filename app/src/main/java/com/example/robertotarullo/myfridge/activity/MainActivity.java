@@ -804,7 +804,10 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("id", p.getId());
         //intent.putExtra("filter", currentFilter);
         intent.putExtra("action", EditProduct.Action.EDIT);
-        intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
+        if(showConsumedProducts)
+            intent.putExtra("actionType", EditProduct.ActionType.CONSUMED);
+        else
+            intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
     }
 

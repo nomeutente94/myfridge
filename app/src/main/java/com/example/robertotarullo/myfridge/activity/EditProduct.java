@@ -65,6 +65,7 @@ public class EditProduct extends AppCompatActivity {
 
     public enum ActionType{
         DEFAULT,
+        CONSUMED,
         UPDATE,
         NO_CONSUMPTION,
         SHOPPING
@@ -217,28 +218,33 @@ public class EditProduct extends AppCompatActivity {
 
         switch (action) {
             case ADD:
-                new Thread(() -> {
-                    initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
-                }).start();
-
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
-
-                if(actionType == ActionType.NO_CONSUMPTION)
-                    hideConsumptionFields();
-                else if(actionType == ActionType.SHOPPING)
-                    hideNonShoppingFields();
 
                 findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentPiecesField.setVisibility(View.GONE);
+
                 findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
 
-                findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
-
                 setCurrentFormToInitial();
+
+                switch (actionType){
+                    case NO_CONSUMPTION:
+                        hideConsumptionFields();
+                        break;
+                    case SHOPPING:
+                        hideNonShoppingFields();
+                        break;
+                    case DEFAULT:
+                        findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
+                        new Thread(() -> {
+                            initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
+                        }).start();
+                        break;
+                }
                 break;
             case EDIT:
-                switch(actionType) {
+                switch (actionType) {
                     case UPDATE:
                         initializeFormLabels("Aggiorna prodotto", "Salva");
                         productToModifyId = getIntent().getLongExtra("id", 0);
@@ -276,13 +282,36 @@ public class EditProduct extends AppCompatActivity {
                         fillFieldsFromProduct((SingleProduct) getIntent().getSerializableExtra("productToEdit"));
                         setCurrentFormToInitial();
                         break;
+                    case CONSUMED:
+                        initializeFormLabels("Modifica prodotto", "Salva");
+                        productToModifyId = getIntent().getLongExtra("id", 0);
+
+                        // Nascondi/mostra i campi
+                        quantityBlock.setVisibility(View.GONE);
+                        hideConsumptionFields();
+                        consumptionDateBlock.setPadding(0, 0, 0, 0);
+                        findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
+                        findViewById(R.id.consumedCheckBoxLabel).setVisibility(View.GONE); // TODO Unire label e checkbox
+                        findViewById(R.id.consumedCheckBox).setVisibility(View.GONE); // TODO Unire label e checkbox
+
+                        new Thread(() -> {
+                            initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
+                            SingleProduct p = productDatabase.productDao().get(productToModifyId);
+                            runOnUiThread(() -> {
+                                fillFieldsFromProduct(p);
+
+
+
+                                setCurrentFormToInitial();
+                            });
+                        }).start();
+                        break;
                     default: // modifica completa
                         initializeFormLabels("Modifica prodotto", "Salva");
                         productToModifyId = getIntent().getLongExtra("id", 0);
 
                         // Nascondi/mostra i campi
                         quantityBlock.setVisibility(View.GONE);
-                        findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
 
                         new Thread(() -> {
                             initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
@@ -312,6 +341,7 @@ public class EditProduct extends AppCompatActivity {
 
     // Nascondi i campi precompilati / da ignorare in modalità spesa
     private void hideNonShoppingFields(){
+        openedCheckBox.setVisibility(View.GONE);
         pointOfPurchaseBlock.setVisibility(View.GONE);
         purchaseDateBlock.setVisibility(View.GONE);
         hideConsumptionFields();
@@ -336,7 +366,13 @@ public class EditProduct extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
 
-        menu.add(0, R.id.reset, Menu.NONE, "Resetta...");
+        if(action==Action.EDIT && actionType==ActionType.DEFAULT)
+            menu.add(0, R.id.consume, Menu.NONE, "Consuma");
+
+        if(action==Action.EDIT && actionType==ActionType.CONSUMED)
+            menu.add(0, R.id.restore, Menu.NONE, "Ripristina");
+        else
+            menu.add(0, R.id.reset, Menu.NONE, "Resetta...");
 
         if(action==Action.EDIT && (actionType==ActionType.DEFAULT || actionType==ActionType.UPDATE))
             menu.add(0, R.id.delete, Menu.NONE, "Elimina");
@@ -350,9 +386,79 @@ public class EditProduct extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.delete:
+            case R.id.consume:
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                    switch (which){
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            new Thread(() -> {
+                                SingleProduct p = createProductFromFields();
+                                p.setId(productToModifyId);
+                                p.setConsumed(true);
+                                p.setConsumptionDate(DateUtils.getCurrentDateWithoutTime());
+
+                                if (productDatabase.productDao().update(p) > 0) {
+                                    String msg = "Prodotti modificati: 1\nProdotti non modificati: 0";
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
+                                }
+
+                                Intent resultIntent = new Intent();
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            }).start();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                String msg = "Vuoi settare come consumato il prodotto " +nameField.getText().toString()+ "?";
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma consumazione")
+                        .setPositiveButton("Conferma", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+
+                return true;
+            case R.id.restore:
+                dialogClickListener = (dialog, which) -> {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            new Thread(() -> {
+                                SingleProduct p = createProductFromFields();
+                                p.setId(productToModifyId);
+                                p.setConsumed(false);
+                                p.setConsumptionDate(null);
+
+                                if (productDatabase.productDao().update(p) > 0) {
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotti modificati: 1\nProdotti non modificati: 0", Toast.LENGTH_LONG).show()); // STRINGS.XML
+                                }
+
+                                Intent resultIntent = new Intent();
+                                resultIntent.putExtra("filter", p.getActualStorageCondition());
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                            }).start();
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+
+                msg = "Vuoi settare come non consumato il prodotto " +nameField.getText().toString()+ "?";
+
+                builder = new AlertDialog.Builder(this);
+                builder.setMessage(msg)
+                        .setTitle("Conferma ripristino consumazione")
+                        .setPositiveButton("Conferma", dialogClickListener)
+                        .setNegativeButton("Annulla", dialogClickListener)
+                        .show();
+
+                return true;
+            case R.id.delete:
+                dialogClickListener = (dialog, which) -> {
+                    switch (which) {
                         case DialogInterface.BUTTON_POSITIVE:
                             new Thread(() -> {
                                 if (productDatabase.productDao().deleteById(productToModifyId) > 0) {
@@ -369,9 +475,9 @@ public class EditProduct extends AppCompatActivity {
                     }
                 };
 
-                String msg = "Vuoi eliminare definitivamente il prodotto?";
+                msg = "Vuoi eliminare definitivamente il prodotto?";
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder = new AlertDialog.Builder(this);
                 builder.setMessage(msg)
                         .setTitle("Conferma eliminazione")
                         .setPositiveButton("Elimina", dialogClickListener)
@@ -380,9 +486,9 @@ public class EditProduct extends AppCompatActivity {
 
                 return true;
             case R.id.reset:
-                if(actionType==ActionType.UPDATE){
+                if (actionType == ActionType.UPDATE) {
                     dialogClickListener = (dialog, which) -> {
-                        switch (which){
+                        switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
                                 resetConsumptionState();
                                 break;
@@ -400,6 +506,26 @@ public class EditProduct extends AppCompatActivity {
                             .setNegativeButton("Annulla", dialogClickListener)
                             .show();
                     return true;
+                } else if(actionType == ActionType.SHOPPING){
+                    dialogClickListener = (dialog, which) -> {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                resetState();
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    };
+
+                    msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi allo stato (data di produzione, data di scadenza)";
+
+                    builder = new AlertDialog.Builder(this);
+                    builder.setMessage(msg)
+                            .setTitle("Conferma ripristino stato")
+                            .setPositiveButton("Conferma", dialogClickListener)
+                            .setNegativeButton("Annulla", dialogClickListener)
+                            .show();
+                    return true;
                 } else {
                     View resetDialogView = getLayoutInflater().inflate(R.layout.lose_state_dialog, null);
 
@@ -413,18 +539,11 @@ public class EditProduct extends AppCompatActivity {
                                     resetState();
                                 else if(radioButtonMin.isChecked())
                                     resetConsumptionState();
-
-                            /*new Thread(() -> {
-                                // modifica su db ?
-                            }).start();*/
                                 break;
                             case DialogInterface.BUTTON_NEGATIVE:
                                 break;
                         }
                     };
-
-                    //msg = "Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi all'apertura e alla consumazione. Inoltre verrano resettati:\n\n" +
-                    //        "- Data di confezionamento\n- Data di acquisto\n- Data di scadenza\n- Punto di acquisto";
 
                     builder = new AlertDialog.Builder(this);
                     builder.setView(resetDialogView)
@@ -654,7 +773,6 @@ public class EditProduct extends AppCompatActivity {
     }
 
     private void insertProduct(SingleProduct newProduct){
-
         new Thread(() -> {
             int insertCount = 0; // counter inserimenti
             Intent resultIntent = new Intent();
@@ -909,17 +1027,17 @@ public class EditProduct extends AppCompatActivity {
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare dopo l'apertura");
 
-            if(actionType != ActionType.SHOPPING)
+            if(actionType!=ActionType.SHOPPING && actionType!=ActionType.CONSUMED) {
                 openedBlock.setVisibility(View.VISIBLE);
+                if(openedCheckBox.isChecked())
+                    openingDateBlock.setVisibility(View.VISIBLE);
+            }
 
             if(actionType != ActionType.UPDATE){
                 expiryDateBlock.setVisibility(View.VISIBLE);
                 expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
                 openedStorageConditionBlock.setVisibility(View.VISIBLE);
             }
-
-            if(actionType != ActionType.SHOPPING && openedCheckBox.isChecked())
-                openingDateBlock.setVisibility(View.VISIBLE);
 
             if(currentWeightSlider.getProgress()<currentWeightSlider.getMax())
                 openedCheckBox.setChecked(true);
@@ -934,10 +1052,9 @@ public class EditProduct extends AppCompatActivity {
             expiryDaysAfterOpeningLabel.setText("Giorni entro cui consumare");
             expiryDateBlock.setVisibility(View.GONE);
 
-            if(actionType != ActionType.SHOPPING){
+            if(actionType != ActionType.SHOPPING && actionType!=ActionType.CONSUMED){
                 openedBlock.setVisibility(View.GONE);
                 openingDateBlock.setVisibility(View.GONE);
-                //currentWeightBlock.setVisibility(View.VISIBLE);
             }
 
             openedStorageConditionBlock.setVisibility(View.GONE);

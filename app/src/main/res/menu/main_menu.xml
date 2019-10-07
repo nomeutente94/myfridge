@@ -4,8 +4,14 @@
         android:id="@+id/showConsumed"
         android:title="Mostra prodotti consumati" />
     <item
+        android:id="@+id/consume"
+        android:title="Consuma" />
+    <item
         android:id="@+id/delete"
         android:title="Elimina prodotto" />
+    <item
+        android:id="@+id/restore"
+        android:title="Ripristina" />
     <item
         android:id="@+id/reset"
         android:title="Resetta stato..." />
