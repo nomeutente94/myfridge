@@ -111,10 +111,6 @@ public class MainActivity extends AppCompatActivity {
         noProductsWarning = findViewById(R.id.noProductsWarning);
         resultsCount = findViewById(R.id.resultsCount);
 
-        if(action==Action.CONSUMED){
-            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
-        }
-
         // Inizializza la search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
 
@@ -122,7 +118,12 @@ public class MainActivity extends AppCompatActivity {
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
         pressOnFilter(filterButton1);
 
-        if(action==Action.PICK) {
+        if(action==Action.PICK || action==Action.CONSUMED) {
+            if(action==Action.PICK)
+                setTitle("Seleziona un prodotto");
+            else if(action==Action.CONSUMED)
+                setTitle("Storico consumazioni");
+
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
 
@@ -130,15 +131,13 @@ public class MainActivity extends AppCompatActivity {
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
             params.setMargins(0, 0, 0, 0);
             mylistviewBlock.setLayoutParams(params);
-
-            setTitle("Seleziona un prodotto");
         }
-
-        // Inizializza la lista leggendo dal DB
-        retrieveProductsFromDB(null);
 
         // Setta il comportamento al click di un elemento
         initializeItemBehaviour();
+
+        // Inizializza la lista leggendo dal DB
+        retrieveProductsFromDB(null);
     }
 
     @Override
@@ -300,7 +299,6 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Conferma", dialogClickListener)
                         .setNegativeButton("Annulla", dialogClickListener)
                         .show();
-
             } else {
                 // TODO codice ripetuto con editProduct()
                 Product p = (Product)listView.getItemAtPosition(position);
@@ -310,8 +308,9 @@ public class MainActivity extends AppCompatActivity {
                     setPackageView((Pack) p);
                 } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
                     updateProduct((SingleProduct)p);
-                else
-                    Toast.makeText(getApplicationContext(), "Non puoi aggiornare lo stato di un prodotto consumato!", Toast.LENGTH_LONG).show();
+                else {                                          // Se si è clickato un SingleProduct consumato
+                    editSingleProduct((SingleProduct) p);
+                }
             }
         });
     }
@@ -597,13 +596,21 @@ public class MainActivity extends AppCompatActivity {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
 
-        if(action == Action.PICK || action == null)              // Raggruppa solo se non si visualizzano i prodotti consumati
+        if(action == Action.PICK || action == null)                     // Raggruppa solo se non si visualizzano i prodotti consumati
             groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
         if(action == Action.PICK){ // salta il filtro e mostra tutti i prodotti
             filteredProducts = groupedProducts;
             sortByName(filteredProducts);
+            filterBySearchBar();
+        } else if(action == Action.CONSUMED){
+            filteredProducts = new ArrayList<>();
+            for(int i=0; i<singleProducts.size(); i++){
+                if(singleProducts.get(i).isConsumed())
+                    filteredProducts.add(singleProducts.get(i));
+            }
+            sortByAscendingDate(filteredProducts);
             filterBySearchBar();
         } else {
             if (pack == null) {
@@ -621,7 +628,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Controlla se il prodotto rispetta le condizioni di consumazione e tipo di lista
     private boolean isProductToDisplay(SingleProduct p){
-        return action == Action.PICK || (action==Action.CONSUMED && p.isConsumed()) || (action!=Action.CONSUMED && !p.isConsumed());
+        return action == Action.PICK || (action==Action.CONSUMED && p.isConsumed()) || (action==null && !p.isConsumed());
     }
 
     // Raggruppa prodotti in base a caratteristiche comuni definite nel metodo packEquals() di SingleProduct
@@ -694,11 +701,7 @@ public class MainActivity extends AppCompatActivity {
     // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
     private void setFilterView(int storageCondition) {
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
-
-        if(action==Action.CONSUMED)
-            setTitle("Storico consumazioni"); // Resetta il titolo al ritorno da una packageView
-        else
-            setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
+        setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
         currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
 
@@ -750,21 +753,19 @@ public class MainActivity extends AppCompatActivity {
         // Mostra la lista
         listView.setAdapter(productsListAdapter);
 
-        // Aggiorna avviso
-        if(action == Action.PICK){
+        if(action == Action.PICK || action==Action.CONSUMED) {
             resultsCount.setVisibility(View.GONE);
-            noProductsWarning.setVisibility(View.GONE);
-        } else {
-            if (listView.getAdapter().getCount() == 0) {
-                noProductsWarning.setVisibility(View.VISIBLE);
-                resultsCount.setVisibility(View.GONE);
-            } else {
-                noProductsWarning.setVisibility(View.GONE);
-                resultsCount.setVisibility(View.VISIBLE);
+        }
 
-                // Aggiorna count
-                resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
-            }
+        if (listView.getAdapter().getCount() == 0) {
+            noProductsWarning.setVisibility(View.VISIBLE);
+            resultsCount.setVisibility(View.GONE);
+        } else {
+            noProductsWarning.setVisibility(View.GONE);
+            resultsCount.setVisibility(View.VISIBLE);
+
+            // Aggiorna count
+            resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
         }
     }
 
