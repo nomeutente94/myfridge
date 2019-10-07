@@ -759,10 +759,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (listView.getAdapter().getCount() == 0) {
             noProductsWarning.setVisibility(View.VISIBLE);
-            resultsCount.setVisibility(View.GONE);
+            if(action==null)
+                resultsCount.setVisibility(View.GONE);
         } else {
             noProductsWarning.setVisibility(View.GONE);
-            resultsCount.setVisibility(View.VISIBLE);
+            if(action==null)
+                resultsCount.setVisibility(View.VISIBLE);
 
             // Aggiorna count
             resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
