@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int ADD_PRODUCT_REQUEST = 1;
     private static final int EDIT_PRODUCT_REQUEST = 2;
     private static final int SHOPPING_REQUEST = 3;
+    private static final int CONSUMED_REQUEST = 4;
 
     // Variabili di stato
     private int currentFilter; // Determina la modalità di conservazione corrente
@@ -110,13 +111,18 @@ public class MainActivity extends AppCompatActivity {
         noProductsWarning = findViewById(R.id.noProductsWarning);
         resultsCount = findViewById(R.id.resultsCount);
 
+        showConsumedProducts = getIntent().getBooleanExtra("showConsumedProducts", false);
+
+        if(showConsumedProducts){
+            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
+        }
+
         // Inizializza la search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
 
         // Setta il filtro prodotti iniziale
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
         pressOnFilter(filterButton1);
-
 
         if(action==Action.PICK) {
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
@@ -140,13 +146,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if(action!=Action.PICK){
-            if (showConsumedProducts)
-                menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra non consumati");
-            else
-                menu.add(0, R.id.showConsumed, Menu.NONE, "Mostra consumati");
+        if(action!=Action.PICK && !showConsumedProducts){
+            menu.add(0, R.id.showConsumed, Menu.NONE, "Storico consumazioni");
         }
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.showConsumed:
+                //showConsumedProducts = !showConsumedProducts;
+
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("showConsumedProducts", true);
+                startActivityForResult(intent, CONSUMED_REQUEST);
+
+                //groupProducts(null);
+                //filterBySearchBar();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     // Usare questa chiamata per cambiare scheda e NON setFilterView direttamente
@@ -172,19 +193,6 @@ public class MainActivity extends AppCompatActivity {
         filterButton2.setBackgroundColor(Color.parseColor("#d6d8d7"));
         // Cambia il colore del filtro attuale
         b.setBackgroundColor(Color.parseColor("#bcbebd"));
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.showConsumed:
-                showConsumedProducts = !showConsumedProducts;
-                groupProducts(null);
-                filterBySearchBar();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override
@@ -523,7 +531,7 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(cloneDialogView)
-               .setTitle("Inserisci quantità di duplicati")
+               .setTitle("Duplica prodotto")
                .setPositiveButton("Conferma", dialogClickListener)
                .setNegativeButton("Annulla", dialogClickListener)
                .show();
@@ -694,7 +702,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
 
         if(showConsumedProducts)
-            setTitle("Consumati"); // Resetta il titolo al ritorno da una packageView
+            setTitle("Storico consumazioni"); // Resetta il titolo al ritorno da una packageView
         else
             setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
         currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
@@ -839,7 +847,10 @@ public class MainActivity extends AppCompatActivity {
         if(productsListAdapter.getItem(currentPopupPosition).isConsumed()) {
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.unconsumeItem).setVisible(true);
+
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
+        } else {
+            //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO non mostrare elimina nella schermata principale?
         }
 
         popup.show();
@@ -869,6 +880,13 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 showConsumedProducts = false; // TODO controllare per quali casi
                 retrieveProductsFromDB(null);
+            }
+        } else if (requestCode == CONSUMED_REQUEST) {
+
+            retrieveProductsFromDB(null);
+
+            if (resultCode == RESULT_OK) {
+
             }
         }
     }

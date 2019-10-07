@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:onClick="updateProduct"
-        android:id="@+id/updateStateItem"
-        android:title="Aggiorna"/>
-    <item
         android:id="@+id/consumeItem"
         android:onClick="consumeProduct"
         android:title="Consuma"/>
-<!--    android:title="Segna come non consumato"/> -->
+    <item
+        android:onClick="updateProduct"
+        android:id="@+id/updateStateItem"
+        android:title="Aggiorna"/>
     <item
         android:id="@+id/unconsumeItem"
         android:onClick="unconsumeProduct"
