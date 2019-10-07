@@ -633,7 +633,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
+                <!--<LinearLayout
                     android:id="@+id/noExpiryCheckboxBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -651,7 +651,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingRight="30px"/>
-                </LinearLayout>
+                </LinearLayout>-->
 
 
                 <LinearLayout
@@ -682,6 +682,12 @@
                             android:hint="Data non impostata"
                             android:onClick="showDatePickerDialog"
                             android:tag="expiryDate" />
+                        <CheckBox
+                            android:id="@+id/noExpiryCheckbox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingRight="15dp"
+                            android:text="Mai"/>
                         <Button
                             android:id="@+id/changeToExpiryDays"
                             android:layout_width="wrap_content"
@@ -725,6 +731,12 @@
                             android:layout_weight="1"
                             android:hint="0"
                             android:inputType="number" />
+                        <CheckBox
+                            android:id="@+id/noExpiryDaysCheckbox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingRight="15dp"
+                            android:text="Mai"/>
                         <Button
                             android:id="@+id/changeToExpiryDate"
                             android:layout_width="wrap_content"

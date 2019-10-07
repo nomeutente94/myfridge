@@ -90,7 +90,7 @@ public class EditProduct extends AppCompatActivity {
     private ScrollView listScrollView;
     private EditText nameField, brandField, pricePerKiloField, priceField, weightField, purchaseDateField, expiryDateField, openingDateField, expiryDaysAfterOpeningField, currentWeightField, packagingDateField, consumptionDateField, currentPercentageField;
     private Spinner storageConditionSpinner, openedStorageConditionSpinner, pointOfPurchaseSpinner;
-    private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox, consumedCheckBox;
+    private CheckBox openedCheckBox, packagedCheckBox, noExpiryCheckbox, noExpiryDaysCheckbox, consumedCheckBox;
     private Button confirmButton, priceClearButton, pricePerKiloClearButton, weightClearButton, changeToExpiryDaysButton, changeToExpiryDateButton, addQuantityButton, subtractQuantityButton, addPieceButton, subtractPieceButton;
     private SeekBar currentWeightSlider;
     private TextView storageConditionSpinnerLabel, quantityField, piecesField, currentPiecesField, expiryDaysAfterOpeningLabel;
@@ -134,6 +134,7 @@ public class EditProduct extends AppCompatActivity {
         piecesField = findViewById(R.id.piecesField);
         currentPiecesField = findViewById(R.id.currentPiecesField);
         noExpiryCheckbox = findViewById(R.id.noExpiryCheckbox);
+        noExpiryDaysCheckbox = findViewById(R.id.noExpiryDaysCheckbox);
         consumedCheckBox = findViewById(R.id.consumedCheckBox);
         consumptionDateField = findViewById(R.id.consumptionDateField);
         currentPercentageField = findViewById(R.id.currentPercentageField);
@@ -185,6 +186,7 @@ public class EditProduct extends AppCompatActivity {
         initializeOpenedCheckBox(true);
         initializePackagedCheckBox(true);
         initializeNoExpiryCheckBox(true);
+        noExpiryDaysCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> noExpiryCheckbox.setChecked(noExpiryDaysCheckbox.isChecked()));
         initializeConsumedCheckBox(true);
 
         // Validazione e comportamento
@@ -212,9 +214,6 @@ public class EditProduct extends AppCompatActivity {
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
         //expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
-
-        System.out.println(action);
-        System.out.println(actionType);
 
         switch (action) {
             case ADD:
@@ -912,6 +911,7 @@ public class EditProduct extends AppCompatActivity {
         enableNoExpiryCheckBoxBehaviour(noExpiryCheckbox.isChecked());
 
         if(packagedCheckBox.isChecked()){
+            noExpiryDaysCheckbox.setVisibility(View.GONE);
             changeToExpiryDateButton.setVisibility(View.GONE);
             changeToExpiryDaysButton.setVisibility(View.GONE);
             storageConditionSpinnerLabel.setText("Modalità di conservazione prima dell'apertura");
@@ -934,6 +934,7 @@ public class EditProduct extends AppCompatActivity {
             else
                 openedCheckBox.setChecked(false);
         } else {
+            noExpiryDaysCheckbox.setVisibility(View.VISIBLE);
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
             changeToExpiryDaysButton.setVisibility(View.VISIBLE);
@@ -967,13 +968,10 @@ public class EditProduct extends AppCompatActivity {
 
     private void initializeNoExpiryCheckBox(boolean addListener){
         enableNoExpiryCheckBoxBehaviour(noExpiryCheckbox.isChecked());
+        noExpiryDaysCheckbox.setChecked(noExpiryCheckbox.isChecked());
 
         if(addListener)
             noExpiryCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> initializeNoExpiryCheckBox(false));
-        /*else {
-            if(!noExpiryCheckbox.isChecked())
-                validateExpiryDate();
-        }*/
     }
 
     private void initializeConsumedCheckBox(boolean addListener){
