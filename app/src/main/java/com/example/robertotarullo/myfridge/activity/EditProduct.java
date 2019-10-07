@@ -233,6 +233,8 @@ public class EditProduct extends AppCompatActivity {
                 findViewById(R.id.currentWeightFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
                 currentWeightField.setVisibility(View.GONE);
 
+                findViewById(R.id.consumedCheckBoxBlock).setVisibility(View.VISIBLE);
+
                 setCurrentFormToInitial();
                 break;
             case EDIT:
