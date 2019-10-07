@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     public enum Action{
         PICK,
         CONSUMED,
-        DEFAULT
     }
 
     private static final String FILTER0_TEXT = "Dispensa";
@@ -91,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private int currentPopupPosition;
 
     // action
-    private Action action = Action.DEFAULT;
+    private Action action;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         filterButton2 = findViewById(R.id.StorageConditionFilterButton2);
         noProductsWarning = findViewById(R.id.noProductsWarning);
         resultsCount = findViewById(R.id.resultsCount);
-
 
         if(action==Action.CONSUMED){
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
@@ -598,7 +596,8 @@ public class MainActivity extends AppCompatActivity {
     private void groupProducts(Pack pack) {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
-        if(action == Action.PICK || action == Action.DEFAULT)              // Raggruppa solo se non si visualizzano i prodotti consumati
+
+        if(action == Action.PICK || action == null)              // Raggruppa solo se non si visualizzano i prodotti consumati
             groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
@@ -638,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
             if (toDisplay) {
 
                 // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
-                if(action==Action.DEFAULT){
+                if(action == null){
                     Date expiryDate = DateUtils.getActualExpiryDate(singleProducts.get(i));
                     if(expiryDate!=null && !expiryDate.equals(DateUtils.getNoExpiryDate())){
                         Date now = DateUtils.getCurrentDateWithoutTime();
