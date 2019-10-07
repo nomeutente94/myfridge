@@ -883,7 +883,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else if (requestCode == CONSUMED_REQUEST) {
 
-            retrieveProductsFromDB(null);
+            retrieveProductsFromDB(null); // TODO chiamare solo in caso di modifica
 
             if (resultCode == RESULT_OK) {
 
