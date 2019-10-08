@@ -66,7 +66,10 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
         setName();
         setBrand();
-        if (action==MainActivity.Action.PICK) {
+
+
+
+        if (action==MainActivity.Action.PICK || action==MainActivity.Action.MANAGE) {
             setDescription();
 
             // Codice per togliere il margine
@@ -76,7 +79,12 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             elementInfoBlock.setLayoutParams(params);
 
             dataTextView.setVisibility(View.GONE);
-            optionsButton.setVisibility(View.GONE);
+            if (action==MainActivity.Action.PICK)
+                optionsButton.setVisibility(View.GONE);
+            else {
+                optionsButton.setTag(position);
+                optionsButton.setVisibility(View.VISIBLE);
+            }
             nonConsumptionBar.setVisibility(View.GONE);
             descriptionTextView.setVisibility(View.VISIBLE);
         } else {
@@ -122,7 +130,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
 
-            if(action==MainActivity.Action.PICK){
+            if(action==MainActivity.Action.PICK || action==MainActivity.Action.MANAGE){
                 if(p.isPackaged())
                     typeTextView.setText("Confezionato");
                 else

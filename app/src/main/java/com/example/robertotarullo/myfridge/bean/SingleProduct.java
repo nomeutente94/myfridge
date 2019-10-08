@@ -96,6 +96,7 @@ public class SingleProduct implements Product, Serializable {
 
     public SingleProduct(){
         this.pieces = 1;
+        this.percentageQuantity = 100;
     }
 
     @Override

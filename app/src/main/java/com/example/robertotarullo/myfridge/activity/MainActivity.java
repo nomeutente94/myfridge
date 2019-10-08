@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public enum Action{
         PICK,
         CONSUMED,
+        MANAGE
     }
 
     private static final String FILTER0_TEXT = "Dispensa";
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int EDIT_PRODUCT_REQUEST = 2;
     private static final int SHOPPING_REQUEST = 3;
     private static final int CONSUMED_REQUEST = 4;
+    private static final int MANAGE_REQUEST = 5;
 
     // Variabili di stato
     private int currentFilter; // Determina la modalità di conservazione corrente
@@ -118,11 +120,13 @@ public class MainActivity extends AppCompatActivity {
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
         pressOnFilter(filterButton1);
 
-        if(action==Action.PICK || action==Action.CONSUMED) {
+        if(action==Action.PICK || action==Action.CONSUMED || action==Action.MANAGE) {
             if(action==Action.PICK)
                 setTitle("Seleziona un prodotto");
             else if(action==Action.CONSUMED)
                 setTitle("Storico consumazioni");
+            else if(action==Action.MANAGE)
+                setTitle("Prodotti memorizzati");
 
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
@@ -145,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         menu.clear();
         if(action==null){ // TODO DEFAULT
             menu.add(0, R.id.showConsumed, Menu.NONE, "Storico consumazioni");
+            menu.add(0, R.id.productsDb, Menu.NONE, "Gestisci prodotti");
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -152,10 +157,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+
             case R.id.showConsumed:
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra("action", Action.CONSUMED);
                 startActivityForResult(intent, CONSUMED_REQUEST);
+                return true;
+            case R.id.productsDb:
+                intent = new Intent(this, MainActivity.class);
+                intent.putExtra("action", Action.MANAGE);
+                startActivityForResult(intent, MANAGE_REQUEST);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -209,9 +220,9 @@ public class MainActivity extends AppCompatActivity {
     // Specifica cosa fare quando l'utente tocca un item della lista
     private void initializeItemBehaviour(){
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            if(action==Action.PICK){
-                Product p = (Product)listView.getItemAtPosition(position);
+            Product p = (Product)listView.getItemAtPosition(position);
 
+            if(action==Action.PICK){
                 DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
@@ -299,10 +310,13 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Conferma", dialogClickListener)
                         .setNegativeButton("Annulla", dialogClickListener)
                         .show();
+            } else if(action==Action.MANAGE){
+                if(p instanceof Pack)
+                    editPack((Pack) p);
+                else if(p instanceof SingleProduct)
+                    editSingleProduct((SingleProduct) p);
             } else {
                 // TODO codice ripetuto con editProduct()
-                Product p = (Product)listView.getItemAtPosition(position);
-
                 if(p instanceof Pack && currentPackage==null) { // Se si è clickato un Pack
                     resetSearchBar();
                     setPackageView((Pack) p);
@@ -323,11 +337,16 @@ public class MainActivity extends AppCompatActivity {
     public void editProduct(MenuItem item){
         Product p = (Product) listView.getItemAtPosition(currentPopupPosition);
 
-        if (p instanceof Pack && currentPackage == null) {  // Se si è clickato un pack
-            resetSearchBar();
-            setPackageView((Pack) p);
-        } else                                              // Se si è clickato un singleProduct
-            editSingleProduct((SingleProduct) p);
+        if (p instanceof Pack){
+            if(action==Action.MANAGE){
+                editPack((Pack) p);
+            } else if(action==null && currentPackage == null){
+                resetSearchBar();
+                setPackageView((Pack) p); // Se si è clickato un pack
+            }
+        } else {
+            editSingleProduct((SingleProduct) p);  // Se si è clickato un singleProduct
+        }
     }
 
     public void consumeProduct(MenuItem item) {
@@ -452,15 +471,23 @@ public class MainActivity extends AppCompatActivity {
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
-                    new Thread(() -> {
-                        if (productDatabase.productDao().delete((SingleProduct)productsListAdapter.getItem(currentPopupPosition)) > 0) {
-                            Intent resultIntent = new Intent();
-                            resultIntent.putExtra("delete", true);
-                            setResult(RESULT_OK, resultIntent);
-                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
-                            retrieveProductsFromDB(null); // aggiorna lista
-                        }
-                    }).start();
+
+                    if(productsListAdapter.getItem(currentPopupPosition) instanceof Pack){
+                        new Thread(() -> {
+                            if (productDatabase.productDao().deleteAll(((Pack) productsListAdapter.getItem(currentPopupPosition)).getProducts()) > 0) {
+                                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
+                                retrieveProductsFromDB(null); // aggiorna lista
+                            }
+                        }).start();
+                    } else if(productsListAdapter.getItem(currentPopupPosition) instanceof SingleProduct){
+                        new Thread(() -> {
+                            if (productDatabase.productDao().delete((SingleProduct)productsListAdapter.getItem(currentPopupPosition)) > 0) {
+                                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
+                                retrieveProductsFromDB(null); // aggiorna lista
+                            }
+                        }).start();
+                    }
+
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
                     break;
@@ -468,6 +495,9 @@ public class MainActivity extends AppCompatActivity {
         };
 
         String msg = "Vuoi eliminare definitivamente il prodotto?";
+        if(action==Action.MANAGE)
+            msg = "Vuoi eliminare definitivamente il prodotto? Verranno eliminati anche tutti i prodotti esistenti di questo tipo!";
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
@@ -596,11 +626,11 @@ public class MainActivity extends AppCompatActivity {
         List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
         groupedProducts = new ArrayList<>();
 
-        if(action == Action.PICK || action == null)                     // Raggruppa solo se non si visualizzano i prodotti consumati
+        if(action == Action.PICK || action == null || action == Action.MANAGE)                     // Raggruppa solo se non si visualizzano i prodotti consumati
             groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
         groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
 
-        if(action == Action.PICK){ // salta il filtro e mostra tutti i prodotti
+        if(action == Action.PICK || action==Action.MANAGE){ // salta il filtro e mostra tutti i prodotti
             filteredProducts = groupedProducts;
             sortByName(filteredProducts);
             filterBySearchBar();
@@ -628,7 +658,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Controlla se il prodotto rispetta le condizioni di consumazione e tipo di lista
     private boolean isProductToDisplay(SingleProduct p){
-        return action == Action.PICK || (action==Action.CONSUMED && p.isConsumed()) || (action==null && !p.isConsumed());
+        return action == Action.PICK || action == Action.MANAGE || (action==Action.CONSUMED && p.isConsumed()) || (action==null && !p.isConsumed());
     }
 
     // Raggruppa prodotti in base a caratteristiche comuni definite nel metodo packEquals() di SingleProduct
@@ -659,7 +689,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean otherToDisplay = isProductToDisplay(singleProducts.get(j));
                     boolean groupable = false;
                     if (otherToDisplay) {
-                        if (action == Action.PICK)
+                        if (action == Action.PICK || action == Action.MANAGE)
                             groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
                         else
                             groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
@@ -753,7 +783,7 @@ public class MainActivity extends AppCompatActivity {
         // Mostra la lista
         listView.setAdapter(productsListAdapter);
 
-        if(action == Action.PICK || action==Action.CONSUMED) {
+        if(action == Action.PICK || action==Action.CONSUMED || action==Action.MANAGE) {
             resultsCount.setVisibility(View.GONE);
         }
 
@@ -796,6 +826,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Avvia l'activity EditProduct per la modifica
+    public void editPack(Pack p) {
+        Intent intent = new Intent(this, EditProduct.class);
+        intent.putExtra("pack", p);
+        intent.putExtra("action", EditProduct.Action.EDIT_PACK);
+        if(action==Action.MANAGE)
+            intent.putExtra("actionType", EditProduct.ActionType.MANAGE);
+        startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
+    }
+
+    // Avvia l'activity EditProduct per la modifica
     public void editSingleProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra("id", p.getId());
@@ -803,6 +843,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("action", EditProduct.Action.EDIT);
         if(action==Action.CONSUMED)
             intent.putExtra("actionType", EditProduct.ActionType.CONSUMED);
+        else if(action==Action.MANAGE)
+            intent.putExtra("actionType", EditProduct.ActionType.MANAGE);
         else
             intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
@@ -844,13 +886,23 @@ public class MainActivity extends AppCompatActivity {
         popup.getMenuInflater().inflate(R.menu.element_options, popup.getMenu());
 
         // TODO nascondere / mostrare / cambiare voci
-        if(productsListAdapter.getItem(currentPopupPosition).isConsumed()) {
-            popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
-            popup.getMenu().findItem(R.id.unconsumeItem).setVisible(true);
 
+        if(action==null){
+            if(productsListAdapter.getItem(currentPopupPosition).isConsumed()) {
+                popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
+                popup.getMenu().findItem(R.id.unconsumeItem).setVisible(true);
+
+                popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
+            } else {
+                //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO non mostrare elimina nella schermata principale?
+            }
+        } else if(action==Action.MANAGE){
+            popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
-        } else {
-            //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO non mostrare elimina nella schermata principale?
+            popup.getMenu().findItem(R.id.cloneItem).setVisible(false);
+        } else if(action==Action.CONSUMED){
+            popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
+            popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
         }
 
         popup.show();
@@ -880,6 +932,12 @@ public class MainActivity extends AppCompatActivity {
             }
         } else if (requestCode == CONSUMED_REQUEST) {
 
+            retrieveProductsFromDB(null); // TODO chiamare solo in caso di modifica
+
+            if (resultCode == RESULT_OK) {
+
+            }
+        } else if (requestCode == MANAGE_REQUEST) {
             retrieveProductsFromDB(null); // TODO chiamare solo in caso di modifica
 
             if (resultCode == RESULT_OK) {

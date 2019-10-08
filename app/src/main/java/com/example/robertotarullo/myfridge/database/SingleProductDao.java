@@ -41,9 +41,17 @@ public interface SingleProductDao {
     @Delete
     int delete(SingleProduct fp);
 
+    // Delete list
+    @Delete
+    int deleteAll(List<SingleProduct> fps);
+
     @Query("DELETE FROM SingleProduct WHERE id = :id")
     int deleteById(long id);
 
     @Update
     int update(SingleProduct p);
+
+    // Update list
+    @Update
+    int updateAll(List<SingleProduct> fps);
 }

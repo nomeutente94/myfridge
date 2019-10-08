@@ -2,10 +2,11 @@ package com.example.robertotarullo.myfridge.bean;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pack implements Product{
+public class Pack implements Product, Serializable {
     private List<SingleProduct> products;
 
     public Pack(){
