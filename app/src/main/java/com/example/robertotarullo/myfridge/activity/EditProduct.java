@@ -917,6 +917,7 @@ public class EditProduct extends AppCompatActivity {
 
     // Costruisce l'oggetto prodotto dai valori presenti nei campi
     private SingleProduct createProductFromFields() {
+
         // Esegui tutte le funzioni della perdita del focus per avere il valore corretto effettivo
         onWeightFocusLost();
         onPriceFocusLost(priceField);
@@ -925,7 +926,6 @@ public class EditProduct extends AppCompatActivity {
         SingleProduct p = new SingleProduct();
 
         p.setConsumed(consumedCheckBox.isChecked());
-
         if (consumedCheckBox.isChecked())
             p.setConsumptionDate(TextUtils.getDate(consumptionDateField));
 
@@ -945,6 +945,7 @@ public class EditProduct extends AppCompatActivity {
         p.setPieces(TextUtils.getInt(piecesField));
 
         p.setPurchaseDate(TextUtils.getDate(purchaseDateField));
+
         if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
             p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
 
@@ -959,43 +960,24 @@ public class EditProduct extends AppCompatActivity {
         if(packagedCheckBox.isChecked()){
             p.setPackaged(true);
 
-            if(!noExpiryCheckbox.isChecked())
-                p.setExpiryDate(TextUtils.getDate(expiryDateField));
-
             if(openedCheckBox.isChecked()) {
                 p.setOpened(true);
                 p.setOpeningDate(TextUtils.getDate(openingDateField));
             }
 
             p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
-
-        } else { // compilazione dei campi di prodotti confezionati se prodotto non confezionato
-            p.setOpened(true);
-
-            if(p.getPackagingDate()!=null)
-                p.setOpeningDate(p.getPackagingDate());
-            else
-                p.setOpeningDate(p.getPurchaseDate());
-
-            if(expiryDateBlock.getVisibility()==View.VISIBLE && !noExpiryCheckbox.isChecked())
-                p.setExpiryDate(TextUtils.getDate(expiryDateField));
-
-            p.setOpenedStorageCondition(storageConditionSpinner.getSelectedItemPosition());
         }
 
-        if(noExpiryCheckbox.isChecked()) {
+        if(noExpiryCheckbox.isChecked())
             p.setExpiryDate(DateUtils.getNoExpiryDate());
-        }
+        else if(expiryDateBlock.getVisibility()==View.VISIBLE)
+            p.setExpiryDate(TextUtils.getDate(expiryDateField));
 
         // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
-        if(p.isOpened()){
+        if(!packagedCheckBox.isChecked() || openedCheckBox.isChecked()){
             p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField));
             p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
             p.setCurrentWeight(TextUtils.getFloat(currentWeightField));
-        } else { // prodotto confezionato chiuso
-            p.setPercentageQuantity(100);
-            p.setCurrentPieces(TextUtils.getInt(piecesField));
-            p.setCurrentWeight(TextUtils.getFloat(weightField));
         }
 
         return p;

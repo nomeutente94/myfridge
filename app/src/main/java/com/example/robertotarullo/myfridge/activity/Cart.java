@@ -151,10 +151,8 @@ public class Cart extends AppCompatActivity {
                 }
             };
 
-            StringBuilder msg = new StringBuilder("Vuoi aggiungere tutti i prodotti presenti nel carrello?");
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(msg.toString())
+            builder.setMessage("Vuoi aggiungere tutti i prodotti presenti nel carrello?")
                     .setTitle("Attenzione")
                     .setPositiveButton("Aggiungi", dialogClickListener)
                     .setNegativeButton("Annulla", dialogClickListener)
