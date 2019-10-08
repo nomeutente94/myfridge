@@ -558,7 +558,8 @@
                     android:id="@+id/packagingDateBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingBottom="11dp">
 
                     <TextView
                         android:id="@+id/packagingDateFieldLabel"
@@ -597,8 +598,7 @@
                     android:id="@+id/purchaseDateBlock"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:paddingTop="11dp">
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/purchaseDateFieldLabel"

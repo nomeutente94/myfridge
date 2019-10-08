@@ -949,8 +949,6 @@ public class EditProduct extends AppCompatActivity {
         if(pointOfPurchaseSpinner.getSelectedItemPosition()>0)
             p.setPointOfPurchaseId(((PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem()).getId());
 
-        p.setPackagingDate(TextUtils.getDate(packagingDateField));
-
         p.setStorageCondition(storageConditionSpinner.getSelectedItemPosition());
 
         if(expiryDaysAfterOpeningBlock.getVisibility()==View.VISIBLE && expiryDaysAfterOpeningBlock.isEnabled() && !noExpiryCheckbox.isChecked())
@@ -966,6 +964,8 @@ public class EditProduct extends AppCompatActivity {
             }
 
             p.setOpenedStorageCondition(openedStorageConditionSpinner.getSelectedItemPosition());
+        } else {
+            p.setPackagingDate(TextUtils.getDate(packagingDateField));
         }
 
         if(noExpiryCheckbox.isChecked())
@@ -973,7 +973,7 @@ public class EditProduct extends AppCompatActivity {
         else if(expiryDateBlock.getVisibility()==View.VISIBLE)
             p.setExpiryDate(TextUtils.getDate(expiryDateField));
 
-        // si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
+        // Si salva la consumazione se si tratta di un prodotto confezionato aperto OPPURE di un prodotto fresco
         if(!packagedCheckBox.isChecked() || openedCheckBox.isChecked()){
             p.setPercentageQuantity(TextUtils.getFloat(currentPercentageField));
             p.setCurrentPieces(TextUtils.getInt(currentPiecesField));
@@ -1002,7 +1002,10 @@ public class EditProduct extends AppCompatActivity {
     private void initializePackagedCheckBox(boolean addListener) {
         enableNoExpiryCheckBoxBehaviour(noExpiryCheckbox.isChecked());
 
+        View packagingDateBlock = findViewById(R.id.packagingDateBlock);
+
         if(packagedCheckBox.isChecked()){
+            packagingDateBlock.setVisibility(View.GONE);
             noExpiryDaysCheckbox.setVisibility(View.GONE);
             changeToExpiryDateButton.setVisibility(View.GONE);
             changeToExpiryDaysButton.setVisibility(View.GONE);
@@ -1026,6 +1029,7 @@ public class EditProduct extends AppCompatActivity {
             else
                 openedCheckBox.setChecked(false);
         } else {
+            packagingDateBlock.setVisibility(View.VISIBLE);
             noExpiryDaysCheckbox.setVisibility(View.VISIBLE);
             expiryDaysAfterOpeningBlock.setVisibility(View.VISIBLE);
             changeToExpiryDateButton.setVisibility(View.VISIBLE);
