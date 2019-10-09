@@ -895,28 +895,50 @@ public class EditProduct extends AppCompatActivity {
 
             SingleProduct generalProduct = createGeneralProductFromFields(); // Prodotto compilato con solo i campi strettamente relativi al prodotto
 
-            for(int i=0; i<packToModify.getSize(); i++){
-                packToModify.getProducts().get(i).setPackaged(generalProduct.isPackaged());
-                packToModify.getProducts().get(i).setName(generalProduct.getName());
-                packToModify.getProducts().get(i).setBrand(generalProduct.getBrand());
-                packToModify.getProducts().get(i).setPrice(generalProduct.getPrice());
-                packToModify.getProducts().get(i).setWeight(generalProduct.getWeight());
-                packToModify.getProducts().get(i).setPricePerKilo(generalProduct.getPricePerKilo());
-                packToModify.getProducts().get(i).setPieces(generalProduct.getPieces());
-                packToModify.getProducts().get(i).setStorageCondition(generalProduct.getStorageCondition());
-                packToModify.getProducts().get(i).setOpenedStorageCondition(generalProduct.getOpenedStorageCondition());
-                packToModify.getProducts().get(i).setExpiringDaysAfterOpening(generalProduct.getExpiringDaysAfterOpening());
-            }
+            if(action==Action.EDIT){
+                new Thread(() -> {
+                    SingleProduct p = productDatabase.productDao().get(productToModifyId);
+                    p.setPackaged(generalProduct.isPackaged());
+                    p.setName(generalProduct.getName());
+                    p.setBrand(generalProduct.getBrand());
+                    p.setPrice(generalProduct.getPrice());
+                    p.setWeight(generalProduct.getWeight());
+                    p.setPricePerKilo(generalProduct.getPricePerKilo());
+                    p.setPieces(generalProduct.getPieces());
+                    p.setStorageCondition(generalProduct.getStorageCondition());
+                    p.setOpenedStorageCondition(generalProduct.getOpenedStorageCondition());
+                    p.setExpiringDaysAfterOpening(generalProduct.getExpiringDaysAfterOpening());
 
-            new Thread(() -> {
-                if (productDatabase.productDao().updateAll(packToModify.getProducts()) > 0) {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto modificato", Toast.LENGTH_LONG).show()); // STRINGS.XML
-                    Intent resultIntent = new Intent();
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
+                    if (productDatabase.productDao().update(p) > 0) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto modificato", Toast.LENGTH_LONG).show()); // STRINGS.XML
+                        Intent resultIntent = new Intent();
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }
+                }).start();
+            } else if(action==Action.EDIT_PACK){
+                for(int i=0; i<packToModify.getSize(); i++){
+                    packToModify.getProducts().get(i).setPackaged(generalProduct.isPackaged());
+                    packToModify.getProducts().get(i).setName(generalProduct.getName());
+                    packToModify.getProducts().get(i).setBrand(generalProduct.getBrand());
+                    packToModify.getProducts().get(i).setPrice(generalProduct.getPrice());
+                    packToModify.getProducts().get(i).setWeight(generalProduct.getWeight());
+                    packToModify.getProducts().get(i).setPricePerKilo(generalProduct.getPricePerKilo());
+                    packToModify.getProducts().get(i).setPieces(generalProduct.getPieces());
+                    packToModify.getProducts().get(i).setStorageCondition(generalProduct.getStorageCondition());
+                    packToModify.getProducts().get(i).setOpenedStorageCondition(generalProduct.getOpenedStorageCondition());
+                    packToModify.getProducts().get(i).setExpiringDaysAfterOpening(generalProduct.getExpiringDaysAfterOpening());
                 }
-            }).start();
 
+                new Thread(() -> {
+                    if (productDatabase.productDao().updateAll(packToModify.getProducts()) > 0) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto modificato", Toast.LENGTH_LONG).show()); // STRINGS.XML
+                        Intent resultIntent = new Intent();
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }
+                }).start();
+            }
         } else {
             // Mostra warning in caso di date sospette
             SingleProduct formProduct = createProductFromFields();
