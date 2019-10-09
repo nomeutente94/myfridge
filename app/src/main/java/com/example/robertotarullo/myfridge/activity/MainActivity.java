@@ -885,21 +885,14 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popup = new PopupMenu(this, v);
         popup.getMenuInflater().inflate(R.menu.element_options, popup.getMenu());
 
-        // TODO nascondere / mostrare / cambiare voci
-
         if(action==null){
-            if(productsListAdapter.getItem(currentPopupPosition).isConsumed()) {
-                popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
-                popup.getMenu().findItem(R.id.unconsumeItem).setVisible(true);
-
-                popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
-            } else {
-                //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO non mostrare elimina nella schermata principale?
-            }
+            popup.getMenu().findItem(R.id.unconsumeItem).setVisible(false);
+            //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO nascondere elimina nella schermata principale?
         } else if(action==Action.MANAGE){
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
             popup.getMenu().findItem(R.id.cloneItem).setVisible(false);
+            popup.getMenu().findItem(R.id.unconsumeItem).setVisible(false);
         } else if(action==Action.CONSUMED){
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
