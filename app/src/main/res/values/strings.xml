@@ -2,4 +2,30 @@
     <string name="app_name">MyFridge Test</string>
     <item name="warningEdit" type="id" />
     <item name="expirySwitchControl" type="id" />
+
+
+    <!-- Generici -->
+
+    <string name="dialog_title_warning">Attenzione</string>
+    <string name="dialog_button_exit">Esci</string>
+    <string name="dialog_button_discard">Annulla</string>
+    <string name="dialog_button_remove">Rimuovi</string>
+    <string name="dialog_button_add">Aggiungi</string>
+    <string name="dialog_title_delete">Conferma eliminazione</string>
+
+    <string name="toast_delete_success">Prodotto rimosso</string>
+    <string name="toast_error">Errore</string>
+
+    <!-- Carrello -->
+
+    <string name="activity_title_cart">Carrello</string>
+
+    <string name="dialog_body_cart_back">Sono presenti uno o più prodotti nel carrello, vuoi uscire comunque? Tutte le modifiche andranno perse.</string>
+    <string name="dialog_body_cart_delete">Rimuovere il prodotto dal carrello?</string>
+    <string name="dialog_body_cart_multipledelete">Rimuovere %1$d prodotti dal carrello?</string>
+    <string name="dialog_body_cart_add">Vuoi aggiungere tutti i prodotti presenti nel carrello?</string>
+
+    <string name="toast_error_insert_cart">Impossibile aggiungere i prodotti del carrello</string>
+
+
 </resources>

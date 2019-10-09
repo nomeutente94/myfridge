@@ -58,7 +58,7 @@ public class ShoppingForm extends AppCompatActivity {
         } else {
             Intent intent = new Intent(this, Cart.class);
             PointOfPurchase currentSelection = (PointOfPurchase)pointOfPurchaseSpinner.getSelectedItem();
-            intent.putExtra("pointOfPurchaseId", currentSelection.getId());
+            intent.putExtra(Cart.POINT_OF_PURCHASE_ID, currentSelection.getId());
             startActivityForResult(intent, 1);
         }
     }

@@ -48,12 +48,18 @@ import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.watcher.PriceWeightRelationWatcher;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 public class EditProduct extends AppCompatActivity {
+
+    // Variabili intent
+    public static final String ACTION = "action"; // Tipo di azione
+    public static final String ACTION_TYPE = "actionType"; // Tipo di form
+    public static final String PRODUCT_TO_EDIT = "productToEdit"; // TODO
+    public static final String QUANTITY = "quantity"; // TODO
+    public static final String SUGGESTIONS = "suggestions"; // Aggiunge eventuali prodotti a quelli già esistenti da cui prenere suggerimenti
 
     private static final int PICK_REQUEST = 1;
 
@@ -62,7 +68,6 @@ public class EditProduct extends AppCompatActivity {
         ADD,
         EDIT,
         EDIT_PACK,
-        INSERT
     }
 
     public enum ActionType{
@@ -113,6 +118,8 @@ public class EditProduct extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_product);
+
+        System.out.println("FDSIGOIDFJDSKFSD: " + Action.ADD.toString());
 
         // Ottieni un riferimento al db
         productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
@@ -219,6 +226,8 @@ public class EditProduct extends AppCompatActivity {
         priceField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(priceField); });
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
         //expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
+
+        nameField.requestFocus(); // Il campo nome ha il focus all'apertura del form
 
         switch (action) {
             case ADD:
@@ -366,18 +375,6 @@ public class EditProduct extends AppCompatActivity {
                             });
                         }).start();
                         break;
-                }
-                break;
-            case INSERT:
-                // Inserimento dei prodotti dal carrello al database
-                if (actionType == ActionType.SHOPPING) {
-                    new Thread(() -> {
-                        if (addProducts((List<SingleProduct>) getIntent().getSerializableExtra("cartProducts")) > 0) { // TODO spostare new thread in addproducts() e modificare di conseguenza onconfirmbuttonclick
-                            Intent resultIntent = new Intent();
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                        }
-                    }).start();
                 }
                 break;
         }
@@ -676,8 +673,8 @@ public class EditProduct extends AppCompatActivity {
 
         new Thread(() -> {
             List<SingleProduct> products = productDatabase.productDao().getAll(); // TODO Prendi tutti i prodotti non uguali
-            if(getIntent().getSerializableExtra("suggestions")!=null){ // Se si tratta di un'aggiunta o di una modifica
-                List<SingleProduct> cartProducts = (List<SingleProduct>) getIntent().getSerializableExtra("suggestions");
+            if(getIntent().getSerializableExtra(SUGGESTIONS)!=null){ // Se si tratta di un'aggiunta o di una modifica
+                List<SingleProduct> cartProducts = (List<SingleProduct>) getIntent().getSerializableExtra(SUGGESTIONS);
                 products.addAll(cartProducts);
             }
             runOnUiThread(() -> addSuggestions(products));
@@ -847,7 +844,6 @@ public class EditProduct extends AppCompatActivity {
                     } else if(actionType == ActionType.SHOPPING){ // Se si tratta della modalità spesa
                         if (getIntent().getSerializableExtra("productToEdit") != null) {
                             resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
-                            resultIntent.putExtra("position", getIntent().getIntExtra("position", 0));
                             resultIntent.putExtra("editedProduct", newProduct);
                             setResult(RESULT_OK, resultIntent);
                             finish();
@@ -867,11 +863,12 @@ public class EditProduct extends AppCompatActivity {
                         resultIntent.putExtra("quantity", TextUtils.getInt(quantityField));
                         setResult(RESULT_OK, resultIntent);
                         finish();
+                        break;
                     } else {
                         List<SingleProduct> productsToAdd = new ArrayList<>();
                         for (int i = 0; i < TextUtils.getInt(quantityField); i++)
                             productsToAdd.add(newProduct);
-                        insertCount = addProducts(productsToAdd);
+                        productDatabase.productDao().insertAll(productsToAdd); // TODO gestire valore di ritorno
                         break;
                     }
             }
@@ -973,16 +970,6 @@ public class EditProduct extends AppCompatActivity {
             } else
                 insertProduct(formProduct);
         }
-    }
-
-    private int addProducts(List<SingleProduct> productsToAdd){
-        int nonAddedProductsCount = Collections.frequency(productDatabase.productDao().insertAll(productsToAdd), -1);
-        int insertCount = productsToAdd.size() - nonAddedProductsCount;
-
-        String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + nonAddedProductsCount;
-        runOnUiThread(() -> Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show()); // STRINGS.XML
-
-        return insertCount;
     }
 
     // TODO mettere a fattor comune con lo stesso metodo in MainAcitvity
