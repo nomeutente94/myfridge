@@ -34,12 +34,9 @@ public class Cart extends AppCompatActivity {
     public static final String NEW_PRODUCT = "newProduct";
     public static final String EDITED_PRODUCT = "editedProduct";
 
-
-
     // Liste utilizzate
     private ArrayList<SingleProduct> cartProducts = new ArrayList<>(); // Lista dei prodotti inseriti nel carrello
-    private ArrayList<Integer> quantities = new ArrayList<>(); // Quantità relativa a ogni prodotto nel carrello // TODO crea classe coppia prodotto quantità
-    private ArrayList<SingleProduct> listToDisplay = new ArrayList<>(); // Lista mostrata all'utente
+    private ArrayList<CartProduct> cartProductsToDisplay = new ArrayList<>(); // Lista mostrata all'utente
 
     // Riferimenti a elementi della view
     private ListView listView;
@@ -53,7 +50,7 @@ public class Cart extends AppCompatActivity {
     private long pointOfPurchaseId;
     private Date purchaseDate;
 
-    private int lastEditPosition = -1; // Posizione dell'ultimo prodotto di cui si è aperta la modifica
+    private int lastEditPosition = -1; // Posizione dell'ultimo prodotto di cui si è aperta la schermata di modifica
 
     @Override
     // Gestisci il comportamento alla pressione del tasto indietro
@@ -107,14 +104,14 @@ public class Cart extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.SHOPPING);
-        intent.putExtra(EditProduct.QUANTITY, quantities.get(position));
-        intent.putExtra(EditProduct.PRODUCT_TO_EDIT, (SingleProduct)listView.getItemAtPosition(position));
-        intent.putExtra(EditProduct.SUGGESTIONS, listToDisplay);
+        intent.putExtra(EditProduct.QUANTITY, cartProductsToDisplay.get(position).quantity);
+        intent.putExtra(EditProduct.PRODUCT_TO_EDIT, cartProductsToDisplay.get(position).product);
+        intent.putExtra(EditProduct.SUGGESTIONS, cartProducts);
         startActivityForResult(intent, EDIT_REQUEST);
     }
 
     public void deleteProduct(View view){
-        SingleProduct p = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
+        SingleProduct p = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString())).getProduct();
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
@@ -179,34 +176,31 @@ public class Cart extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.ADD);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.SHOPPING);
-        intent.putExtra(EditProduct.SUGGESTIONS, listToDisplay);
+        intent.putExtra(EditProduct.SUGGESTIONS, cartProducts);
         startActivityForResult(intent, ADD_REQUEST);
     }
 
     // Aggiorna la lista da mostrare all'utente
     private void updateList(){
-        listToDisplay = new ArrayList<>(cartProducts);
-        quantities = new ArrayList<>();
-
-        for(int i=0; i<listToDisplay.size(); i++){
-            int occurences = 1;
-            for(int j=i+1; j<listToDisplay.size(); j++){
-                if(listToDisplay.get(i).equals(listToDisplay.get(j))){
-                    occurences++;
-                    listToDisplay.remove(j);
-                    j--;
-                }
-            }
-            quantities.add(occurences);
-        }
-
-        productsListAdapter = new CartListAdapter(this, R.layout.list_cart_element, listToDisplay, quantities);
-        listView.setAdapter(productsListAdapter);
-
         float total = 0;
-        for(int i=0; i<cartProducts.size(); i++) {
+        cartProductsToDisplay = new ArrayList<>(); // Resetta la lista dei prodotti da mostrare
+
+        // Controlla che il prodotto non sia stato già inserito nella lista dei prodotti da mostrare
+        // In caso positivo si aggiunge con le relative occorreze, altrimenti lo si ignora
+        for(int i=0; i<cartProducts.size(); i++){
             total += cartProducts.get(i).getPrice();
+            boolean alreadyFound = false;
+            for(int j=0; j<cartProductsToDisplay.size() && !alreadyFound; j++){
+                if(cartProducts.get(i).equals(cartProductsToDisplay.get(j).product))
+                    alreadyFound = true;
+            }
+            if(!alreadyFound)
+                cartProductsToDisplay.add(new CartProduct(cartProducts.get(i), Collections.frequency(cartProducts, cartProducts.get(i))));
         }
+
+        // Mostra la lista a schermo
+        productsListAdapter = new CartListAdapter(this, R.layout.list_cart_element, cartProductsToDisplay);
+        listView.setAdapter(productsListAdapter);
 
         // Aggiorna il campo prezzo
         if(total==0)
@@ -227,15 +221,15 @@ public class Cart extends AppCompatActivity {
 
         if (requestCode == ADD_REQUEST) {
             if (resultCode == RESULT_OK) {
-                for(int i=0; i<data.getIntExtra(QUANTITY, 1); i++)
+                for(int i=0; i<data.getIntExtra(QUANTITY, SingleProduct.DEFAULT_PIECES); i++)
                     cartProducts.add((SingleProduct)data.getSerializableExtra(NEW_PRODUCT));
                 updateList();
             }
         } else if (requestCode == EDIT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                int newQuantity = data.getIntExtra(QUANTITY, 1);
-                int oldQuantity = quantities.get(lastEditPosition);
-                SingleProduct oldProduct = listToDisplay.get(lastEditPosition);
+                int newQuantity = data.getIntExtra(QUANTITY, SingleProduct.DEFAULT_PIECES);
+                int oldQuantity = cartProductsToDisplay.get(lastEditPosition).getQuantity();
+                SingleProduct oldProduct = cartProductsToDisplay.get(lastEditPosition).getProduct();
 
                 if(newQuantity > oldQuantity){
                     for(int i=0; i < newQuantity-oldQuantity; i++)
@@ -252,6 +246,24 @@ public class Cart extends AppCompatActivity {
                 }
                 updateList();
             }
+        }
+    }
+
+    public class CartProduct {
+        private SingleProduct product;
+        private int quantity;
+
+        public SingleProduct getProduct(){
+            return product;
+        }
+
+        public int getQuantity(){
+            return quantity;
+        }
+
+        private CartProduct(SingleProduct product, int quantity){
+            this.product = product;
+            this.quantity = quantity;
         }
     }
 }

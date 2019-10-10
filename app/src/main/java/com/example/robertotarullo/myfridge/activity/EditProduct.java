@@ -119,8 +119,6 @@ public class EditProduct extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_product);
 
-        System.out.println("FDSIGOIDFJDSKFSD: " + Action.ADD.toString());
-
         // Ottieni un riferimento al db
         productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
 

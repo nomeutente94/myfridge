@@ -94,9 +94,13 @@ public class SingleProduct implements Product, Serializable {
     private Date openingDate; // Data di apertura del prodotto                                      (= packagingDate, se null = purchaseDate)
     private int openedStorageCondition; // Modalità di conservazione a seguito dell'apertura        (= storageCondition)
 
+    public static final int DEFAULT_PIECES = 1;
+    public static final int DEFAULT_PERCENTAGEQUANTITY = 100;
+
+
     public SingleProduct(){
-        this.pieces = 1;
-        this.percentageQuantity = 100;
+        this.pieces = DEFAULT_PIECES;
+        this.percentageQuantity = DEFAULT_PERCENTAGEQUANTITY;
     }
 
     @Override
@@ -210,7 +214,7 @@ public class SingleProduct implements Product, Serializable {
 
     public float getPercentageQuantity() {
         if(!isOpened())
-            return 100;
+            return DEFAULT_PERCENTAGEQUANTITY;
         return percentageQuantity;
     }
 
