@@ -778,7 +778,7 @@ public class EditProduct extends AppCompatActivity {
                 TextUtils.editFieldNotFromUser(expiryDateField, "");                                       // svuota eventuale expiryDate
             } else {
                 TextUtils.editFieldNotFromUser(expiryDateField, DateUtils.getFormattedDate(p.getExpiryDate())); // se data di scadenza standard
-                if(!p.isPackaged())                                                                             // Se prodotto fresco...
+                if(!p.isPackaged() && actionType!=ActionType.MANAGE)                                            // Se prodotto fresco...
                     changeToExpiringDateMode(true);                                                             // .. mostra 'data di scadenza' e nascondi 'giorni entro cui consumare'
             }
         } else {
@@ -805,7 +805,7 @@ public class EditProduct extends AppCompatActivity {
 
         if (p.getPieces()==1 && (p.getWeight()==0 && (p.getPrice()==0 || p.getPricePerKilo()==0))){ // Se il pezzo è unico e il peso non è definito/generato
             currentWeightSlider.setTag("percentage");
-            currentWeightSlider.setMax(100);
+            currentWeightSlider.setMax(SingleProduct.DEFAULT_PERCENTAGEQUANTITY);
             currentWeightSlider.setProgress((int) Math.ceil(p.getPercentageQuantity()));
         } else if (p.getPieces()>1) {
             currentWeightSlider.setTag("pieces");
@@ -816,8 +816,6 @@ public class EditProduct extends AppCompatActivity {
             currentWeightSlider.setMax(TextUtils.getInt(weightField));
             currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
         }
-
-        System.out.println("tag: " + currentWeightSlider.getTag());
     }
 
     private void insertProduct(SingleProduct newProduct){
@@ -1148,10 +1146,8 @@ public class EditProduct extends AppCompatActivity {
             }
 
             openedStorageConditionBlock.setVisibility(View.GONE);
-            currentWeightSlider.setEnabled(true); // TODO ?
-            currentWeightSlider.setVisibility(View.VISIBLE); // TODO ?
 
-            if(currentWeightSlider.getProgress()<currentWeightSlider.getMax() && !openedCheckBox.isChecked()) {
+            if(currentWeightSlider.getProgress() < currentWeightSlider.getMax() && !openedCheckBox.isChecked()) {
                 currentWeightSlider.setProgress(currentWeightSlider.getMax());
                 currentPercentageField.setText("100");
             }
