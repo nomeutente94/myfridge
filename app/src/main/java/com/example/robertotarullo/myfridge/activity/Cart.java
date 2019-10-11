@@ -73,8 +73,6 @@ public class Cart extends AppCompatActivity {
                    .setPositiveButton(getString(R.string.dialog_button_exit), dialogClickListener)
                    .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
                    .show();
-
-        // Se il carrello è vuoto esci senza alcun avviso
         } else
             super.onBackPressed();
     }
@@ -111,11 +109,11 @@ public class Cart extends AppCompatActivity {
     }
 
     public void deleteProduct(View view){
-        SingleProduct p = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString())).getProduct();
+        CartProduct cartProduct = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:
-                    cartProducts.removeAll(Collections.singleton(p)); // Rimuovi tutte le occorrenze del prodotto
+                    cartProducts.removeAll(Collections.singleton(cartProduct.getProduct())); // Rimuovi tutte le occorrenze del prodotto
                     updateList(); // Aggiorna la lista da visualizzare // TODO aggiornare ad ogni modifica di cartProducts? (listener)
                     Toast.makeText(getApplicationContext(), getString(R.string.toast_delete_success), Toast.LENGTH_LONG).show();
                     break;
@@ -125,8 +123,8 @@ public class Cart extends AppCompatActivity {
         };
 
         String msg = getString(R.string.dialog_body_cart_delete);
-        if(Collections.frequency(cartProducts, p)>1)
-            msg = String.format(getString(R.string.dialog_body_cart_multipledelete), Collections.frequency(cartProducts, p));
+        if(cartProduct.getQuantity()>1)
+            msg = String.format(getString(R.string.dialog_body_cart_multipledelete), cartProduct.getQuantity());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
