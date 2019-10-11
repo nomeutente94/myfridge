@@ -350,9 +350,6 @@ public class EditProduct extends AppCompatActivity {
                             SingleProduct p = productDatabase.productDao().get(productToModifyId);
                             runOnUiThread(() -> {
                                 fillFieldsFromProduct(p);
-
-
-
                                 setCurrentFormToInitial();
                             });
                         }).start();
@@ -368,6 +365,7 @@ public class EditProduct extends AppCompatActivity {
                             initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                             SingleProduct p = productDatabase.productDao().get(productToModifyId);
                             runOnUiThread(() -> {
+                                System.out.println(p);
                                 fillFieldsFromProduct(p);
                                 setCurrentFormToInitial();
                             });
@@ -741,14 +739,12 @@ public class EditProduct extends AppCompatActivity {
 
         if(p.getPricePerKilo()==0 || p.getWeight()==0)
             TextUtils.setPrice(p.getPrice(), priceField);
-
         if(p.getPrice()==0 || p.getWeight()==0)
             TextUtils.setPrice(p.getPricePerKilo(), pricePerKiloField);
-
         if(p.getPrice()==0 || p.getPricePerKilo()==0)
             TextUtils.setWeight(p.getWeight(), weightField);
 
-        if(p.getWeight()>0 && p.getCurrentWeight()>0)
+        if((p.getWeight()>0 || (p.getPrice()>0 && p.getPricePerKilo()>0)) && p.getCurrentWeight()>0) // Se il peso è definito/generato e currentWeight definito
             TextUtils.setWeight(p.getCurrentWeight(), currentWeightField);
         else
             TextUtils.setWeight(p.getWeight(), currentWeightField);
@@ -807,21 +803,21 @@ public class EditProduct extends AppCompatActivity {
             packagedCheckBox.setChecked(false);
         }
 
-        if ((p.getPieces()==1 && p.getWeight()==0)){
+        if (p.getPieces()==1 && (p.getWeight()==0 && (p.getPrice()==0 || p.getPricePerKilo()==0))){ // Se il pezzo è unico e il peso non è definito/generato
             currentWeightSlider.setTag("percentage");
             currentWeightSlider.setMax(100);
             currentWeightSlider.setProgress((int) Math.ceil(p.getPercentageQuantity()));
-        } else {
-            if (p.getPieces()>1) {
-                currentWeightSlider.setTag("pieces");
-                currentWeightSlider.setMax(p.getPieces());
-                currentWeightSlider.setProgress(p.getCurrentPieces());
-            } else if (p.getWeight()>0) {
-                currentWeightSlider.setTag("currentWeight");
-                currentWeightSlider.setMax(TextUtils.getInt(weightField));
-                currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
-            }
+        } else if (p.getPieces()>1) {
+            currentWeightSlider.setTag("pieces");
+            currentWeightSlider.setMax(p.getPieces());
+            currentWeightSlider.setProgress(p.getCurrentPieces());
+        } else if (p.getWeight()>0 || (p.getPrice()>0 && p.getPricePerKilo()>0)) { // Se il peso è definito/generato
+            currentWeightSlider.setTag("currentWeight");
+            currentWeightSlider.setMax(TextUtils.getInt(weightField));
+            currentWeightSlider.setProgress(TextUtils.getInt(currentWeightField));
         }
+
+        System.out.println("tag: " + currentWeightSlider.getTag());
     }
 
     private void insertProduct(SingleProduct newProduct){
