@@ -225,10 +225,10 @@ public class EditProduct extends AppCompatActivity {
         pricePerKiloField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) onPriceFocusLost(pricePerKiloField); });
         //expiryDaysAfterOpeningField.setOnFocusChangeListener((view, hasFocus) -> { if (!hasFocus) validateExpiryDate(); });
 
-        nameField.requestFocus(); // Il campo nome ha il focus all'apertura del form
-
         switch (action) {
             case ADD:
+                nameField.requestFocus(); // Il campo nome ha il focus all'apertura del form
+
                 initializeFormLabels("Aggiungi prodotto", "Aggiungi");
 
                 findViewById(R.id.currentPiecesFieldLabel).setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
