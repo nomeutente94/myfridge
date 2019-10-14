@@ -30,17 +30,18 @@ public class Cart extends AppCompatActivity {
     // Variabili per intent
     public static final String POINT_OF_PURCHASE_ID = "pointOfPurchaseId";
 
-    public static final String QUANTITY = "quantity";
-    public static final String NEW_PRODUCT = "newProduct";
-    public static final String EDITED_PRODUCT = "editedProduct";
+    // Variabili per intent (onActivityResult)
+    public static final String QUANTITY = "quantity"; // Chiave della quantità del prodotto aggiunto/modificato
+    public static final String NEW_PRODUCT = "newProduct"; // Chiave del nuovo prodotto
+    public static final String EDITED_PRODUCT = "editedProduct"; // Chiave del prodotto modificato
 
     // Liste utilizzate
     private ArrayList<SingleProduct> cartProducts = new ArrayList<>(); // Lista dei prodotti inseriti nel carrello
     private ArrayList<CartProduct> cartProductsToDisplay = new ArrayList<>(); // Lista mostrata all'utente
 
     // Riferimenti a elementi della view
-    private ListView listView;
-    private TextView totalPriceText;
+    private ListView listView; // View della lista di prodotti attualmente presenti nel carrello
+    private TextView totalPriceText; // View del campo prezzo totale
     private TextView noProductsWarning;
 
     // Adapter lista
@@ -108,6 +109,7 @@ public class Cart extends AppCompatActivity {
         startActivityForResult(intent, EDIT_REQUEST);
     }
 
+    // Elimina la voce relativa al pulsante premuto
     public void deleteProduct(View view){
         CartProduct cartProduct = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
         DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -124,7 +126,7 @@ public class Cart extends AppCompatActivity {
 
         String msg = getString(R.string.dialog_body_cart_delete);
         if(cartProduct.getQuantity()>1)
-            msg = String.format(getString(R.string.dialog_body_cart_multipledelete), cartProduct.getQuantity());
+            msg = String.format(getString(R.string.dialog_body_cart_multipleDelete), cartProduct.getQuantity());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(msg)
@@ -202,9 +204,9 @@ public class Cart extends AppCompatActivity {
 
         // Aggiorna il campo prezzo
         if(total==0)
-            totalPriceText.setText("€0,00");
+            totalPriceText.setText(getString(R.string.text_cart_totalPrice_empty));
         else
-            totalPriceText.setText("€" + PriceUtils.getFormattedPrice(total));
+            totalPriceText.setText(getString(R.string.text_cart_totalPrice,PriceUtils.getFormattedPrice(total)));
 
         // Aggiorna la visibilità di noProductsWarning
         if(listView.getAdapter().getCount()==0)
@@ -219,6 +221,8 @@ public class Cart extends AppCompatActivity {
 
         if (requestCode == ADD_REQUEST) {
             if (resultCode == RESULT_OK) {
+
+                // Aggungi il nuovo prodotto per il numero di volte specificato
                 for(int i=0; i<data.getIntExtra(QUANTITY, SingleProduct.DEFAULT_PIECES); i++)
                     cartProducts.add((SingleProduct)data.getSerializableExtra(NEW_PRODUCT));
                 updateList();
@@ -229,6 +233,7 @@ public class Cart extends AppCompatActivity {
                 int oldQuantity = cartProductsToDisplay.get(lastEditPosition).getQuantity();
                 SingleProduct oldProduct = cartProductsToDisplay.get(lastEditPosition).getProduct();
 
+                // Aggiungi o rimuovi prodotti nella loro posizione
                 if(newQuantity > oldQuantity){
                     for(int i=0; i < newQuantity-oldQuantity; i++)
                         cartProducts.add(cartProducts.indexOf(oldProduct), oldProduct);
@@ -237,16 +242,19 @@ public class Cart extends AppCompatActivity {
                         cartProducts.remove(oldProduct);
                 }
 
+                // Applica le eventuali modifiche a tutti i prodotti
                 for(int i=0; i<cartProducts.size(); i++){
                     if(cartProducts.get(i).equals(oldProduct)){
                         cartProducts.set(i, (SingleProduct)data.getSerializableExtra(EDITED_PRODUCT));
                     }
                 }
+
                 updateList();
             }
         }
     }
 
+    // Rappresenta l'oggetto 'prodotto' nel carrello, con la relativa quantità
     public class CartProduct {
         private SingleProduct product;
         private int quantity;
