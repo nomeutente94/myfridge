@@ -15,6 +15,7 @@
 
     <string name="toast_delete_success">Prodotto rimosso</string>
     <string name="toast_error">Errore</string>
+    <string name="toast_error_productNotFoundInList">Non è stato trovato alcun prodotto alla posizione in lista indicata</string>
 
     <!-- Cart -->
 
@@ -29,5 +30,13 @@
 
     <string name="text_cart_totalPrice_empty">€0,00</string>
     <string name="text_cart_totalPrice">€%1$s</string>
+
+
+    <!-- MainActivity -->
+
+    <string name="activty_title_main_pick">Seleziona un prodotto</string>
+    <string name="activty_title_main_consumed">Storico consumazioni</string>
+    <string name="activty_title_main_manage">Prodotti memorizzati</string>
+
 
 </resources>

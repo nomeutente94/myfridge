@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
         MANAGE
     }
 
+    // Stringhe di testo per le modalità di conservazione
+    // TODO rendere dinamiche
     private static final String FILTER0_TEXT = "Dispensa";
     private static final String FILTER1_TEXT = "Frigorifero";
     private static final String FILTER2_TEXT = "Congelatore";
@@ -91,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     // Position dell'elemento su cui si è aperto l'utlimo popupmenu
     private int currentPopupPosition;
 
-    // action
+    // Definisce il tipo di lista mostrata, null se default
     private Action action;
 
     @Override
@@ -99,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Inizializza action
         action = (Action) getIntent().getSerializableExtra("action");
 
         // Ottieni un riferimento al DB
@@ -118,15 +121,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Setta il filtro prodotti iniziale
         currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
-        pressOnFilter(filterButton1);
+        pressOnFilter(filterButton1); // TODO leggere valore iniziale filtro da impostazioni
 
         if(action==Action.PICK || action==Action.CONSUMED || action==Action.MANAGE) {
             if(action==Action.PICK)
-                setTitle("Seleziona un prodotto");
+                setTitle(getString(R.string.activty_title_main_pick));
             else if(action==Action.CONSUMED)
-                setTitle("Storico consumazioni");
+                setTitle(getString(R.string.activty_title_main_consumed));
             else if(action==Action.MANAGE)
-                setTitle("Prodotti memorizzati");
+                setTitle(getString(R.string.activty_title_main_manage));
 
             findViewById(R.id.buttonPanel).setVisibility(View.GONE);
             findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);

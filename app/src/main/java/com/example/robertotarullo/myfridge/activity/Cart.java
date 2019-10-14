@@ -112,28 +112,32 @@ public class Cart extends AppCompatActivity {
     // Elimina la voce relativa al pulsante premuto
     public void deleteProduct(View view){
         CartProduct cartProduct = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which){
-                case DialogInterface.BUTTON_POSITIVE:
-                    cartProducts.removeAll(Collections.singleton(cartProduct.getProduct())); // Rimuovi tutte le occorrenze del prodotto
-                    updateList(); // Aggiorna la lista da visualizzare // TODO aggiornare ad ogni modifica di cartProducts? (listener)
-                    Toast.makeText(getApplicationContext(), getString(R.string.toast_delete_success), Toast.LENGTH_LONG).show();
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    break;
-            }
-        };
 
-        String msg = getString(R.string.dialog_body_cart_delete);
-        if(cartProduct.getQuantity()>1)
-            msg = String.format(getString(R.string.dialog_body_cart_multipleDelete), cartProduct.getQuantity());
+        if(cartProduct!=null){
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        cartProducts.removeAll(Collections.singleton(cartProduct.getProduct())); // Rimuovi tutte le occorrenze del prodotto
+                        updateList(); // Aggiorna la lista da visualizzare
+                        Toast.makeText(getApplicationContext(), getString(R.string.toast_delete_success), Toast.LENGTH_LONG).show();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
-                .setTitle(getString(R.string.dialog_title_delete))
-                .setPositiveButton(getString(R.string.dialog_button_remove), dialogClickListener)
-                .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
-                .show();
+            String msg = getString(R.string.dialog_body_cart_delete);
+            if (cartProduct.getQuantity() > 1)
+                msg = String.format(getString(R.string.dialog_body_cart_multipleDelete), cartProduct.getQuantity());
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(msg)
+                    .setTitle(getString(R.string.dialog_title_delete))
+                    .setPositiveButton(getString(R.string.dialog_button_remove), dialogClickListener)
+                    .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                    .show();
+        } else
+            Toast.makeText(this, getString(R.string.toast_error_productNotFoundInList), Toast.LENGTH_LONG).show();
     }
 
     public void onConfirmButtonClick(View view) {
