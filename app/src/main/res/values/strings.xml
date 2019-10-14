@@ -16,16 +16,18 @@
     <string name="toast_delete_success">Prodotto rimosso</string>
     <string name="toast_error">Errore</string>
 
-    <!-- Carrello -->
+    <!-- Cart -->
 
     <string name="activity_title_cart">Carrello</string>
 
     <string name="dialog_body_cart_back">Sono presenti uno o più prodotti nel carrello, vuoi uscire comunque? Tutte le modifiche andranno perse.</string>
     <string name="dialog_body_cart_delete">Rimuovere il prodotto dal carrello?</string>
-    <string name="dialog_body_cart_multipledelete">Rimuovere %1$d prodotti dal carrello?</string>
+    <string name="dialog_body_cart_multipleDelete">Rimuovere %1$d prodotti dal carrello?</string>
     <string name="dialog_body_cart_add">Vuoi aggiungere tutti i prodotti presenti nel carrello?</string>
 
     <string name="toast_error_insert_cart">Impossibile aggiungere i prodotti del carrello</string>
 
+    <string name="text_cart_totalPrice_empty">€0,00</string>
+    <string name="text_cart_totalPrice">€%1$s</string>
 
 </resources>
