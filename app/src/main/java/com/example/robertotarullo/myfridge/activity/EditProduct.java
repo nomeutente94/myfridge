@@ -861,6 +861,9 @@ public class EditProduct extends AppCompatActivity {
                         for (int i = 0; i < TextUtils.getInt(quantityField); i++)
                             productsToAdd.add(newProduct);
                         productDatabase.productDao().insertAll(productsToAdd); // TODO gestire valore di ritorno
+                        resultIntent.putExtra("filter", newProduct.getActualStorageCondition());
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
                         break;
                     }
             }
