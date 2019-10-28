@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.robertotarullo.myfridge.adapter.CartListAdapter;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
-import com.example.robertotarullo.myfridge.database.DatabaseUtils;
+import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
@@ -119,7 +119,7 @@ public class Cart extends AppCompatActivity {
                     case DialogInterface.BUTTON_POSITIVE:
                         cartProducts.removeAll(Collections.singleton(cartProduct.getProduct())); // Rimuovi tutte le occorrenze del prodotto
                         updateList(); // Aggiorna la lista da visualizzare
-                        Toast.makeText(getApplicationContext(), getString(R.string.toast_delete_success), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), getString(R.string.success_delete), Toast.LENGTH_LONG).show();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
                         break;
@@ -137,7 +137,7 @@ public class Cart extends AppCompatActivity {
                     .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
                     .show();
         } else
-            Toast.makeText(this, getString(R.string.toast_error_productNotFoundInList), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_productNotFoundInList), Toast.LENGTH_LONG).show();
     }
 
     public void onConfirmButtonClick(View view) {
@@ -155,7 +155,7 @@ public class Cart extends AppCompatActivity {
 
                     // Inserimento dei prodotti dal carrello al database
                     new Thread(() -> {
-                        if (Collections.frequency(DatabaseUtils.getDatabase(this).productDao().insertAll(cartProducts), -1) == 0)
+                        if (Collections.frequency(ProductDatabase.getInstance(this).productDao().insertAll(cartProducts), -1) == 0)
                             finish();
                         else
                             runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.toast_error_insert_cart), Toast.LENGTH_LONG).show());
@@ -222,7 +222,6 @@ public class Cart extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == ADD_REQUEST) {
             if (resultCode == RESULT_OK) {
 

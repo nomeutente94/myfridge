@@ -31,7 +31,6 @@ import com.example.robertotarullo.myfridge.bean.ProductForm;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.adapter.PointsOfPurchaseSpinnerAdapter;
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
-import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.filter.NameBrandInputFilter;
 import com.example.robertotarullo.myfridge.fragment.SpinnerDatePickerFragment;
@@ -57,6 +56,8 @@ public class EditProduct extends AppCompatActivity {
     // Variabili intent
     public static final String ACTION = "action"; // Tipo di azione
     public static final String ACTION_TYPE = "actionType"; // Tipo di form
+    public static final String ID = "id"; // Id del prodotto da modificare
+    public static final String FILTER = "filter"; // Filtro di partenza
     public static final String PRODUCT_TO_EDIT = "productToEdit"; // TODO
     public static final String QUANTITY = "quantity"; // TODO
     public static final String SUGGESTIONS = "suggestions"; // Aggiunge eventuali prodotti a quelli già esistenti da cui prenere suggerimenti
@@ -120,7 +121,7 @@ public class EditProduct extends AppCompatActivity {
         setContentView(R.layout.activity_edit_product);
 
         // Ottieni un riferimento al db
-        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
+        productDatabase = ProductDatabase.getInstance(getApplicationContext());
 
         // Riferimenti ai campi
         packagedCheckBox = findViewById(R.id.packagedCheckBox);
@@ -365,7 +366,6 @@ public class EditProduct extends AppCompatActivity {
                             initializePointsOfPurchaseSpinner(); // TODO mettere a fattor comune con le altre chiamate uguali nello switch
                             SingleProduct p = productDatabase.productDao().get(productToModifyId);
                             runOnUiThread(() -> {
-                                System.out.println(p);
                                 fillFieldsFromProduct(p);
                                 setCurrentFormToInitial();
                             });
@@ -909,7 +909,7 @@ public class EditProduct extends AppCompatActivity {
                     }
                 }).start();
             } else if(action==Action.EDIT_PACK){
-                for(int i=0; i<packToModify.getSize(); i++){
+                for(int i=0; i<packToModify.getProducts().size(); i++){
                     packToModify.getProducts().get(i).setPackaged(generalProduct.isPackaged());
                     packToModify.getProducts().get(i).setName(generalProduct.getName());
                     packToModify.getProducts().get(i).setBrand(generalProduct.getBrand());

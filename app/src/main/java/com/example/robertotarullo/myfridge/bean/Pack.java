@@ -17,10 +17,6 @@ public class Pack implements Product, Serializable {
         this.products = products;
     }
 
-    public boolean isEmpty(){
-        return products.size()==0;
-    }
-
     public List<SingleProduct> getProducts() {
         return products;
     }
@@ -29,50 +25,42 @@ public class Pack implements Product, Serializable {
         this.products = products;
     }
 
-    public void addProduct(SingleProduct singleProduct){
-        products.add(singleProduct);
-    }
-
-    public int getSize(){
-        return getProducts().size();
-    }
-
     @Override
     public String getName() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getName();
         return null;
     }
 
     @Override
     public void setName(String name) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setName(name);
     }
 
     @Override
     public String getBrand() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getBrand();
         return null;
     }
 
     @Override
     public void setBrand(String brand) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setBrand(brand);
     }
 
     @Override
     public float getWeight() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getWeight();
         return 0;
     }
 
     @Override
     public void setWeight(float weight) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setWeight(weight);
     }
 
@@ -80,13 +68,13 @@ public class Pack implements Product, Serializable {
     @Override
     // Ritorna una media da tutti i prodotti, compresi quelli consumati
     public int getPercentageQuantity() {
-        if(getSize()>0){
+        if(getProducts().size()>0){
             int sum = 0;
-            for(int i=0; i<getSize(); i++) {
+            for(int i=0; i<getProducts().size(); i++) {
                 if(!getProducts().get(i).isConsumed())
                     sum += getProducts().get(i).getPercentageQuantity();
             }
-            return (int) Math.ceil(sum/(float)getSize());
+            return (int) Math.ceil(sum/(float)getProducts().size());
         } else
             return 0;
     }*/
@@ -95,79 +83,79 @@ public class Pack implements Product, Serializable {
     // Ritorna true se tutti i pezzi sono stati consumati, false se almeno uno non è consumato
     public boolean isConsumed() {
         int consumed = 0;
-        for(int i=0; i<getSize(); i++){
+        for(int i=0; i<getProducts().size(); i++){
             if(getProducts().get(i).isConsumed())
                 consumed++;
         }
-        return consumed==getSize();
+        return consumed==getProducts().size();
     }
 
     @Override
     // Ritorna true se tutti i pezzi sono stati consumati, false se almeno uno non è consumato
     public boolean isOpened() {
         int opened = 0;
-        for(int i=0; i<getSize(); i++){
+        for(int i=0; i<getProducts().size(); i++){
             if(getProducts().get(i).isOpened())
                 opened++;
         }
-        return opened==getSize();
+        return opened==getProducts().size();
     }
 
     @Override
     public void setConsumed(boolean consumed) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setConsumed(consumed);
     }
 
     @Override
     public int getPieces() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getPieces();
         return 0;
     }
 
     @Override
     public void setPieces(int pieces) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setPieces(pieces);
     }
 
     @Override
     public int getActualStorageCondition(){
-        if(getSize()>0 && isOpened())
+        if(getProducts().size()>0 && isOpened())
             return getProducts().get(0).getOpenedStorageCondition();
         return getProducts().get(0).getStorageCondition();
     }
 
     @Override
     public int getStorageCondition() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getStorageCondition();
         return 0;
     }
 
     @Override
     public void setStorageCondition(int storageCondition) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setStorageCondition(storageCondition);
     }
 
     @Override
     public int getOpenedStorageCondition() {
-        if(getSize()>0)
+        if(getProducts().size()>0)
             return getProducts().get(0).getOpenedStorageCondition();
         return 0;
     }
 
     @Override
     public void setOpenedStorageCondition(int openedStorageCondition) {
-        for(int i=0; i<getSize(); i++)
+        for(int i=0; i<getProducts().size(); i++)
             getProducts().get(i).setOpenedStorageCondition(openedStorageCondition);
     }
 
     @Override
     public boolean isPackaged() {
-        for(int i=0; i<getSize(); i++){
+        for(int i=0; i<getProducts().size(); i++){
             if(!getProducts().get(i).isPackaged())
                 return false;
         }
@@ -178,7 +166,7 @@ public class Pack implements Product, Serializable {
     @Override
     public String toString() {
         String packAsString = "[";
-        packAsString += "size: " + getSize() + ", ";
+        packAsString += "size: " + getProducts().size() + ", ";
         packAsString += "products: ";
         for(SingleProduct p : getProducts())
             packAsString += p;

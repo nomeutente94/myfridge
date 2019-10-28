@@ -8,45 +8,52 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-
         <LinearLayout
             android:id="@+id/storageConditionsBlock"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="3">
+            android:layout_height="wrap_content">
 
+            <!--Pulsante di esempio-->
             <Button
-                android:id="@+id/StorageConditionFilterButton0"
+                android:id="@+id/exampleFilterButton"
+                android:background="#d6d8d7"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+
+            <!--<Button
+                android:id="@+id/storageConditionFilterButton0"
                 android:background="#d6d8d7"
                 android:layout_width="match_parent"
                 android:width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:tag="0"
-                android:onClick="setFilteredProducts"
+                android:onClick="setFilter"
                 android:text="Dispensa"/>
             <Button
-                android:id="@+id/StorageConditionFilterButton1"
+                android:id="@+id/storageConditionFilterButton1"
                 android:background="#d6d8d7"
                 android:width="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:tag="1"
-                android:onClick="setFilteredProducts"
+                android:onClick="setFilter"
                 android:text="Frigorifero"/>
             <Button
-                android:id="@+id/StorageConditionFilterButton2"
+                android:id="@+id/storageConditionFilterButton2"
                 android:background="#d6d8d7"
                 android:width="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:tag="2"
-                android:onClick="setFilteredProducts"
-                android:text="Congelatore"/>
-
+                android:onClick="setFilter"
+                android:text="Congelatore"/>-->
         </LinearLayout>
 
         <RelativeLayout

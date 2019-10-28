@@ -9,7 +9,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.robertotarullo.myfridge.bean.PointOfPurchase;
-import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
@@ -34,7 +33,7 @@ public class AddPointOfPurchase extends AppCompatActivity {
         addButton = findViewById(R.id.addButton);
 
         // Ottieni un riferimento al db
-        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
+        productDatabase = ProductDatabase.getInstance(getApplicationContext());
 
         addButton.setOnClickListener(v -> {
             if (isEmpty(nameField)) {

@@ -103,6 +103,31 @@ public class SingleProduct implements Product, Serializable {
         this.percentageQuantity = DEFAULT_PERCENTAGEQUANTITY;
     }
 
+    public SingleProduct(SingleProduct other){
+        this.id = other.id;
+        this.packaged = other.packaged;
+        this.name = other.name;
+        this.brand = other.brand;
+        this.price = other.price;
+        this.pricePerKilo = other.pricePerKilo;
+        this.weight = other.weight;
+        this.currentWeight = other.currentWeight;
+        this.percentageQuantity = other.percentageQuantity;
+        this.pieces = other.pieces;
+        this.currentPieces = other.currentPieces;
+        this.expiringDaysAfterOpening = other.expiringDaysAfterOpening;
+        this.purchaseDate = other.purchaseDate;
+        this.consumptionDate = other.consumptionDate;
+        this.storageCondition = other.storageCondition;
+        this.pointOfPurchaseId = other.pointOfPurchaseId;
+        this.consumed = other.consumed;
+        this.expiryDate = other.expiryDate;
+        this.packagingDate = other.packagingDate;
+        this.opened = other.opened;
+        this.openingDate = other.openingDate;
+        this.openedStorageCondition = other.openedStorageCondition;
+    }
+
     @Override
     public String getName() {
         return name;

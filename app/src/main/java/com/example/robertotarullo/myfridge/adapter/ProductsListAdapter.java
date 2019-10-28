@@ -136,7 +136,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
                 else
                     typeTextView.setText("Fresco");
             } else {
-                typeTextView.setText(String.valueOf(((Pack)p).getSize()));
+                typeTextView.setText(String.valueOf(((Pack)p).getProducts().size()));
                 if(p.isPackaged())
                     typeTextView.setText(typeTextView.getText() + " confezionati");
                 else

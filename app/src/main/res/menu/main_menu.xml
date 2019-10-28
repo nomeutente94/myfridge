@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/showConsumed"
-        android:title="Mostra prodotti consumati" />
+        android:title="@string/menu_consumed_main" />
     <item
         android:id="@+id/productsDb"
         android:title="Database prodotti" />
@@ -20,5 +20,6 @@
         android:title="Resetta stato..." />
     <item
         android:id="@+id/fillFromInsertedProduct"
+        android:enabled="false"
         android:title="Compila da prodotto..." />
 </menu>

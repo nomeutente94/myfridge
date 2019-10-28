@@ -31,13 +31,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.robertotarullo.myfridge.adapter.ProductsListAdapter;
+import com.example.robertotarullo.myfridge.bean.Filter;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.comparator.AscendingDateComparator;
 import com.example.robertotarullo.myfridge.comparator.ConsumedDiscendingDateComparator;
 import com.example.robertotarullo.myfridge.comparator.NameComparator;
-import com.example.robertotarullo.myfridge.database.DatabaseUtils;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.DateUtils;
@@ -46,18 +46,24 @@ import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Variabili intent
+    public static final String ACTION = "action"; // Tipo di azione
+    public static final String PACK = "currentPack"; // Chiave relativa al valore del currentPack
+
+    // Valori restituiti da intent result
+    public static final String FILTER = "filter";
+    public static final String DELETE = "delete";
+
+    private final int FILTER_INACTIVE_COLOR = Color.parseColor("#d6d8d7");
+    private final int FILTER_ACTIVE_COLOR = Color.parseColor("#bcbebd");
+
     // Tipo di azione
     public enum Action{
         PICK,
         CONSUMED,
-        MANAGE
+        MANAGE,
+        PACK
     }
-
-    // Stringhe di testo per le modalità di conservazione
-    // TODO rendere dinamiche
-    private static final String FILTER0_TEXT = "Dispensa";
-    private static final String FILTER1_TEXT = "Frigorifero";
-    private static final String FILTER2_TEXT = "Congelatore";
 
     // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
@@ -68,21 +74,20 @@ public class MainActivity extends AppCompatActivity {
     private static final int SHOPPING_REQUEST = 3;
     private static final int CONSUMED_REQUEST = 4;
     private static final int MANAGE_REQUEST = 5;
+    private static final int PACK_REQUEST = 6;
+
+    // Variabili delle impostazioni
+    private static final int DEFAULT_FILTER = 1;
 
     // Variabili di stato
     private int currentFilter; // Determina la modalità di conservazione corrente
-    private Pack currentPackage; // Riferimento alla confezione correntemente visualizzata, null se non si sta visualizzando una confezione
 
     // Dichiarazione delle liste di prodotti
-    private List<SingleProduct> singleProducts; // Lista di tutti i prodotti
-    private List<Product> groupedProducts; // Lista di tutti i prodotti della view (pack e singleProduct)
-    private List<Product> filteredProducts; // Lista di prodotti della modalità di conservazione corrente (pack e singleProduct)
-    private List<Product> packProducts; // Lista di prodotti della confezione corrente (solo singleProduct)
+    private List<Product> displayedProducts = new ArrayList<>(); // Lista di prodotti attualmente su schermo
 
     // Riferimenti a elementi della view
     private ListView listView;
     private EditText searchBar;
-    private Button filterButton0, filterButton1, filterButton2;
 
     // Adapter lista
     private ProductsListAdapter productsListAdapter;
@@ -90,85 +95,192 @@ public class MainActivity extends AppCompatActivity {
     // Elementi view
     private TextView noProductsWarning, resultsCount;
 
-    // Position dell'elemento su cui si è aperto l'utlimo popupmenu
-    private int currentPopupPosition;
+    // Position dell'elemento su cui si è aperto l'ultima volta il popupMenu
+    private int currentPopupPosition = -1;
 
     // Definisce il tipo di lista mostrata, null se default
     private Action action;
+
+    // Rappresenta il pack attualmente mostrato
+    // null se action != Action.PACK
+    private Pack currentPack;
+
+    // Lista dei filtri
+    private List<Filter> filters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inizializza action
-        action = (Action) getIntent().getSerializableExtra("action");
-
-        // Ottieni un riferimento al DB
-        productDatabase = DatabaseUtils.getDatabase(getApplicationContext());
+        // Inizializza variabili prese dall'activity chiamante
+        action = (Action) getIntent().getSerializableExtra(ACTION);
+        currentPack = (Pack) getIntent().getSerializableExtra(PACK);
 
         // Ottieni riferimenti alle view
         listView = findViewById(R.id.mylistview);
         searchBar = findViewById(R.id.searchBar);
-        filterButton0 = findViewById(R.id.StorageConditionFilterButton0);
-        filterButton1 = findViewById(R.id.StorageConditionFilterButton1);
-        filterButton2 = findViewById(R.id.StorageConditionFilterButton2);
         noProductsWarning = findViewById(R.id.noProductsWarning);
         resultsCount = findViewById(R.id.resultsCount);
 
-        // Inizializza la search bar
+        // Stabilisci il comportamento della search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
 
         // Setta il filtro prodotti iniziale
-        currentFilter = 1; // TODO leggere valore iniziale filtro da impostazioni
-        pressOnFilter(filterButton1); // TODO leggere valore iniziale filtro da impostazioni
+        currentFilter = DEFAULT_FILTER; // TODO leggere valore iniziale filtro da impostazioni
 
-        if(action==Action.PICK || action==Action.CONSUMED || action==Action.MANAGE) {
-            if(action==Action.PICK)
-                setTitle(getString(R.string.activty_title_main_pick));
-            else if(action==Action.CONSUMED)
-                setTitle(getString(R.string.activty_title_main_consumed));
-            else if(action==Action.MANAGE)
-                setTitle(getString(R.string.activty_title_main_manage));
-
-            findViewById(R.id.buttonPanel).setVisibility(View.GONE);
-            findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE);
-
-            LinearLayout mylistviewBlock = findViewById(R.id.mylistviewBlock);
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mylistviewBlock.getLayoutParams();
-            params.setMargins(0, 0, 0, 0);
-            mylistviewBlock.setLayoutParams(params);
-        }
+        // Stabilisce il titolo dell'activity
+        setTitle();
 
         // Setta il comportamento al click di un elemento
         initializeItemBehaviour();
 
-        // Inizializza la lista leggendo dal DB
-        retrieveProductsFromDB(null);
+        // Ottieni un riferimento al DB
+        productDatabase = ProductDatabase.getInstance(getApplicationContext());
+
+        if(action==null) {
+            new Thread(() -> {
+                triggerDbCallbacks();
+                runOnUiThread(this::syncFiltersAndProducts); // Procedi solo dopo aver prepopolato i filtri
+            }).start();
+        } else {
+            hideMainViews();
+            syncProducts();
+        }
+    }
+
+    // TODO dummy select per triggerare la callback di prepolazione
+    private void triggerDbCallbacks(){
+        productDatabase.query("select 1", null); // dummy select
+    }
+
+    private void syncFiltersAndProducts(){
+        new Thread(() -> {
+            filters = productDatabase.filterDao().getFilters();
+
+            runOnUiThread(() -> {
+                for(int i=0; i<filters.size(); i++){
+                    LinearLayout storageConditionsBlock = findViewById(R.id.storageConditionsBlock);
+                    storageConditionsBlock.setWeightSum(filters.size());
+
+                    Button filterButton = new Button(this);
+                    filterButton.setLayoutParams(findViewById(R.id.exampleFilterButton).getLayoutParams());
+                    filterButton.setVisibility(View.VISIBLE);
+                    filterButton.setTag(String.valueOf(i));
+                    filterButton.setOnClickListener(v -> setFilter(v));
+                    storageConditionsBlock.addView(filterButton);
+                    filters.get(i).setButton(filterButton);
+                }
+                syncProducts();
+            });
+        }).start();
+    }
+
+    // Aggiorna la lista dei prodotti dal DB in base al tipo di action
+    private void syncProducts() {
+        if (action==null) {
+            // Inizializza filtri
+            for(int i=0; i<filters.size(); i++) {
+                filters.get(i).setProducts(new ArrayList<>());
+            }
+            new Thread(() -> {
+                List<SingleProduct> singleProducts = productDatabase.productDao().getAll(false);
+                runOnUiThread(() -> {
+                    setNotifications(singleProducts);
+                    List<Product> groupedProducts = getGroupedProducts(singleProducts); // Raggruppa i prodotti in pack
+                    for (int i = 0; i < groupedProducts.size(); i++) { // Aggiungi i prodotti raggruppati nel rispettivo filtro
+                        filters.get(groupedProducts.get(i).getActualStorageCondition()).getProducts().add(groupedProducts.get(i));
+                    }
+                    for(int i=0; i<filters.size(); i++){
+                        sortByAscendingDate(filters.get(i).getProducts()); // TODO controlla prima quale ordinamento utilizzare
+                    }
+                    setFilter(filters.get(currentFilter).getButton()); // Mostra i prodotti del filtro attuale
+                });
+            }).start();
+        } else if (action==Action.PACK) {
+            new Thread(() -> {
+                List<SingleProduct> singleProducts = productDatabase.productDao().getAll(false);
+                runOnUiThread(() -> {
+                    displayedProducts = new ArrayList<>();
+
+                    for(SingleProduct sp: singleProducts){
+                        if(sp.packEquals(currentPack.getProducts().get(0)))
+                            displayedProducts.add(sp);
+                    }
+
+                    if(displayedProducts.size()==0){
+                        finish(); // TODO Gestire
+                    } else {
+                        filterBySearchBar(); // TODO ordina per data di inserimento
+                    }
+                });
+            }).start();
+        } else if (action==Action.CONSUMED){
+            new Thread(() -> {
+                displayedProducts = new ArrayList<>(productDatabase.productDao().getAll(true));
+                runOnUiThread(() -> {
+                    sortByAscendingDate(displayedProducts);
+                    filterBySearchBar();
+                });
+            }).start();
+        } else if (action==Action.PICK || action==Action.MANAGE) {
+            new Thread(() -> {
+                // List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); TODO prendi catalogo prodotti
+                runOnUiThread(() -> {
+                    // TODO
+                });
+            }).start();
+        }
+    }
+
+    // Cambia il titolo dell'activity in base al parametro action
+    private void setTitle(){
+        if(action==null)
+            setTitle(getString(R.string.activity_title_main_default));
+        else if(action==Action.PICK)
+            setTitle(getString(R.string.activity_title_main_pick));
+        else if(action==Action.CONSUMED)
+            setTitle(getString(R.string.activity_title_main_consumed));
+        else if(action==Action.MANAGE)
+            setTitle(getString(R.string.activity_title_main_manage));
+        else if(action == Action.PACK) {
+            if(currentPack.getBrand()==null)
+                setTitle(getString(R.string.activity_title_main_pack_nobrand, currentPack.getName()));
+            else
+                setTitle(getString(R.string.activity_title_main_pack, currentPack.getName(), currentPack.getBrand()));
+        } else
+            setTitle(getString(R.string.activity_title_main_default));
+    }
+
+    // Nasconde i pulsanti in basso, i filtri per la modalità di conservazione e il counter di prodotti visualizzati
+    private void hideMainViews(){
+        findViewById(R.id.buttonPanel).setVisibility(View.GONE); // Nascondi i pulsanti in basso
+        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti relativi alla modalità di conservazione
+
+        // TODO Rimuovi il margine dalla view contenitore della lista
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) findViewById(R.id.mylistviewBlock).getLayoutParams();
+        params.setMargins(0, 0, 0, 0);
+        findViewById(R.id.mylistviewBlock).setLayoutParams(params);
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.clear();
-        if(action==null){ // TODO DEFAULT
-            menu.add(0, R.id.showConsumed, Menu.NONE, "Storico consumazioni");
-            menu.add(0, R.id.productsDb, Menu.NONE, "Gestisci prodotti");
-        }
-        return super.onPrepareOptionsMenu(menu);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if(action==null)
+            getMenuInflater().inflate(R.menu.mainactivity_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
             case R.id.showConsumed:
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("action", Action.CONSUMED);
+                intent.putExtra(ACTION, Action.CONSUMED);
                 startActivityForResult(intent, CONSUMED_REQUEST);
                 return true;
             case R.id.productsDb:
                 intent = new Intent(this, MainActivity.class);
-                intent.putExtra("action", Action.MANAGE);
+                intent.putExtra(ACTION, Action.MANAGE);
                 startActivityForResult(intent, MANAGE_REQUEST);
                 return true;
             default:
@@ -176,46 +288,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Usare questa chiamata per cambiare scheda e NON setFilterView direttamente
-    public void setFilteredProducts(View v) {
-        pressOnFilter((Button) v); // Cambia il colore del filtro attuale
-        clearSerchBarFocus();
-        setFilterView(Integer.valueOf(v.getTag().toString())); // Filtra la lista dei prodotti in base al filtro selezionato
-    }
+    public void setFilter(View v) {
+        for(int i=0; i<filters.size(); i++)
+            filters.get(i).getButton().setBackgroundColor(FILTER_INACTIVE_COLOR); // Setta tutti i pulsanti come inattivi
+        v.setBackgroundColor(FILTER_ACTIVE_COLOR); // Setta pulsante come attivo
+        clearSearchBarFocus();
 
-    private void pressOnFilter(Button b) {
-        if (b == null) {
-            if (currentFilter == 0)
-                b = filterButton0;
-            else if (currentFilter == 1)
-                b = filterButton1;
-            else if (currentFilter == 2)
-                b = filterButton2;
-        }
-
-        // Resetta i colori dei filtri
-        filterButton0.setBackgroundColor(Color.parseColor("#d6d8d7"));
-        filterButton1.setBackgroundColor(Color.parseColor("#d6d8d7"));
-        filterButton2.setBackgroundColor(Color.parseColor("#d6d8d7"));
-        // Cambia il colore del filtro attuale
-        b.setBackgroundColor(Color.parseColor("#bcbebd"));
+        currentFilter = Integer.valueOf(v.getTag().toString()); // Comunica quale filtro si sta utilizzando
+        displayedProducts = filters.get(currentFilter).getProducts();
+        filterBySearchBar();
     }
 
     @Override
     public void onBackPressed() {
-        if (currentPackage != null) {
-            resetSearchBar();
-            setFilterView(currentFilter); // TODO Usare setFilteredProducts per cambiare scheda e NON setFilterView direttamente ?
-        } else
-            super.onBackPressed();
+        super.onBackPressed();
     }
 
     private void resetSearchBar() {
         searchBar.setText(""); // Svuota la barra di ricerca
-        clearSerchBarFocus();
+        clearSearchBarFocus();
     }
 
-    private void clearSerchBarFocus() {
+    private void clearSearchBarFocus() {
         searchBar.clearFocus(); // Togli il focus alla barra di ricerca
         ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(searchBar.getWindowToken(), 0); // Nascondi la tastiera
     }
@@ -225,8 +319,23 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
 
-            if(action==Action.PICK){
-                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            if(action==null) {
+                if (p instanceof Pack) {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.putExtra(ACTION, Action.PACK);
+                    intent.putExtra(PACK, (Pack) p);
+                    startActivityForResult(intent, PACK_REQUEST);
+                } else if (p instanceof SingleProduct) {
+                    updateProduct((SingleProduct) p);
+                }
+            } else if(action==Action.PACK){
+                if (p instanceof SingleProduct) {
+                    updateProduct((SingleProduct) p);
+                } else if (p instanceof Pack) {
+                    Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
+                }
+            } else if(action==Action.PICK){ // TODO
+                /*DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                     switch (which){
                         case DialogInterface.BUTTON_POSITIVE:
                             Intent resultIntent = new Intent();
@@ -246,320 +355,162 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
 
-                String msg = "Eventuali dati presenti nei campi andranno persi, sei sicuro di voler autocompilare il form dal prodotto selezionato?";
-
-                /*SingleProduct clicked = null;
-                if(p instanceof SingleProduct)
-                    clicked = (SingleProduct)p;
-                else if(p instanceof Pack)
-                    clicked = ((Pack) p).getProducts().get(0);
-
-                if(p.isPackaged())
-                    msg += "\n- Tipo: Confezionato";
-                else
-                    msg += "\n- Tipo: Fresco";
-
-                msg += "\n- Nome: \"" + clicked.getName() + "\"";
-
-                if(clicked.getBrand()!=null)
-                    msg += "\n- Marca: \"" + clicked.getBrand() + "\"";
-                else
-                    msg += "\n- Marca: -";
-
-                if(clicked.getPrice()!=0)
-                    msg += "\n- Prezzo: € " + PriceUtils.getFormattedPrice(clicked.getPrice());
-                else
-                    msg += "\n- Prezzo: -";
-
-                if(clicked.getPricePerKilo()!=0)
-                    msg += "\n- Prezzo/kg: € " + PriceUtils.getFormattedPrice(clicked.getPricePerKilo());
-                else
-                    msg += "\n- Prezzo/kg: -";
-
-                if(clicked.getWeight()!=0)
-                    msg += "\n- Peso: " + PriceUtils.getFormattedWeight(clicked.getWeight()) + "g";
-                else
-                    msg += "\n- Peso: -";
-
-                if(clicked.getPieces()!=0)
-                    msg += "\n- N. pezzi: " + clicked.getPieces();
-                else
-                    msg += "\n- N. pezzi: Pezzo unico";
-
-                if(clicked.getExpiringDaysAfterOpening()!=0)
-                    msg += "\n- Giorni entro cui consumare: " + clicked.getExpiringDaysAfterOpening();
-                else
-                    msg += "\n- Giorni entro cui consumare: -";
-
-                if(clicked.getStorageCondition()==0)
-                    msg += "\n- Conservazione: Dispensa";
-                else if(clicked.getStorageCondition()==1)
-                    msg += "\n- Conservazione: Frigorifero";
-                else if(clicked.getStorageCondition()==2)
-                    msg += "\n- Conservazione: Congelatore";
-
-                if(clicked.isPackaged()){
-                    if(clicked.getOpenedStorageCondition()==0)
-                        msg += "\n- Conservazione dopo l'apertura: Dispensa";
-                    else if(clicked.getOpenedStorageCondition()==1)
-                        msg += "\n- Conservazione dopo l'apertura: Frigorifero";
-                    else if(clicked.getOpenedStorageCondition()==2)
-                        msg += "\n- Conservazione dopo l'apertura: Congelatore";
-                }*/
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(msg)
-                        .setTitle("Conferma compilazione")
-                        .setPositiveButton("Conferma", dialogClickListener)
-                        .setNegativeButton("Annulla", dialogClickListener)
-                        .show();
-            } else if(action==Action.MANAGE){
-                if(p instanceof Pack)
+                new AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.dialog_body_main_pick))
+                    .setTitle(getString(R.string.dialog_title_warning))
+                    .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                    .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                    .show();*/
+            } else if(action==Action.MANAGE){ // TODO
+                /*if(p instanceof Pack)
                     editPack((Pack) p);
                 else if(p instanceof SingleProduct)
-                    editSingleProduct((SingleProduct) p);
-            } else {
-                // TODO codice ripetuto con editProduct()
-                if(p instanceof Pack && currentPackage==null) { // Se si è clickato un Pack
-                    resetSearchBar();
-                    setPackageView((Pack) p);
-                } else if(!p.isConsumed())                      // Se si è clickato un SingleProduct
-                    updateProduct((SingleProduct)p);
-                else {                                          // Se si è clickato un SingleProduct consumato
-                    editSingleProduct((SingleProduct) p);
+                    editSingleProduct((SingleProduct) p);*/
+            } else if(action==Action.CONSUMED){
+                if (p instanceof SingleProduct) {
+                    editProduct(p);
+                } else if (p instanceof Pack) {
+                    Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    // Svuota il testo contenuto nella search bar
-    public void clearField(View view) {
-        TextUtils.clearField(view);
-    }
+    public void onMenuItemClick(MenuItem item){
+        Product p = productsListAdapter.getItem(currentPopupPosition);
+        if (p instanceof SingleProduct) {
+            SingleProduct sp = ((SingleProduct) p);
 
-    public void editProduct(MenuItem item){
-        Product p = (Product) listView.getItemAtPosition(currentPopupPosition);
-
-        if (p instanceof Pack){
-            if(action==Action.MANAGE){
-                editPack((Pack) p);
-            } else if(action==null && currentPackage == null){
-                resetSearchBar();
-                setPackageView((Pack) p); // Se si è clickato un pack
-            }
-        } else {
-            editSingleProduct((SingleProduct) p);  // Se si è clickato un singleProduct
-        }
-    }
-
-    public void consumeProduct(MenuItem item) {
-        int position = currentPopupPosition;
-        Product p = productsListAdapter.getItem(position);
-
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    new Thread(() -> {
-                        if (p instanceof Pack) {
-                            /*
-                            // rendere operazione atomica
-                            boolean deleteOk = true;
-                            for(int i=0; i<((Pack)p).getProducts().size(); i++){
-                                if (productDatabase.productDao().updateConsumption(((Pack)p).getProducts().get(i).getId(), true) <= 0)
-                                    deleteOk = false;
-                            }
-
-                            runOnUiThread(() -> {
-                                if(deleteOk)
-                                    Toast.makeText(getApplicationContext(), "Errore nella consumazione di uno o più prodotti", Toast.LENGTH_LONG).show();
-                                else
-                                    Toast.makeText(getApplicationContext(), "Confezione settata come consumata", Toast.LENGTH_LONG).show();
-                                retrieveProductsFromDB(null); // aggiorna lista
-                            });
-                            */
-                        } else {
-                            SingleProduct sp = ((SingleProduct) p);
+            switch(item.getItemId()){
+                case R.id.updateStateItem:
+                    updateProduct(sp);  // Se si è clickato un singleProduct
+                    break;
+                case R.id.consumeItem:
+                    DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                        if(which == DialogInterface.BUTTON_POSITIVE){
                             sp.setConsumed(true);
-                            sp.setConsumptionDate(DateUtils.getCurrentDateWithoutTime());
+                            sp.setConsumptionDate(new Date()); // Si imposta come data di consumazione l'istante in cui viene confermata la consumazione
 
-                            if (productDatabase.productDao().update(sp) > 0) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(getApplicationContext(), "Prodotto settato come consumato", Toast.LENGTH_LONG).show();
-                                    retrieveProductsFromDB(null); // aggiorna lista
-                                });
-                            }
+                            new Thread(() -> {
+                                if (productDatabase.productDao().update(sp) > 0) {
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(getApplicationContext(), getString(R.string.success_consume), Toast.LENGTH_LONG).show();
+                                        syncProducts(); // aggiorna lista
+                                    });
+                                } else {
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                }
+                            }).start();
                         }
-                    }).start();
+                    };
+
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.dialog_body_main_consume))
+                            .setTitle(getString(R.string.dialog_title_consume))
+                            .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                            .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                            .show();
                     break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    break;
-            }
-        };
-
-        String msg;
-        if (p instanceof Pack)
-            msg = "Vuoi segnare come consumati tutti i prodotti di tipo \"" + p.getName() + "\"?";
-        else
-            msg = "Vuoi segnare come consumato il prodotto \"" + p.getName() + "\"?";
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
-                .setTitle("Conferma consumazione")
-                .setPositiveButton("Conferma", dialogClickListener)
-                .setNegativeButton("Annulla", dialogClickListener)
-                .show();
-    }
-
-    // TODO parametrizzare e mettere a fattor comune con consumeProduct
-    public void unconsumeProduct(MenuItem item) {
-        int position = currentPopupPosition;
-        Product p = productsListAdapter.getItem(position);
-
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    new Thread(() -> {
-                        if (p instanceof Pack) {
-                            /*
-                            // rendere operazione atomica
-                            boolean deleteOk = true;
-                            for(int i=0; i<((Pack)p).getProducts().size(); i++){
-                                if (productDatabase.productDao().updateConsumption(((Pack)p).getProducts().get(i).getId(), true) <= 0)
-                                    deleteOk = false;
-                            }
-
-                            runOnUiThread(() -> {
-                                if(deleteOk)
-                                    Toast.makeText(getApplicationContext(), "Errore nella consumazione di uno o più prodotti", Toast.LENGTH_LONG).show();
-                                else
-                                    Toast.makeText(getApplicationContext(), "Confezione settata come consumata", Toast.LENGTH_LONG).show();
-                                retrieveProductsFromDB(null); // aggiorna lista
-                            });
-                            */
-                        } else {
-                            SingleProduct sp = ((SingleProduct) p);
+                case R.id.unconsumeItem:
+                    dialogClickListener = (dialog, which) -> {
+                        if(which == DialogInterface.BUTTON_POSITIVE){
                             sp.setConsumed(false);
                             sp.setConsumptionDate(null);
 
-                            if (productDatabase.productDao().update(sp) > 0) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(getApplicationContext(), "Prodotto settato come non consumato", Toast.LENGTH_LONG).show();
-                                    retrieveProductsFromDB(null); // aggiorna lista
-                                });
-                            }
+                            new Thread(() -> {
+                                if (productDatabase.productDao().update(sp) > 0) {
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(getApplicationContext(), getString(R.string.success_unconsume), Toast.LENGTH_LONG).show();
+                                        syncProducts(); // aggiorna lista
+                                    });
+                                } else {
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                }
+                            }).start();
                         }
-                    }).start();
+                    };
+
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.dialog_body_main_unconsume))
+                            .setTitle(getString(R.string.dialog_title_unconsume))
+                            .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                            .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                            .show();
                     break;
-                case DialogInterface.BUTTON_NEGATIVE:
+                case R.id.editItem:
+                    editProduct(sp);
                     break;
-            }
-        };
+                case R.id.cloneItem:
+                    View cloneDialogView = getLayoutInflater().inflate(R.layout.clone_dialog, null);
+                    TextView clonesField = cloneDialogView.findViewById(R.id.quantityField);
+                    clonesField.addTextChangedListener(new QuantityWatcher(cloneDialogView.findViewById(R.id.quantityAddButton), cloneDialogView.findViewById(R.id.quantitySubtractButton)));
 
-        String msg;
-        if (p instanceof Pack)
-            msg = "Vuoi settare come non consumati tutti i prodotti di tipo \"" + p.getName() + "\"?";
-        else
-            msg = "Vuoi settare come non consumato il prodotto \"" + p.getName() + "\"?";
+                    //RadioButton radioButtonFull = cloneDialogView.findViewById(R.id.radio_clone_complete);
+                    RadioButton radioButtonPartial = cloneDialogView.findViewById(R.id.radio_clone_partial);
+                    RadioButton radioButtonMin = cloneDialogView.findViewById(R.id.radio_clone_min);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
-                .setTitle("Conferma ripristino consumazione")
-                .setPositiveButton("Conferma", dialogClickListener)
-                .setNegativeButton("Annulla", dialogClickListener)
-                .show();
-    }
+                    dialogClickListener = (dialog, which) -> {
+                        if(which == DialogInterface.BUTTON_POSITIVE){
+                            SingleProduct clonedProduct = new SingleProduct(sp);
+                            clonedProduct.setId(0);
 
-    // TODO parametrizzare e mettere a fattor comune con onOptionsItemSelected case R.id.delete dell'activity EditProduct
-    public void deleteProduct(MenuItem item) {
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which){
-                case DialogInterface.BUTTON_POSITIVE:
+                            if(radioButtonPartial.isChecked())
+                                clonedProduct.loseConsumptionState();
+                            else if(radioButtonMin.isChecked())
+                                clonedProduct.loseState();
 
-                    if(productsListAdapter.getItem(currentPopupPosition) instanceof Pack){
-                        new Thread(() -> {
-                            if (productDatabase.productDao().deleteAll(((Pack) productsListAdapter.getItem(currentPopupPosition)).getProducts()) > 0) {
-                                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
-                                retrieveProductsFromDB(null); // aggiorna lista
-                            }
-                        }).start();
-                    } else if(productsListAdapter.getItem(currentPopupPosition) instanceof SingleProduct){
-                        new Thread(() -> {
-                            if (productDatabase.productDao().delete((SingleProduct)productsListAdapter.getItem(currentPopupPosition)) > 0) {
-                                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Prodotto eliminato", Toast.LENGTH_LONG).show());
-                                retrieveProductsFromDB(null); // aggiorna lista
-                            }
-                        }).start();
-                    }
+                            currentFilter = clonedProduct.getActualStorageCondition();
 
+                            List<SingleProduct> productsToClone = new ArrayList<>();
+                            for (int i = 0; i < TextUtils.getInt(clonesField); i++)
+                                productsToClone.add(clonedProduct);
+
+                            new Thread(() -> {
+                                int nonAddedProducts = Collections.frequency(productDatabase.productDao().insertAll(productsToClone), -1);
+                                runOnUiThread(() -> {
+                                    if(nonAddedProducts==0){
+                                        Toast.makeText(getApplicationContext(), getString(R.string.success_clone, productsToClone.size() - nonAddedProducts), Toast.LENGTH_LONG).show();
+                                        syncProducts(); // aggiorna lista
+                                    } else {
+                                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                    }
+                                });
+                            }).start();
+                        }
+                    };
+
+                    new AlertDialog.Builder(this)
+                            .setView(cloneDialogView)
+                            .setTitle(getString(R.string.dialog_title_clone))
+                            .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                            .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                            .show();
                     break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    break;
-            }
-        };
+                case R.id.deleteItem:
+                    dialogClickListener = (dialog, which) -> {
+                        if(which == DialogInterface.BUTTON_POSITIVE){
+                            new Thread(() -> {
+                                if (productDatabase.productDao().delete(sp) > 0) {
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.success_delete), Toast.LENGTH_LONG).show());
+                                    syncProducts(); // aggiorna lista
+                                } else {
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                }
+                            }).start();
+                        }
+                    };
 
-        String msg = "Vuoi eliminare definitivamente il prodotto?";
-        if(action==Action.MANAGE)
-            msg = "Vuoi eliminare definitivamente il prodotto? Verranno eliminati anche tutti i prodotti esistenti di questo tipo!";
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
-                .setTitle("Conferma eliminazione")
-                .setPositiveButton("Elimina", dialogClickListener)
-                .setNegativeButton("Annulla", dialogClickListener)
-                .show();
-    }
-
-    // TODO codice uguale a onConfirmButtonClick case "add"
-    public void cloneProduct(MenuItem item) {
-        View cloneDialogView = getLayoutInflater().inflate(R.layout.clone_dialog, null);
-
-        TextView clonesField = cloneDialogView.findViewById(R.id.quantityField);
-        clonesField.addTextChangedListener(new QuantityWatcher(cloneDialogView.findViewById(R.id.quantityAddButton), cloneDialogView.findViewById(R.id.quantitySubtractButton)));
-
-        //RadioButton radioButtonFull = cloneDialogView.findViewById(R.id.radio_clone_complete);
-        RadioButton radioButtonPartial = cloneDialogView.findViewById(R.id.radio_clone_partial);
-        RadioButton radioButtonMin = cloneDialogView.findViewById(R.id.radio_clone_min);
-
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-            switch (which){
-                case DialogInterface.BUTTON_POSITIVE:
-                    SingleProduct clonedProduct = (SingleProduct)productsListAdapter.getItem(currentPopupPosition);
-                    clonedProduct.setId(0);
-
-                    if(radioButtonPartial.isChecked())
-                        clonedProduct.loseConsumptionState();
-                    else if(radioButtonMin.isChecked())
-                       clonedProduct.loseState();
-
-                    currentFilter = clonedProduct.getActualStorageCondition();
-
-                    List<SingleProduct> productsToClone = new ArrayList<>();
-                    for (int i = 0; i < TextUtils.getInt(clonesField); i++)
-                        productsToClone.add(clonedProduct);
-
-                    new Thread(() -> {
-                        int nonAddedProductsCount = Collections.frequency(productDatabase.productDao().insertAll(productsToClone), -1);
-                        int insertCount = productsToClone.size() - nonAddedProductsCount;
-                        String msg = "Prodotti aggiunti: " + insertCount + "\nProdotti non aggiunti: " + nonAddedProductsCount;
-
-                        runOnUiThread(() -> {
-                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show(); // STRINGS.XML
-                            retrieveProductsFromDB(null); // aggiorna lista
-                        });
-                    }).start();
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.dialog_body_main_delete))
+                            .setTitle(getString(R.string.dialog_title_delete))
+                            .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                            .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                            .show();
                     break;
             }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(cloneDialogView)
-               .setTitle("Duplica prodotto")
-               .setPositiveButton("Conferma", dialogClickListener)
-               .setNegativeButton("Annulla", dialogClickListener)
-               .show();
+        } else if (p instanceof Pack){
+            Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
+        }
     }
 
     // Modifica la quantità dei duplicati tramite i relativi pulsanti
@@ -588,12 +539,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Ritorna una lista dei prodotti attualmente visualizzati a schermo
-    private List<Product> getCurrentDisplayedProducts() {
-        if (currentPackage == null)
-            return filteredProducts;
-        else
-            return packProducts;
+    // Svuota il contenuto del primo campo di tipo edittext corrispondente al pulsante premuto
+    public void clearField(View view) {
+        TextUtils.clearField(view);
     }
 
     // Filtra e mostra i prodotti filtrati in base al testo contenuto nella search bar
@@ -602,223 +550,126 @@ public class MainActivity extends AppCompatActivity {
 
         if (searchBar.getText().length() > 0) { // Se la barra di ricerca contiene qualcosa
             // Cerca la stringa della barra di ricerca nel nome o la marca dei prodotti
-            for (int i = 0; i < getCurrentDisplayedProducts().size(); i++) {
-                if (getCurrentDisplayedProducts().get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
-                    searchResults.add(getCurrentDisplayedProducts().get(i));
-                else if (getCurrentDisplayedProducts().get(i).getBrand() != null) {
-                    if (getCurrentDisplayedProducts().get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
-                        searchResults.add(getCurrentDisplayedProducts().get(i));
+            for (int i = 0; i < displayedProducts.size(); i++) {
+                if (displayedProducts.get(i).getName().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                    searchResults.add(displayedProducts.get(i));
+                else if (displayedProducts.get(i).getBrand() != null) {
+                    if (displayedProducts.get(i).getBrand().toLowerCase().contains(searchBar.getText().toString().toLowerCase()))
+                        searchResults.add(displayedProducts.get(i));
                 }
             }
             showProducts(searchResults);
         } else // Se la barra di ricerca è vuota resetta la view
-            showProducts(getCurrentDisplayedProducts());
+            showProducts(displayedProducts);
     }
 
-    // Aggiorna la lista dei prodotti dal DB e aggiorna la view
-    // Se non si vuole visualizzare il contenuto di un gruppo passare null
-    // .. altrimenti passare il riferimento all'oggetto pack
-    private void retrieveProductsFromDB(Pack pack) {
-        new Thread(() -> {
-            singleProducts = productDatabase.productDao().getAll(); // Prendi tutti i prodotti
-            runOnUiThread(() -> groupProducts(pack));
-        }).start();
-    }
+    // Ritorna una lista di prodotti raggruppati a partire da una di singoli non raggruppati
+    // Il criterio di raggruppamento dipende dal tipo di action
+    private List<Product> getGroupedProducts(List<SingleProduct> nonGroupedProducts) {
+        List<SingleProduct> nonGroupableProducts = new ArrayList<>(nonGroupedProducts);
+        List<Pack> groups = new ArrayList<>();
 
-    private void groupProducts(Pack pack) {
-        List<SingleProduct> groupedSingleProducts = new ArrayList<>(singleProducts);
-        groupedProducts = new ArrayList<>();
+        for (int i = 0; i < nonGroupableProducts.size(); i++) { // Per ogni prodotto
+            Pack p = new Pack(); // Crea un nuovo currentPack
 
-        if(action == Action.PICK || action == null || action == Action.MANAGE)                     // Raggruppa solo se non si visualizzano i prodotti consumati
-            groupedProducts.addAll(getPacks(groupedSingleProducts));    // Prendi gli eventuali raggruppamenti di prodotti
-        groupedProducts.addAll(groupedSingleProducts);                  // Prendi i singleProduct di cui non è stato trovato alcun raggruppamento
+            // Cerca un prodotto raggruppabile
+            for (int j = i+1; j < nonGroupableProducts.size(); j++) {
+                boolean groupable = false;
+                if (action == Action.PICK || action == Action.MANAGE)
+                    groupable = nonGroupableProducts.get(i).pickEquals(nonGroupableProducts.get(j));
+                else if(action == null || action == Action.PACK)
+                    groupable = nonGroupableProducts.get(i).packEquals(nonGroupableProducts.get(j));
 
-        if(action == Action.PICK || action==Action.MANAGE){ // salta il filtro e mostra tutti i prodotti
-            filteredProducts = groupedProducts;
-            sortByName(filteredProducts);
-            filterBySearchBar();
-        } else if(action == Action.CONSUMED){
-            filteredProducts = new ArrayList<>();
-            for(int i=0; i<singleProducts.size(); i++){
-                if(singleProducts.get(i).isConsumed())
-                    filteredProducts.add(singleProducts.get(i));
-            }
-            sortByAscendingDate(filteredProducts);
-            filterBySearchBar();
-        } else {
-            if (pack == null) {
-                if(currentFilter==0)
-                    setFilteredProducts(filterButton0);
-                else if(currentFilter==1)
-                    setFilteredProducts(filterButton1);
-                else if(currentFilter==2)
-                    setFilteredProducts(filterButton2);
-            } else {
-                setPackageView(pack);
-            }
-        }
-    }
-
-    // Controlla se il prodotto rispetta le condizioni di consumazione e tipo di lista
-    private boolean isProductToDisplay(SingleProduct p){
-        return action == Action.PICK || action == Action.MANAGE || (action==Action.CONSUMED && p.isConsumed()) || (action==null && !p.isConsumed());
-    }
-
-    // Raggruppa prodotti in base a caratteristiche comuni definite nel metodo packEquals() di SingleProduct
-    private List<Pack> getPacks(List<SingleProduct> singleProducts) {
-        List<Pack> packs = new ArrayList<>();
-        int[] storageNotifications = {0, 0, 0};
-
-        for (int i = 0; i < singleProducts.size(); i++) { // Per ogni prodotto
-
-            Pack p = new Pack(); // Crea un nuovo pack
-
-            boolean toDisplay = isProductToDisplay(singleProducts.get(i));
-            if (toDisplay) {
-
-                // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
-                if(action == null){
-                    Date expiryDate = DateUtils.getActualExpiryDate(singleProducts.get(i));
-                    if(expiryDate!=null && !expiryDate.equals(DateUtils.getNoExpiryDate())){
-                        Date now = DateUtils.getCurrentDateWithoutTime();
-                        if(expiryDate.before(now) || expiryDate.equals(now)){
-                            storageNotifications[singleProducts.get(i).getActualStorageCondition()]++;
-                        }
-                    }
-                }
-
-                for (int j = i+1; j<singleProducts.size(); j++) { // Cerca tra tutti i prodotti
-
-                    boolean otherToDisplay = isProductToDisplay(singleProducts.get(j));
-                    boolean groupable = false;
-                    if (otherToDisplay) {
-                        if (action == Action.PICK || action == Action.MANAGE)
-                            groupable = singleProducts.get(i).pickEquals(singleProducts.get(j));
-                        else
-                            groupable = singleProducts.get(i).packEquals(singleProducts.get(j));
-                    }
-
-                    if(!otherToDisplay || groupable){
-                        if (groupable)
-                            p.addProduct(singleProducts.get(j)); // sposta il prodotto nel pack
-                        singleProducts.remove(j);
-                        j--;
-                    }
+                // Se raggruppabile sposta il prodotto nel currentPack
+                if (groupable) {
+                    p.getProducts().add(nonGroupableProducts.get(j));
+                    nonGroupableProducts.remove(j);
+                    j--;
                 }
             }
 
-            if(!toDisplay || !p.getProducts().isEmpty()){
-                if(!p.getProducts().isEmpty()){ // Se è stato raggruppato con almeno un altro prodotto
-                    p.addProduct(singleProducts.get(i));  // .. sposta il prodotto nel pack
-                    packs.add(p);   // .. aggiungi il pack alla lista
-                }
-                singleProducts.remove(i);
-                i--;
+            // Se è stato trovato qualche raggruppamento si sposta il prodotto iniziale nel currentPack
+            if(!p.getProducts().isEmpty()){
+                p.getProducts().add(0, nonGroupableProducts.get(i)); // Aggiungi nella prima posizione del currentPack
+                nonGroupableProducts.remove(i); // Rimuovi dalla lista
+                i--; // Aggiorna indice lista
+                groups.add(p); // Aggiungi il currentPack alla lista
             }
         }
 
-        // aggiorna notifica sui pulsanti dei filtri
-        filterButton0.setText(FILTER0_TEXT);
-        if(storageNotifications[0]>0)
-            filterButton0.setText(FILTER0_TEXT +  " (" + storageNotifications[0] + ")");
-        filterButton1.setText(FILTER1_TEXT);
-        if(storageNotifications[1]>0)
-            filterButton1.setText(FILTER1_TEXT +  " (" + storageNotifications[1] + ")");
-        filterButton2.setText(FILTER2_TEXT);
-        if(storageNotifications[2]>0)
-            filterButton2.setText(FILTER2_TEXT +  " (" + storageNotifications[2] + ")");
+        List<Product> groupedProducts = new ArrayList<>(groups);
+        groupedProducts.addAll(nonGroupableProducts);
 
-        return packs;
+        return groupedProducts;
     }
 
-    // Mostra a schermo i prodotti filtrati secondo la modalità di conservazione attuale
-    private void setFilterView(int storageCondition) {
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.VISIBLE); // Mostra pulsanti di filtro
-        setTitle("MyFridge (test build)"); // Resetta il titolo al ritorno da una packageView
-        currentPackage = null; // Comunica che non si sta visualizzando alcun gruppo
-        currentFilter = storageCondition; // Comunica quale filtro si sta utilizzando
+    private void setNotifications(List<SingleProduct> nonGroupedProducts){
 
-        filteredProducts = new ArrayList<>();
+        // Inizializza notifiche per ogni filtro
+        for(int i=0; i<filters.size(); i++){
+            filters.get(i).setNotificationCount(0);
+        }
 
-        for (int i = 0; i < groupedProducts.size(); i++) {
-            if ((action==Action.CONSUMED && groupedProducts.get(i).isConsumed()) || (action!=Action.CONSUMED && !groupedProducts.get(i).isConsumed())) { // Controlla se il prodotto soddisfa il filtro corrente 'Mostra consumati'
-                // Controlla se il prodotto soddisfa il filtro storageCondition ricevuto
-                if (groupedProducts.get(i) instanceof SingleProduct) {
-                    if (((SingleProduct) groupedProducts.get(i)).getActualStorageCondition() == currentFilter)
-                        filteredProducts.add(groupedProducts.get(i));
-                } else {//if (groupedProducts.get(i) instanceof Pack)
-                    if ((groupedProducts.get(i)).getActualStorageCondition() == currentFilter) // TODO actualStorageCondition per gruppo ?
-                        filteredProducts.add(groupedProducts.get(i));
+        // Aggiungi eventuali notifiche sui filtri per prodotti in scadenza/scaduti
+        for (int i = 0; i < nonGroupedProducts.size(); i++) { // Per ogni prodotto
+            Date expiryDate = DateUtils.getActualExpiryDate(nonGroupedProducts.get(i));
+            if (expiryDate != null && !expiryDate.equals(DateUtils.getNoExpiryDate())) {
+                Date now = DateUtils.getCurrentDateWithoutTime();
+                if (expiryDate.before(now) || expiryDate.equals(now)) {
+                    Filter filter = filters.get(nonGroupedProducts.get(i).getActualStorageCondition());
+                    filter.setNotificationCount(filter.getNotificationCount() + 1);
                 }
             }
         }
-        sortByAscendingDate(filteredProducts); // TODO controlla prima quale ordinamento utilizzare
-        filterBySearchBar();
-    }
 
-    // Mostra nella view il contenuto di un raggruppamento (se non vuoto)
-    private void setPackageView(Pack pack) {
-        currentPackage = pack;
-        findViewById(R.id.storageConditionsBlock).setVisibility(View.GONE); // Nascondi i pulsanti per filtrare la modalità di conservazione
-        if (pack.getBrand() != null)
-            setTitle(pack.getName() + " " + pack.getBrand());
-        else
-            setTitle(pack.getName());
-
-        packProducts = new ArrayList<>();
-        for (int i = 0; i < pack.getProducts().size(); i++) {
-            if (action==Action.CONSUMED){
-                packProducts.add(pack.getProducts().get(i));
-            } else {
-                if (!pack.getProducts().get(i).isConsumed())
-                    packProducts.add(pack.getProducts().get(i));
-            }
+        // Aggiorna notifica sui pulsanti dei filtri
+        for(int i=0; i<filters.size(); i++){
+            Button filterButton = filters.get(i).getButton();
+            if(filters.get(i).getNotificationCount()>0)
+                filterButton.setText(getString(R.string.filter_name_notify, filters.get(i).getName(), filters.get(i).getNotificationCount()));
+            else
+                filterButton.setText(getString(R.string.filter_name, filters.get(i).getName()));
         }
-
-        showProducts(packProducts);
     }
 
-    // aggiunge adapter e aggiorna warning
-    // TODO cambia lista all'adapter esistente senza inizializzarlo ogni volta e metti un observer per aggiornare il warning
+    // Aggiunge adapter con i prodotti ricevuti e aggiorna warning
     private void showProducts(List<Product> productsToShow) {
-        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, productsToShow, action==Action.CONSUMED, action);
+        productsListAdapter = new ProductsListAdapter(this, R.layout.list_element, productsToShow, action==Action.CONSUMED, action); // Crea adapter
+        listView.setAdapter(productsListAdapter); // Mostra la lista
 
-        // Mostra la lista
-        listView.setAdapter(productsListAdapter);
-
-        if(action == Action.PICK || action==Action.CONSUMED || action==Action.MANAGE) {
+        if(action != null) {
             resultsCount.setVisibility(View.GONE);
         }
 
         if (listView.getAdapter().getCount() == 0) {
             noProductsWarning.setVisibility(View.VISIBLE);
-            if(action==null)
+            if(action==null) {
                 resultsCount.setVisibility(View.GONE);
+            }
         } else {
             noProductsWarning.setVisibility(View.GONE);
             if(action==null)
                 resultsCount.setVisibility(View.VISIBLE);
 
-            // Aggiorna count
-            resultsCount.setText("Numero risultati: " + productsListAdapter.getCount());
+            resultsCount.setText(getString(R.string.status, productsListAdapter.getCount())); // Aggiorna count
         }
     }
 
     // Avvia l'activity EditProduct per l'aggiunta (legacy)
     public void addProduct(View view) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", EditProduct.Action.ADD);
-        intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
-        intent.putExtra("filter", currentFilter);
+        intent.putExtra(EditProduct.ACTION, EditProduct.Action.ADD);
+        intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.DEFAULT);
+        intent.putExtra(EditProduct.FILTER, currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
-    // Avvia l'activity EditProduct per l'aggiunta (new)
+    // TODO Avvia l'activity EditProduct per l'aggiunta (new)
     public void addProductWithoutConsumption(View view) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("action", EditProduct.Action.ADD);
-        intent.putExtra("actionType", EditProduct.ActionType.NO_CONSUMPTION);
-        intent.putExtra("filter", currentFilter);
+        intent.putExtra(EditProduct.ACTION, EditProduct.Action.ADD);
+        intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.NO_CONSUMPTION);
+        intent.putExtra(EditProduct.FILTER, currentFilter);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
@@ -828,42 +679,40 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // Avvia l'activity EditProduct per la modifica
+    /*TODO // Avvia l'activity EditProduct per la modifica
     public void editPack(Pack p) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("pack", p);
         intent.putExtra("action", EditProduct.Action.EDIT_PACK);
         if(action==Action.MANAGE)
             intent.putExtra("actionType", EditProduct.ActionType.MANAGE);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
-    }
+    }*/
 
     // Avvia l'activity EditProduct per la modifica
-    public void editSingleProduct(SingleProduct p) {
-        Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("id", p.getId());
-        //intent.putExtra("filter", currentFilter);
-        intent.putExtra("action", EditProduct.Action.EDIT);
-        if(action==Action.CONSUMED)
-            intent.putExtra("actionType", EditProduct.ActionType.CONSUMED);
-        else if(action==Action.MANAGE)
-            intent.putExtra("actionType", EditProduct.ActionType.MANAGE);
-        else
-            intent.putExtra("actionType", EditProduct.ActionType.DEFAULT);
-        startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
+    public void editProduct(Product p) {
+        if(p instanceof SingleProduct){
+            Intent intent = new Intent(this, EditProduct.class);
+            intent.putExtra(EditProduct.ID, ((SingleProduct)p).getId()); // TODO Passare l'intero prodotto
+            //intent.putExtra("filter", currentFilter);
+            intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
+            if(action==Action.CONSUMED)
+                intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.CONSUMED);
+            else if(action==Action.MANAGE)
+                intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.MANAGE);
+            else if(action==null || action==Action.PACK)
+                intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.DEFAULT);
+            startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
+        } else {
+           Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show(); // TODO sostituire tutti gli errori generici
+        }
     }
 
     public void updateProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra("id", p.getId());
-        intent.putExtra("action", EditProduct.Action.EDIT);
-        intent.putExtra("actionType", EditProduct.ActionType.UPDATE);
+        intent.putExtra(EditProduct.ID, p.getId());
+        intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
+        intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.UPDATE);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
-    }
-
-    public void updateProduct(MenuItem item) {
-        SingleProduct p = (SingleProduct) listView.getItemAtPosition(currentPopupPosition);
-        updateProduct(p);
     }
 
     public void startShoppingMode(View view) {
@@ -871,16 +720,16 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SHOPPING_REQUEST);
     }
 
-    // ordina dalla data più recente alla più lontana
-    private void sortByAscendingDate(List<Product> products) {
+    // Ordina dalla data più recente alla più lontana
+    private void sortByAscendingDate(List<Product> productsToSort) {
         if(action==Action.CONSUMED)
-            Collections.sort(products, new ConsumedDiscendingDateComparator());
+            Collections.sort(productsToSort, new ConsumedDiscendingDateComparator());
         else
-            Collections.sort(products, new AscendingDateComparator());
+            Collections.sort(productsToSort, new AscendingDateComparator());
     }
 
-    private void sortByName(List<Product> products) {
-        Collections.sort(products, new NameComparator());
+    private void sortByName(List<Product> productsToSort) {
+        Collections.sort(productsToSort, new NameComparator());
     }
 
     public void showPopup(View v) {
@@ -888,7 +737,7 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popup = new PopupMenu(this, v);
         popup.getMenuInflater().inflate(R.menu.element_options, popup.getMenu());
 
-        if(action==null){
+        if(action==null || action==Action.PACK){
             popup.getMenu().findItem(R.id.unconsumeItem).setVisible(false);
             //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO nascondere elimina nella schermata principale?
         } else if(action==Action.MANAGE){
@@ -900,7 +749,6 @@ public class MainActivity extends AppCompatActivity {
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
         }
-
         popup.show();
     }
 
@@ -911,30 +759,34 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                currentFilter = data.getIntExtra("filter", currentFilter);
-                retrieveProductsFromDB(null);
+                currentFilter = data.getIntExtra(FILTER, currentFilter);
+                syncProducts();
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                if (!data.getBooleanExtra("delete", false)) { // Se il prodotto è stato modificato
-                    currentFilter = data.getIntExtra("filter", currentFilter);
-                    pressOnFilter(null);
+                if (!data.getBooleanExtra(DELETE, false)) { // Se il prodotto è stato modificato e non eliminato
+                    currentFilter = data.getIntExtra(FILTER, currentFilter);
                 }
-                retrieveProductsFromDB(null);
+                syncProducts();
             }
         } else if (requestCode == SHOPPING_REQUEST) {
             if (resultCode == RESULT_OK) {
-                retrieveProductsFromDB(null);
+                syncProducts();
             }
         } else if (requestCode == CONSUMED_REQUEST) {
-
-            retrieveProductsFromDB(null); // TODO chiamare solo in caso di modifica
+            syncProducts(); // TODO chiamare solo in caso di modifica
 
             if (resultCode == RESULT_OK) {
 
             }
         } else if (requestCode == MANAGE_REQUEST) {
-            retrieveProductsFromDB(null); // TODO chiamare solo in caso di modifica
+            syncProducts(); // TODO chiamare solo in caso di modifica
+
+            if (resultCode == RESULT_OK) {
+
+            }
+        } else if(requestCode == PACK_REQUEST){
+            syncProducts(); // TODO chiamare solo in caso di modifica
 
             if (resultCode == RESULT_OK) {
 

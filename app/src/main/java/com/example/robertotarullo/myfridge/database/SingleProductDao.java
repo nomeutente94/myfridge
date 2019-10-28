@@ -17,6 +17,10 @@ public interface SingleProductDao {
     @Query("SELECT * FROM SingleProduct")
     List<SingleProduct> getAll();
 
+    // Get consumed
+    @Query("SELECT * FROM SingleProduct WHERE consumed = :consumed")
+    List<SingleProduct> getAll(boolean consumed);
+
     // Get single
     @Query("SELECT * FROM SingleProduct where id = :id")
     SingleProduct get(long id);

@@ -2,26 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/consumeItem"
-        android:onClick="consumeProduct"
-        android:title="Consuma"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_consume"/>
     <item
-        android:onClick="updateProduct"
         android:id="@+id/updateStateItem"
-        android:title="Aggiorna"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_update"/>
     <item
         android:id="@+id/unconsumeItem"
-        android:onClick="unconsumeProduct"
-        android:title="Ripristina"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_unconsume"/>
     <item
         android:id="@+id/editItem"
-        android:onClick="editProduct"
-        android:title="Modifica"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_edit"/>
     <item
         android:id="@+id/cloneItem"
-        android:onClick="cloneProduct"
-        android:title="Duplica"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_clone"/>
     <item
         android:id="@+id/deleteItem"
-        android:onClick="deleteProduct"
-        android:title="Elimina"/>
+        android:onClick="onMenuItemClick"
+        android:title="@string/menuitem_main_delete"/>
 </menu>
