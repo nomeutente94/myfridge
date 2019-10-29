@@ -59,9 +59,10 @@ public class EditProduct extends AppCompatActivity {
     public static final String ACTION_TYPE = "actionType"; // Tipo di form
     public static final String ID = "id"; // Id del prodotto da modificare
     public static final String FILTER = "filter"; // Filtro di partenza
-    public static final String PRODUCT_TO_EDIT = "productToEdit"; // TODO
-    public static final String QUANTITY = "quantity"; // TODO
-    public static final String SUGGESTIONS = "suggestions"; // Aggiunge eventuali prodotti a quelli già esistenti da cui prenere suggerimenti
+    public static final String SUGGESTIONS = "suggestions"; // Aggiunge eventuali prodotti a quelli già esistenti da cui prendere suggerimenti
+
+    public static final String PRODUCT_TO_EDIT = "productToEdit"; // TODO usato da shopping
+    public static final String QUANTITY = "quantity"; // TODO usato da shopping
 
     private static final int PICK_REQUEST = 1;
 
@@ -604,8 +605,8 @@ public class EditProduct extends AppCompatActivity {
                 }
             case R.id.fillFromInsertedProduct:
                 // permetti all'utente di scegliere un prodotto già inserito
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("action", MainActivity.Action.PICK);
+                Intent intent = new Intent(this, ProductsList.class);
+                intent.putExtra("action", ProductsList.Action.PICK);
                 startActivityForResult(intent, PICK_REQUEST);
                 return true;
             default:

@@ -46,7 +46,7 @@ import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
-public class MainActivity extends AppCompatActivity {
+public class ProductsList extends AppCompatActivity {
 
     // Variabili intent
     public static final String ACTION = "action"; // Tipo di azione
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if(displayedProducts.size()==0){
-                        finish(); // TODO Gestire
+                        finish(); // TODO Gestire meglio
                     } else {
                         filterBySearchBar(); // TODO ordina per data di inserimento
                     }
@@ -258,10 +258,11 @@ public class MainActivity extends AppCompatActivity {
         else if(action==Action.MANAGE)
             setTitle(getString(R.string.activity_title_main_manage));
         else if(action == Action.PACK) {
-            if(currentPack.getBrand()==null)
+            if(currentPack.getBrand()==null) {
                 setTitle(getString(R.string.activity_title_main_pack_nobrand, currentPack.getName()));
-            else
+            } else {
                 setTitle(getString(R.string.activity_title_main_pack, currentPack.getName(), currentPack.getBrand()));
+            }
         } else
             setTitle(getString(R.string.activity_title_main_default));
     }
@@ -288,12 +289,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showConsumed:
-                Intent intent = new Intent(this, MainActivity.class);
+                Intent intent = new Intent(this, ProductsList.class);
                 intent.putExtra(ACTION, Action.CONSUMED);
                 startActivityForResult(intent, CONSUMED_REQUEST);
                 return true;
             case R.id.productsDb:
-                intent = new Intent(this, MainActivity.class);
+                intent = new Intent(this, ProductsList.class);
                 intent.putExtra(ACTION, Action.MANAGE);
                 startActivityForResult(intent, MANAGE_REQUEST);
                 return true;
@@ -307,16 +308,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilter(View v) {
-        for(int i=0; i<filters.size(); i++)
-            filters.get(i).getButton().setBackgroundColor(FILTER_INACTIVE_COLOR); // Inizializza tutti i pulsanti come inattivi
+        for (Filter f: filters) {
+            f.getButton().setBackgroundColor(FILTER_INACTIVE_COLOR); // Inizializza tutti i pulsanti come inattivi
+        }
         v.setBackgroundColor(FILTER_ACTIVE_COLOR); // Setta pulsante come attivo
         clearSearchBarFocus(); // Toglie il focus alla barra di ricerca
 
         // Setta i prodotti del filtro selezionato come da mostrare
-        for(int i=0; i<filters.size(); i++){
-            if(filters.get(i).getButton()==v){
-                currentFilterId = filters.get(i).getId();
-                displayedProducts = filters.get(i).getProducts();
+        for (Filter f: filters) {
+            if(f.getButton()==v){
+                currentFilterId = f.getId();
+                displayedProducts = f.getProducts();
                 break;
             }
         }
@@ -352,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(action==null) {
                 if (p instanceof Pack) {
-                    Intent intent = new Intent(this, MainActivity.class);
+                    Intent intent = new Intent(this, ProductsList.class);
                     intent.putExtra(ACTION, Action.PACK);
                     intent.putExtra(PACK, (Pack) p);
                     startActivityForResult(intent, PACK_REQUEST);
@@ -363,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 if (p instanceof SingleProduct) {
                     updateProduct((SingleProduct) p);
                 } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
                 }
             } else if(action==Action.PICK){ // TODO
                 /*DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -401,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                 if (p instanceof SingleProduct) {
                     editProduct(p);
                 } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -540,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         } else if (p instanceof Pack){
-            Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -723,7 +725,7 @@ public class MainActivity extends AppCompatActivity {
     public void editProduct(Product p) {
         if (p instanceof SingleProduct){
             Intent intent = new Intent(this, EditProduct.class);
-            intent.putExtra(EditProduct.ID, ((SingleProduct)p).getId()); // TODO Passare l'intero prodotto
+            intent.putExtra(EditProduct.ID, ((SingleProduct)p).getId()); // TODO Passare l'intero prodotto ?
             //intent.putExtra("filter", currentFilterId);
             intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
             if(action==Action.CONSUMED)
@@ -734,7 +736,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.DEFAULT);
             startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
         } else if (p instanceof Pack){
-           Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
+           Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
         }
     }
 

@@ -26,7 +26,7 @@
     <string name="success_clone">Aggiunte %1$d nuove copie del prodotto</string>
     <string name="error_generic">Errore generico</string>
     <string name="error_productNotFoundInList">Non è stato trovato alcun prodotto alla posizione in lista indicata</string>
-    <string name="error_invalidType">Il tipo di prodotto non è compatibile con l\'azione che si vuole effettuare</string>
+    <string name="error_invalidProductType">Il tipo di prodotto non è compatibile con l\'azione che si vuole effettuare</string>
     <string name="error_databaseAction">Impossibile effettuare l\'operazione sul database</string>
 
     <!-- Cart -->
@@ -44,7 +44,7 @@
     <string name="text_cart_totalPrice">€%1$s</string>
 
 
-    <!-- MainActivity -->
+    <!-- ProductsList -->
 
     <string name="activity_title_main_default">MyFridge (test build)</string>
     <string name="activity_title_main_pick">Seleziona un prodotto</string>

@@ -23,6 +23,11 @@ import java.util.Objects;
         )})*/
 
 public class SingleProduct implements Product, Serializable {
+
+    // Variaibili fisse
+    public static final int DEFAULT_PIECES = 1;
+    public static final int DEFAULT_PERCENTAGEQUANTITY = 100;
+
     // Identificatore univoco del prodotto
     // 0 se inserito, >1 se inserito nel database
     @PrimaryKey(autoGenerate = true)
@@ -84,8 +89,10 @@ public class SingleProduct implements Product, Serializable {
     // Dovrebbe essere null se expiringDaysAfterOpening>0 (e viceversa)
     private Date expiryDate;
 
-    // ATTRIBUTI PROPRI DI UN PRODOTTO FRESCO
-    // IL VALORE DI QUESTE VARIABILI VIENE DEDOTTO SE IL PRODOTTO E' CONFEZIONATO                   // Se prodotto confezionato si assumono sempre i seguenti valori:
+    private Date insertDate; // Data di inserimento nel db
+
+    // ATTRIBUTI ESCLUSIVI DI UN PRODOTTO NON CONFEZIONATO
+    // IL VALORE DI QUESTE VARIABILI VIENE DEDOTTO SE IL PRODOTTO È CONFEZIONATO                    // Se prodotto confezionato si assumono sempre i seguenti valori:
     private Date packagingDate; // Indica la data in cui il prodotto fresco è stato confezionato    (= null)
 
     // ATTRIBUTI PROPRI DI UN PRODOTTO CONFEZIONATO
@@ -93,10 +100,6 @@ public class SingleProduct implements Product, Serializable {
     private boolean opened; // Indica se il prodotto è stato aperto                                 (= true)
     private Date openingDate; // Data di apertura del prodotto                                      (= packagingDate, se null = purchaseDate)
     private int openedStorageCondition; // Modalità di conservazione a seguito dell'apertura        (= storageCondition)
-
-    public static final int DEFAULT_PIECES = 1;
-    public static final int DEFAULT_PERCENTAGEQUANTITY = 100;
-
 
     public SingleProduct(){
         this.pieces = DEFAULT_PIECES;
@@ -126,6 +129,7 @@ public class SingleProduct implements Product, Serializable {
         this.opened = other.opened;
         this.openingDate = other.openingDate;
         this.openedStorageCondition = other.openedStorageCondition;
+        this.insertDate = other.insertDate;
     }
 
     @Override
@@ -342,6 +346,14 @@ public class SingleProduct implements Product, Serializable {
         this.consumptionDate = consumptionDate;
     }
 
+    public Date getInsertDate() {
+        return insertDate;
+    }
+
+    public void setInsertDate(Date insertDate) {
+        this.insertDate = insertDate;
+    }
+
     public void loseState(){
         setPurchaseDate(null);
         setPointOfPurchaseId(0); // TODO attributo proprio? Eliminare?
@@ -355,7 +367,7 @@ public class SingleProduct implements Product, Serializable {
 
     public void loseConsumptionState(){
         setCurrentWeight(0);
-        setPercentageQuantity(100);
+        setPercentageQuantity(DEFAULT_PERCENTAGEQUANTITY);
         setCurrentPieces(getPieces());
         setConsumptionDate(null);
         setConsumed(false);
@@ -368,9 +380,9 @@ public class SingleProduct implements Product, Serializable {
     // ritorna true se raggruppabile in un pack
     // TODO permettere di configurare il criterio di raggruppamento
     public boolean packEquals(SingleProduct singleProduct){
-        if(singleProduct!=null){
+        if(singleProduct != null){
             return     singleProduct.isPackaged() == isPackaged()
-                    && singleProduct.getActualStorageCondition() == this.getActualStorageCondition()
+                    && singleProduct.getActualStorageCondition() == getActualStorageCondition()
                     && Objects.equals(singleProduct.getName(), getName())
                     && Objects.equals(singleProduct.getBrand(), getBrand())
                     && singleProduct.getPrice() == getPrice()
@@ -430,6 +442,7 @@ public class SingleProduct implements Product, Serializable {
                     Objects.equals(singleProductObj.getPackagingDate(), getPackagingDate()) &&
                     singleProductObj.isOpened() == isOpened() &&
                     Objects.equals(singleProductObj.getOpeningDate(), getOpeningDate()) &&
+                    Objects.equals(singleProductObj.getInsertDate(), getInsertDate()) &&
                     singleProductObj.getOpenedStorageCondition() == getOpenedStorageCondition();
         }
         return false;
@@ -461,6 +474,7 @@ public class SingleProduct implements Product, Serializable {
         singleProductAsString += "packagingDate: " + getPackagingDate() + ", ";
         singleProductAsString += "opened: " + isOpened() + ", ";
         singleProductAsString += "openingDate: " + getOpeningDate() + ", ";
+        singleProductAsString += "insertDate: " + getInsertDate() + ", ";
         singleProductAsString += "openedStorageCondition: " + getOpenedStorageCondition() + "]";
         return singleProductAsString;
     }
