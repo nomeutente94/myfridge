@@ -158,7 +158,7 @@ public class Cart extends AppCompatActivity {
                         if (Collections.frequency(ProductDatabase.getInstance(this).productDao().insertAll(cartProducts), -1) == 0)
                             finish();
                         else
-                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.toast_error_insert_cart), Toast.LENGTH_LONG).show());
+                            runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_insert_cart), Toast.LENGTH_LONG).show());
                     }).start();
                 }
             };

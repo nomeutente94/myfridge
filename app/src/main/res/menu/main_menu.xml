@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/showConsumed"
-        android:title="@string/menu_consumed_main" />
+        android:title="@string/menu_main_consumed" />
     <item
         android:id="@+id/productsDb"
         android:title="Database prodotti" />

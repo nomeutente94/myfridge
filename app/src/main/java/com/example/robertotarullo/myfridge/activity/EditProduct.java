@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.robertotarullo.myfridge.adapter.StorageSpinnerArrayAdapter;
+import com.example.robertotarullo.myfridge.bean.Filter;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.ProductForm;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
@@ -1206,20 +1207,22 @@ public class EditProduct extends AppCompatActivity {
         }
     }
 
+    // TODO controllare thread
     private void initializeStorageSpinners() {
-        ArrayList<String> storageList = new ArrayList<>();
-        storageList.add("Temperatura ambiente");
-        storageList.add("Frigorifero");
-        storageList.add("Congelatore");
+        new Thread(() -> {
+            List<Filter> filters = productDatabase.filterDao().getFilters();
 
-        storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
-        openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, storageList));
+            runOnUiThread(() -> {
+                storageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, filters));
+                openedStorageConditionSpinner.setAdapter(new StorageSpinnerArrayAdapter(this, R.layout.storage_condition_spinner_item, filters));
 
-        if (actionType==ActionType.SHOPPING)
-            storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO permettere di selezionare il valore di default
-        else
-            storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", FRIDGE_SELECTION));
-        openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
+                if (actionType==ActionType.SHOPPING)
+                    storageConditionSpinner.setSelection(FRIDGE_SELECTION); // TODO permettere di selezionare il valore di default
+                else
+                    storageConditionSpinner.setSelection(getIntent().getIntExtra("filter", FRIDGE_SELECTION));
+                openedStorageConditionSpinner.setSelection(storageConditionSpinner.getSelectedItemPosition());
+            });
+        }).start();
     }
 
     private void initializePointsOfPurchaseSpinner() {

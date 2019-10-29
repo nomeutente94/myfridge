@@ -16,7 +16,7 @@
 
             <!--Pulsante di esempio-->
             <Button
-                android:id="@+id/exampleFilterButton"
+                android:id="@+id/templateFilterButton"
                 android:background="#d6d8d7"
                 android:visibility="gone"
                 android:layout_width="match_parent"

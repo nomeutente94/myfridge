@@ -9,8 +9,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -68,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     // Dichiarazione delle variabili di database
     private ProductDatabase productDatabase;
 
+    // Impostazioni
+    private SharedPreferences prefs;
+
     // Variabili per intent
     private static final int ADD_PRODUCT_REQUEST = 1;
     private static final int EDIT_PRODUCT_REQUEST = 2;
@@ -75,12 +80,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int CONSUMED_REQUEST = 4;
     private static final int MANAGE_REQUEST = 5;
     private static final int PACK_REQUEST = 6;
-
-    // Variabili delle impostazioni
-    private static final int DEFAULT_FILTER = 1;
+    private static final int SETTINGS_REQUEST = 7;
 
     // Variabili di stato
-    private int currentFilter; // Determina la modalità di conservazione corrente
+    private long currentFilterId; // Determina la modalità di conservazione da visualizzare al lancio dell'applicazione
 
     // Dichiarazione delle liste di prodotti
     private List<Product> displayedProducts = new ArrayList<>(); // Lista di prodotti attualmente su schermo
@@ -113,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Ottieni un riferimento al DB
+        productDatabase = ProductDatabase.getInstance(getApplicationContext());
+
         // Inizializza variabili prese dall'activity chiamante
         action = (Action) getIntent().getSerializableExtra(ACTION);
         currentPack = (Pack) getIntent().getSerializableExtra(PACK);
@@ -126,17 +132,18 @@ public class MainActivity extends AppCompatActivity {
         // Stabilisci il comportamento della search bar
         searchBar.addTextChangedListener(new SearchBarWatcher());
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
         // Setta il filtro prodotti iniziale
-        currentFilter = DEFAULT_FILTER; // TODO leggere valore iniziale filtro da impostazioni
+        if(prefs.getBoolean(Settings.USE_LAST_USED_FILTER, Settings.USE_LAST_USED_FILTER_DEFAULT)){
+            currentFilterId = prefs.getLong(Settings.LAST_USED_FILTER, Settings.INITIAL_FILTER_DEFAULT);
+        } else {
+            currentFilterId = prefs.getLong(Settings.INITIAL_FILTER, Settings.INITIAL_FILTER_DEFAULT);
+        }
 
-        // Stabilisce il titolo dell'activity
-        setTitle();
+        setTitle(); // Stabilisce il titolo dell'activity
 
-        // Setta il comportamento al click di un elemento
-        initializeItemBehaviour();
-
-        // Ottieni un riferimento al DB
-        productDatabase = ProductDatabase.getInstance(getApplicationContext());
+        initializeItemBehaviour(); // Setta il comportamento al click di un elemento
 
         if(action==null) {
             new Thread(() -> {
@@ -164,10 +171,10 @@ public class MainActivity extends AppCompatActivity {
                     storageConditionsBlock.setWeightSum(filters.size());
 
                     Button filterButton = new Button(this);
-                    filterButton.setLayoutParams(findViewById(R.id.exampleFilterButton).getLayoutParams());
+                    filterButton.setLayoutParams(findViewById(R.id.templateFilterButton).getLayoutParams());
                     filterButton.setVisibility(View.VISIBLE);
                     filterButton.setTag(String.valueOf(i));
-                    filterButton.setOnClickListener(v -> setFilter(v));
+                    filterButton.setOnClickListener(this::setFilter);
                     storageConditionsBlock.addView(filterButton);
                     filters.get(i).setButton(filterButton);
                 }
@@ -179,22 +186,29 @@ public class MainActivity extends AppCompatActivity {
     // Aggiorna la lista dei prodotti dal DB in base al tipo di action
     private void syncProducts() {
         if (action==null) {
+
             // Inizializza filtri
             for(int i=0; i<filters.size(); i++) {
                 filters.get(i).setProducts(new ArrayList<>());
             }
+
             new Thread(() -> {
                 List<SingleProduct> singleProducts = productDatabase.productDao().getAll(false);
                 runOnUiThread(() -> {
                     setNotifications(singleProducts);
                     List<Product> groupedProducts = getGroupedProducts(singleProducts); // Raggruppa i prodotti in pack
                     for (int i = 0; i < groupedProducts.size(); i++) { // Aggiungi i prodotti raggruppati nel rispettivo filtro
-                        filters.get(groupedProducts.get(i).getActualStorageCondition()).getProducts().add(groupedProducts.get(i));
+                        for(int j=0; j<filters.size(); j++){
+                            if(filters.get(j).getId()==groupedProducts.get(i).getActualStorageCondition()){
+                                filters.get(j).getProducts().add(groupedProducts.get(i));
+                            }
+                        }
                     }
                     for(int i=0; i<filters.size(); i++){
                         sortByAscendingDate(filters.get(i).getProducts()); // TODO controlla prima quale ordinamento utilizzare
+                        if(filters.get(i).getId()== currentFilterId)
+                            setFilter(filters.get(i).getButton()); // Mostra i prodotti del filtro attuale
                     }
-                    setFilter(filters.get(currentFilter).getButton()); // Mostra i prodotti del filtro attuale
                 });
             }).start();
         } else if (action==Action.PACK) {
@@ -283,6 +297,10 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(ACTION, Action.MANAGE);
                 startActivityForResult(intent, MANAGE_REQUEST);
                 return true;
+            case R.id.settings:
+                intent = new Intent(this, Settings.class);
+                startActivityForResult(intent, SETTINGS_REQUEST);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -290,12 +308,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void setFilter(View v) {
         for(int i=0; i<filters.size(); i++)
-            filters.get(i).getButton().setBackgroundColor(FILTER_INACTIVE_COLOR); // Setta tutti i pulsanti come inattivi
+            filters.get(i).getButton().setBackgroundColor(FILTER_INACTIVE_COLOR); // Inizializza tutti i pulsanti come inattivi
         v.setBackgroundColor(FILTER_ACTIVE_COLOR); // Setta pulsante come attivo
-        clearSearchBarFocus();
+        clearSearchBarFocus(); // Toglie il focus alla barra di ricerca
 
-        currentFilter = Integer.valueOf(v.getTag().toString()); // Comunica quale filtro si sta utilizzando
-        displayedProducts = filters.get(currentFilter).getProducts();
+        // Setta i prodotti del filtro selezionato come da mostrare
+        for(int i=0; i<filters.size(); i++){
+            if(filters.get(i).getButton()==v){
+                currentFilterId = filters.get(i).getId();
+                displayedProducts = filters.get(i).getProducts();
+                break;
+            }
+        }
+
+        // Salva l'utlimo filtro usato
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong(Settings.LAST_USED_FILTER, currentFilterId);
+        editor.apply();
+
+        // Aggiorna la view
         filterBySearchBar();
     }
 
@@ -332,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                 if (p instanceof SingleProduct) {
                     updateProduct((SingleProduct) p);
                 } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
                 }
             } else if(action==Action.PICK){ // TODO
                 /*DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -370,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
                 if (p instanceof SingleProduct) {
                     editProduct(p);
                 } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -383,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
 
             switch(item.getItemId()){
                 case R.id.updateStateItem:
-                    updateProduct(sp);  // Se si è clickato un singleProduct
+                    updateProduct(sp);
                     break;
                 case R.id.consumeItem:
                     DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -398,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                                         syncProducts(); // aggiorna lista
                                     });
                                 } else {
-                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_databaseAction), Toast.LENGTH_LONG).show());
                                 }
                             }).start();
                         }
@@ -424,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                                         syncProducts(); // aggiorna lista
                                     });
                                 } else {
-                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_databaseAction), Toast.LENGTH_LONG).show());
                                 }
                             }).start();
                         }
@@ -459,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
                             else if(radioButtonMin.isChecked())
                                 clonedProduct.loseState();
 
-                            currentFilter = clonedProduct.getActualStorageCondition();
+                            currentFilterId = clonedProduct.getActualStorageCondition();
 
                             List<SingleProduct> productsToClone = new ArrayList<>();
                             for (int i = 0; i < TextUtils.getInt(clonesField); i++)
@@ -472,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
                                         Toast.makeText(getApplicationContext(), getString(R.string.success_clone, productsToClone.size() - nonAddedProducts), Toast.LENGTH_LONG).show();
                                         syncProducts(); // aggiorna lista
                                     } else {
-                                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_databaseAction), Toast.LENGTH_LONG).show());
                                     }
                                 });
                             }).start();
@@ -494,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
                                     runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.success_delete), Toast.LENGTH_LONG).show());
                                     syncProducts(); // aggiorna lista
                                 } else {
-                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_generic), Toast.LENGTH_LONG).show());
+                                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.error_databaseAction), Toast.LENGTH_LONG).show());
                                 }
                             }).start();
                         }
@@ -509,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         } else if (p instanceof Pack){
-            Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -660,7 +691,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.ADD);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.DEFAULT);
-        intent.putExtra(EditProduct.FILTER, currentFilter);
+        intent.putExtra(EditProduct.FILTER, currentFilterId);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
@@ -669,7 +700,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.ADD);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.NO_CONSUMPTION);
-        intent.putExtra(EditProduct.FILTER, currentFilter);
+        intent.putExtra(EditProduct.FILTER, currentFilterId);
         startActivityForResult(intent, ADD_PRODUCT_REQUEST);
     }
 
@@ -690,10 +721,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Avvia l'activity EditProduct per la modifica
     public void editProduct(Product p) {
-        if(p instanceof SingleProduct){
+        if (p instanceof SingleProduct){
             Intent intent = new Intent(this, EditProduct.class);
             intent.putExtra(EditProduct.ID, ((SingleProduct)p).getId()); // TODO Passare l'intero prodotto
-            //intent.putExtra("filter", currentFilter);
+            //intent.putExtra("filter", currentFilterId);
             intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
             if(action==Action.CONSUMED)
                 intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.CONSUMED);
@@ -702,8 +733,8 @@ public class MainActivity extends AppCompatActivity {
             else if(action==null || action==Action.PACK)
                 intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.DEFAULT);
             startActivityForResult(intent, EDIT_PRODUCT_REQUEST);
-        } else {
-           Toast.makeText(this, getString(R.string.error_generic), Toast.LENGTH_LONG).show(); // TODO sostituire tutti gli errori generici
+        } else if (p instanceof Pack){
+           Toast.makeText(this, getString(R.string.error_invalidType), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -739,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(action==null || action==Action.PACK){
             popup.getMenu().findItem(R.id.unconsumeItem).setVisible(false);
-            //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // TODO nascondere elimina nella schermata principale?
+            //popup.getMenu().findItem(R.id.deleteItem).setVisible(false); // Nascondere 'elimina' nella schermata principale?
         } else if(action==Action.MANAGE){
             popup.getMenu().findItem(R.id.consumeItem).setVisible(false);
             popup.getMenu().findItem(R.id.updateStateItem).setVisible(false);
@@ -759,13 +790,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == ADD_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                currentFilter = data.getIntExtra(FILTER, currentFilter);
+                currentFilterId = data.getLongExtra(FILTER, currentFilterId);
                 syncProducts();
             }
         } else if (requestCode == EDIT_PRODUCT_REQUEST) {
             if (resultCode == RESULT_OK) {
                 if (!data.getBooleanExtra(DELETE, false)) { // Se il prodotto è stato modificato e non eliminato
-                    currentFilter = data.getIntExtra(FILTER, currentFilter);
+                    currentFilterId = data.getLongExtra(FILTER, currentFilterId);
                 }
                 syncProducts();
             }
@@ -790,6 +821,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (resultCode == RESULT_OK) {
 
+            }
+        } else if(requestCode == SETTINGS_REQUEST){
+            if (resultCode == RESULT_OK) {
+                // TODO
             }
         }
     }

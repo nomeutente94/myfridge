@@ -26,6 +26,8 @@
     <string name="success_clone">Aggiunte %1$d nuove copie del prodotto</string>
     <string name="error_generic">Errore generico</string>
     <string name="error_productNotFoundInList">Non è stato trovato alcun prodotto alla posizione in lista indicata</string>
+    <string name="error_invalidType">Il tipo di prodotto non è compatibile con l\'azione che si vuole effettuare</string>
+    <string name="error_databaseAction">Impossibile effettuare l\'operazione sul database</string>
 
     <!-- Cart -->
 
@@ -36,7 +38,7 @@
     <string name="dialog_body_cart_multipleDelete">Rimuovere %1$d prodotti dal carrello?</string>
     <string name="dialog_body_cart_add">Vuoi aggiungere tutti i prodotti presenti nel carrello?</string>
 
-    <string name="toast_error_insert_cart">Impossibile aggiungere i prodotti del carrello</string>
+    <string name="error_insert_cart">Impossibile aggiungere i prodotti del carrello</string>
 
     <string name="text_cart_totalPrice_empty">€0,00</string>
     <string name="text_cart_totalPrice">€%1$s</string>
@@ -44,15 +46,16 @@
 
     <!-- MainActivity -->
 
-    <string name="activity_title_main_default">"MyFridge (test build)"</string>
+    <string name="activity_title_main_default">MyFridge (test build)</string>
     <string name="activity_title_main_pick">Seleziona un prodotto</string>
     <string name="activity_title_main_consumed">Storico consumazioni</string>
     <string name="activity_title_main_manage">Prodotti memorizzati</string>
     <string name="activity_title_main_pack">%1$s %2$s</string>
     <string name="activity_title_main_pack_nobrand">%1$s</string>
 
-    <string name="menu_consumed_main">Storico consumazioni</string>
-    <string name="menu_manage_main">Gestisci prodotti</string>
+    <string name="menu_main_consumed">Storico consumazioni</string>
+    <string name="menu_main_manage">Gestisci prodotti</string>
+    <string name="menu_main_settings">Impostazioni</string>
 
     <string name="dialog_body_main_pick">Eventuali dati presenti andranno persi, sei sicuro di voler autocompilare i campi dal prodotto selezionato?</string>
     <string name="dialog_body_main_consume">Vuoi segnare il prodotto come consumato?</string>
@@ -70,5 +73,8 @@
     <string name="filter_name_notify">%1$s (%2$d)</string>
 
     <string name="status">Numero risultati: %1$d</string>
+
+    <!-- Settings -->
+    <string name="activity_title_settings">Impostazioni</string>
 
 </resources>

@@ -2,9 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/showConsumed"
-        android:title="@string/menu_consumed_main" />
+        android:title="@string/menu_main_consumed" />
     <item
         android:id="@+id/productsDb"
         android:enabled="false"
-        android:title="@string/menu_manage_main" />
+        android:title="@string/menu_main_manage" />
+    <item
+        android:id="@+id/settings"
+        android:title="@string/menu_main_settings" />
 </menu>
