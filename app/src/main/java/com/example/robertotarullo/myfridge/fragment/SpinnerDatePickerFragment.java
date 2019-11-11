@@ -28,6 +28,8 @@ public class SpinnerDatePickerFragment extends DialogFragment {
 
     //private boolean dayAutoSelection;
 
+    public static final String DATE_FIELD_ID = "dateFieldId";
+
     private Spinner daySpinner;
     private Spinner monthSpinner;
     private Spinner yearSpinner;
@@ -94,7 +96,7 @@ public class SpinnerDatePickerFragment extends DialogFragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.spinner_date_picker, null);
 
-        dateField = getActivity().findViewById(getArguments().getInt("dateFieldId"));
+        dateField = getActivity().findViewById(getArguments().getInt(DATE_FIELD_ID));
 
         expiryDateField = getActivity().findViewById(R.id.expiryDateField);
         packagingDateField = getActivity().findViewById(R.id.packagingDateField);

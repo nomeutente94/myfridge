@@ -15,17 +15,19 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
+    public static final String DATE_FIELD_ID = "dateFieldId";
+    public static final String SPINNER_MODE = "spinnerMode";
+
     private EditText dateField; // Data attuale
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int year, month, day;
 
-        dateField = getActivity().findViewById(getArguments().getInt("dateFieldId"));
+        dateField = getActivity().findViewById(getArguments().getInt(DATE_FIELD_ID));
 
         // inizializza giorno, mese ed anno
         if(DateUtils.isDateEmpty(dateField)){
-            // TODO controllare se la data è legale altrimenti scegli la più vicina (??)
             Calendar c = Calendar.getInstance();
             month = c.get(Calendar.MONTH);
             year = c.get(Calendar.YEAR);
@@ -37,7 +39,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         }
 
         DatePickerDialog dpd;
-        if(getArguments().getBoolean("spinnerMode"))
+        if(getArguments().getBoolean(SPINNER_MODE))
             dpd = new DatePickerDialog(getActivity(), R.style.MySpinnerDatePickerStyle, this, year, month, day);
         else
             dpd = new DatePickerDialog(getActivity(), this, year, month, day);

@@ -26,7 +26,7 @@ public class SingleProduct implements Product, Serializable {
 
     // Variaibili fisse
     public static final int DEFAULT_PIECES = 1;
-    public static final int DEFAULT_PERCENTAGEQUANTITY = 100;
+    public static final float DEFAULT_PERCENTAGEQUANTITY = 100;
 
     // Identificatore univoco del prodotto
     // 0 se inserito, >1 se inserito nel database
@@ -81,7 +81,7 @@ public class SingleProduct implements Product, Serializable {
     // Indica l'id del punto di acquisto
     private long pointOfPurchaseId;
 
-    // Indica se il prodotto è stato esaurito o meno
+    // Indica se il contenuto del prodotto è stato esaurito o meno
     private boolean consumed;
 
     // Data di scadenza indicata sulla confezione del prodotto

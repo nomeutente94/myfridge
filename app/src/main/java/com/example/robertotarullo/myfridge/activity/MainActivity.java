@@ -36,6 +36,7 @@ import com.example.robertotarullo.myfridge.adapter.ProductsListAdapter;
 import com.example.robertotarullo.myfridge.bean.Filter;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.Product;
+import com.example.robertotarullo.myfridge.bean.ProductForm;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.comparator.AscendingDateComparator;
 import com.example.robertotarullo.myfridge.comparator.ConsumedDiscendingDateComparator;
@@ -46,7 +47,7 @@ import com.example.robertotarullo.myfridge.utils.DateUtils;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.watcher.QuantityWatcher;
 
-public class ProductsList extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     // Variabili intent
     public static final String ACTION = "action"; // Tipo di azione
@@ -185,8 +186,7 @@ public class ProductsList extends AppCompatActivity {
 
     // Aggiorna la lista dei prodotti dal DB in base al tipo di action
     private void syncProducts() {
-        if (action==null) {
-
+        if(action==null){ // TODO allineare con lo switch, fargli assumere un valore Action.DEFAULT
             // Inizializza filtri
             for(int i=0; i<filters.size(); i++) {
                 filters.get(i).setProducts(new ArrayList<>());
@@ -211,39 +211,46 @@ public class ProductsList extends AppCompatActivity {
                     }
                 });
             }).start();
-        } else if (action==Action.PACK) {
-            new Thread(() -> {
-                List<SingleProduct> singleProducts = productDatabase.productDao().getAll(false);
-                runOnUiThread(() -> {
-                    displayedProducts = new ArrayList<>();
+        } else {
+            switch (action) {
+                case PACK:
+                    new Thread(() -> {
+                        List<SingleProduct> singleProducts = productDatabase.productDao().getAll(false);
+                        runOnUiThread(() -> {
+                            displayedProducts = new ArrayList<>();
 
-                    for(SingleProduct sp: singleProducts){
-                        if(sp.packEquals(currentPack.getProducts().get(0)))
-                            displayedProducts.add(sp);
-                    }
+                            for (SingleProduct sp : singleProducts) {
+                                if (sp.packEquals(currentPack.getProducts().get(0)))
+                                    displayedProducts.add(sp);
+                            }
 
-                    if(displayedProducts.size()==0){
-                        finish(); // TODO Gestire meglio
-                    } else {
-                        filterBySearchBar(); // TODO ordina per data di inserimento
-                    }
-                });
-            }).start();
-        } else if (action==Action.CONSUMED){
-            new Thread(() -> {
-                displayedProducts = new ArrayList<>(productDatabase.productDao().getAll(true));
-                runOnUiThread(() -> {
-                    sortByAscendingDate(displayedProducts);
-                    filterBySearchBar();
-                });
-            }).start();
-        } else if (action==Action.PICK || action==Action.MANAGE) {
-            new Thread(() -> {
-                // List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); TODO prendi catalogo prodotti
-                runOnUiThread(() -> {
-                    // TODO
-                });
-            }).start();
+                            if (displayedProducts.size() == 0) {
+                                finish(); // TODO Gestire meglio
+                            } else {
+                                filterBySearchBar(); // TODO ordina per data di inserimento
+                            }
+                        });
+                    }).start();
+                    break;
+                case CONSUMED:
+                    new Thread(() -> {
+                        displayedProducts = new ArrayList<>(productDatabase.productDao().getAll(true));
+                        runOnUiThread(() -> {
+                            sortByAscendingDate(displayedProducts);
+                            filterBySearchBar();
+                        });
+                    }).start();
+                    break;
+                case PICK:
+                case MANAGE:
+                    new Thread(() -> {
+                        // List<SingleProduct> singleProducts = productDatabase.productDao().getAll(); TODO prendi catalogo prodotti
+                        runOnUiThread(() -> {
+                            // TODO
+                        });
+                    }).start();
+                    break;
+            }
         }
     }
 
@@ -289,12 +296,12 @@ public class ProductsList extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.showConsumed:
-                Intent intent = new Intent(this, ProductsList.class);
+                Intent intent = new Intent(this, MainActivity.class);
                 intent.putExtra(ACTION, Action.CONSUMED);
                 startActivityForResult(intent, CONSUMED_REQUEST);
                 return true;
             case R.id.productsDb:
-                intent = new Intent(this, ProductsList.class);
+                intent = new Intent(this, MainActivity.class);
                 intent.putExtra(ACTION, Action.MANAGE);
                 startActivityForResult(intent, MANAGE_REQUEST);
                 return true;
@@ -328,8 +335,7 @@ public class ProductsList extends AppCompatActivity {
         editor.putLong(Settings.LAST_USED_FILTER, currentFilterId);
         editor.apply();
 
-        // Aggiorna la view
-        filterBySearchBar();
+        filterBySearchBar(); // Aggiorna la view
     }
 
     @Override
@@ -352,59 +358,65 @@ public class ProductsList extends AppCompatActivity {
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Product p = (Product)listView.getItemAtPosition(position);
 
-            if(action==null) {
-                if (p instanceof Pack) {
-                    Intent intent = new Intent(this, ProductsList.class);
-                    intent.putExtra(ACTION, Action.PACK);
-                    intent.putExtra(PACK, (Pack) p);
-                    startActivityForResult(intent, PACK_REQUEST);
-                } else if (p instanceof SingleProduct) {
-                    updateProduct((SingleProduct) p);
-                }
-            } else if(action==Action.PACK){
-                if (p instanceof SingleProduct) {
-                    updateProduct((SingleProduct) p);
-                } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
-                }
-            } else if(action==Action.PICK){ // TODO
-                /*DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            Intent resultIntent = new Intent();
-
-                            SingleProduct clickedProduct = null;
-                            if(p instanceof SingleProduct)
-                                clickedProduct = (SingleProduct)p;
-                            else if(p instanceof Pack)
-                                clickedProduct = ((Pack) p).getProducts().get(0);
-
-                            resultIntent.putExtra("productId", clickedProduct.getId());
-                            setResult(RESULT_OK, resultIntent);
-                            finish();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
+            switch(action){
+                case PACK:
+                    if (p instanceof SingleProduct) {
+                        updateProduct((SingleProduct) p);
+                    } else if (p instanceof Pack) {
+                        Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
                     }
-                };
+                    break;
+                case PICK:
+                    /*DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Intent resultIntent = new Intent();
 
-                new AlertDialog.Builder(this)
-                    .setMessage(getString(R.string.dialog_body_main_pick))
-                    .setTitle(getString(R.string.dialog_title_warning))
-                    .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
-                    .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
-                    .show();*/
-            } else if(action==Action.MANAGE){ // TODO
-                /*if(p instanceof Pack)
+                                SingleProduct clickedProduct = null;
+                                if(p instanceof SingleProduct)
+                                    clickedProduct = (SingleProduct)p;
+                                else if(p instanceof Pack)
+                                    clickedProduct = ((Pack) p).getProducts().get(0);
+
+                                resultIntent.putExtra("productId", clickedProduct.getId());
+                                setResult(RESULT_OK, resultIntent);
+                                finish();
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    };
+
+                    new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.dialog_body_main_pick))
+                        .setTitle(getString(R.string.dialog_title_warning))
+                        .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
+                        .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
+                        .show();*/
+                    break;
+                case MANAGE:
+                     /*if(p instanceof Pack)
                     editPack((Pack) p);
                 else if(p instanceof SingleProduct)
                     editSingleProduct((SingleProduct) p);*/
-            } else if(action==Action.CONSUMED){
-                if (p instanceof SingleProduct) {
-                    editProduct(p);
-                } else if (p instanceof Pack) {
-                    Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
-                }
+                     break;
+                case CONSUMED:
+                    if (p instanceof SingleProduct) {
+                        editProduct(p);
+                    } else if (p instanceof Pack) {
+                        Toast.makeText(this, getString(R.string.error_invalidProductType), Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                default:
+                    if (p instanceof Pack) {
+                        Intent intent = new Intent(this, MainActivity.class);
+                        intent.putExtra(ACTION, Action.PACK);
+                        intent.putExtra(PACK, (Pack) p);
+                        startActivityForResult(intent, PACK_REQUEST);
+                    } else if (p instanceof SingleProduct) {
+                        updateProduct((SingleProduct) p);
+                    }
+                    break;
             }
         });
     }
@@ -438,7 +450,7 @@ public class ProductsList extends AppCompatActivity {
                     };
 
                     new AlertDialog.Builder(this)
-                            .setMessage(getString(R.string.dialog_body_main_consume))
+                            .setMessage(getString(R.string.dialog_body_consume))
                             .setTitle(getString(R.string.dialog_title_consume))
                             .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
                             .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
@@ -464,7 +476,7 @@ public class ProductsList extends AppCompatActivity {
                     };
 
                     new AlertDialog.Builder(this)
-                            .setMessage(getString(R.string.dialog_body_main_unconsume))
+                            .setMessage(getString(R.string.dialog_body_unconsume))
                             .setTitle(getString(R.string.dialog_title_unconsume))
                             .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
                             .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
@@ -534,7 +546,7 @@ public class ProductsList extends AppCompatActivity {
                     };
 
                     new AlertDialog.Builder(this)
-                            .setMessage(getString(R.string.dialog_body_main_delete))
+                            .setMessage(getString(R.string.dialog_body_delete))
                             .setTitle(getString(R.string.dialog_title_delete))
                             .setPositiveButton(getString(R.string.dialog_button_confirm), dialogClickListener)
                             .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
@@ -553,7 +565,7 @@ public class ProductsList extends AppCompatActivity {
             View child = ((ViewGroup)view.getParent()).getChildAt(i);
             if(child.getId()==R.id.quantityField && child instanceof TextView){
                 found = true;
-                TextUtils.editQuantityByButtons((Button)view, (TextView)child, EditProduct.MIN_QUANTITY, EditProduct.MAX_QUANTITY);
+                TextUtils.editQuantityByButtons((Button)view, (TextView)child, ProductForm.MIN_QUANTITY, EditProduct.MAX_QUANTITY);
             }
         }
     }
@@ -725,7 +737,7 @@ public class ProductsList extends AppCompatActivity {
     public void editProduct(Product p) {
         if (p instanceof SingleProduct){
             Intent intent = new Intent(this, EditProduct.class);
-            intent.putExtra(EditProduct.ID, ((SingleProduct)p).getId()); // TODO Passare l'intero prodotto ?
+            intent.putExtra(EditProduct.PRODUCT_TO_EDIT, (SingleProduct)p);
             //intent.putExtra("filter", currentFilterId);
             intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
             if(action==Action.CONSUMED)
@@ -742,7 +754,7 @@ public class ProductsList extends AppCompatActivity {
 
     public void updateProduct(SingleProduct p) {
         Intent intent = new Intent(this, EditProduct.class);
-        intent.putExtra(EditProduct.ID, p.getId());
+        intent.putExtra(EditProduct.PRODUCT_TO_EDIT, p);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.UPDATE);
         startActivityForResult(intent, EDIT_PRODUCT_REQUEST);

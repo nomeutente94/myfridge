@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.example.robertotarullo.myfridge.activity.ProductsList;
+import com.example.robertotarullo.myfridge.activity.MainActivity;
 import com.example.robertotarullo.myfridge.bean.Pack;
 import com.example.robertotarullo.myfridge.bean.Product;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
@@ -35,9 +35,9 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
     private Context context;
     private View optionsButton;
 
-    private ProductsList.Action action;
+    private MainActivity.Action action;
 
-    public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed, ProductsList.Action action) {
+    public ProductsListAdapter(Context context, int resourceId, List<Product> products, Boolean showConsumed, MainActivity.Action action) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
         this.showConsumed = showConsumed;
@@ -69,7 +69,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
 
 
 
-        if (action== ProductsList.Action.PICK || action== ProductsList.Action.MANAGE) {
+        if (action== MainActivity.Action.PICK || action== MainActivity.Action.MANAGE) {
             setDescription();
 
             // Codice per togliere il margine
@@ -79,7 +79,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
             elementInfoBlock.setLayoutParams(params);
 
             dataTextView.setVisibility(View.GONE);
-            if (action== ProductsList.Action.PICK)
+            if (action== MainActivity.Action.PICK)
                 optionsButton.setVisibility(View.GONE);
             else {
                 optionsButton.setTag(position);
@@ -130,7 +130,7 @@ public class ProductsListAdapter extends ArrayAdapter<Product> {
         } else {
             optionsButton.setVisibility(View.INVISIBLE);
 
-            if(action== ProductsList.Action.PICK || action== ProductsList.Action.MANAGE){
+            if(action== MainActivity.Action.PICK || action== MainActivity.Action.MANAGE){
                 if(p.isPackaged())
                     typeTextView.setText("Confezionato");
                 else

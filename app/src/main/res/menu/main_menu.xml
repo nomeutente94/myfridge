@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/showConsumed"
-        android:title="@string/menu_main_consumed" />
-    <item
-        android:id="@+id/productsDb"
-        android:title="Database prodotti" />
-    <item
         android:id="@+id/consume"
         android:title="Consuma" />
-    <item
-        android:id="@+id/delete"
-        android:title="Elimina prodotto" />
     <item
         android:id="@+id/restore"
         android:title="Ripristina" />
     <item
         android:id="@+id/reset"
-        android:title="Resetta stato..." />
+        android:title="Resetta campi..." />
+    <item
+        android:id="@+id/delete"
+        android:title="Elimina" />
     <item
         android:id="@+id/fillFromInsertedProduct"
         android:enabled="false"

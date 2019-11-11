@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.robertotarullo.myfridge.adapter.CartListAdapter;
+import com.example.robertotarullo.myfridge.bean.ProductForm;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.database.ProductDatabase;
@@ -37,7 +38,7 @@ public class Cart extends AppCompatActivity {
 
     // Liste utilizzate
     private ArrayList<SingleProduct> cartProducts = new ArrayList<>(); // Lista dei prodotti inseriti nel carrello
-    private ArrayList<CartProduct> cartProductsToDisplay = new ArrayList<>(); // Lista mostrata all'utente
+    private ArrayList<ProductForm> cartProductsToDisplay = new ArrayList<>(); // Lista mostrata all'utente
 
     // Riferimenti a elementi della view
     private ListView listView; // View della lista di prodotti attualmente presenti nel carrello
@@ -103,15 +104,15 @@ public class Cart extends AppCompatActivity {
         Intent intent = new Intent(this, EditProduct.class);
         intent.putExtra(EditProduct.ACTION, EditProduct.Action.EDIT);
         intent.putExtra(EditProduct.ACTION_TYPE, EditProduct.ActionType.SHOPPING);
-        intent.putExtra(EditProduct.QUANTITY, cartProductsToDisplay.get(position).quantity);
-        intent.putExtra(EditProduct.PRODUCT_TO_EDIT, cartProductsToDisplay.get(position).product);
+        intent.putExtra(EditProduct.QUANTITY, cartProductsToDisplay.get(position).getQuantity()); // TODO passare direttamente l'oggetto productForm?
+        intent.putExtra(EditProduct.PRODUCT_TO_EDIT, cartProductsToDisplay.get(position).getProduct());
         intent.putExtra(EditProduct.SUGGESTIONS, cartProducts);
         startActivityForResult(intent, EDIT_REQUEST);
     }
 
     // Elimina la voce relativa al pulsante premuto
     public void deleteProduct(View view){
-        CartProduct cartProduct = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
+        ProductForm cartProduct = productsListAdapter.getItem(Integer.parseInt(view.getTag().toString()));
 
         if(cartProduct!=null){
             DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
@@ -133,7 +134,7 @@ public class Cart extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(msg)
                     .setTitle(getString(R.string.dialog_title_delete))
-                    .setPositiveButton(getString(R.string.dialog_button_remove), dialogClickListener)
+                    .setPositiveButton(getString(R.string.dialog_button_delete), dialogClickListener)
                     .setNegativeButton(getString(R.string.dialog_button_discard), dialogClickListener)
                     .show();
         } else
@@ -195,11 +196,13 @@ public class Cart extends AppCompatActivity {
             total += cartProducts.get(i).getPrice();
             boolean alreadyFound = false;
             for(int j=0; j<cartProductsToDisplay.size() && !alreadyFound; j++){
-                if(cartProducts.get(i).equals(cartProductsToDisplay.get(j).product))
+                if(cartProducts.get(i).equals(cartProductsToDisplay.get(j).getProduct())) {
                     alreadyFound = true;
+                }
             }
-            if(!alreadyFound)
-                cartProductsToDisplay.add(new CartProduct(cartProducts.get(i), Collections.frequency(cartProducts, cartProducts.get(i))));
+            if(!alreadyFound) {
+                cartProductsToDisplay.add(new ProductForm(cartProducts.get(i), Collections.frequency(cartProducts, cartProducts.get(i))));
+            }
         }
 
         // Mostra la lista a schermo
@@ -207,16 +210,18 @@ public class Cart extends AppCompatActivity {
         listView.setAdapter(productsListAdapter);
 
         // Aggiorna il campo prezzo
-        if(total==0)
+        if(total==0) {
             totalPriceText.setText(getString(R.string.text_cart_totalPrice_empty));
-        else
-            totalPriceText.setText(getString(R.string.text_cart_totalPrice,PriceUtils.getFormattedPrice(total)));
+        } else {
+            totalPriceText.setText(getString(R.string.text_cart_totalPrice, PriceUtils.getFormattedPrice(total)));
+        }
 
         // Aggiorna la visibilità di noProductsWarning
-        if(listView.getAdapter().getCount()==0)
+        if(listView.getAdapter().getCount()==0) {
             noProductsWarning.setVisibility(View.VISIBLE);
-        else
+        } else {
             noProductsWarning.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -224,10 +229,10 @@ public class Cart extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ADD_REQUEST) {
             if (resultCode == RESULT_OK) {
-
                 // Aggungi il nuovo prodotto per il numero di volte specificato
-                for(int i=0; i<data.getIntExtra(QUANTITY, SingleProduct.DEFAULT_PIECES); i++)
-                    cartProducts.add((SingleProduct)data.getSerializableExtra(NEW_PRODUCT));
+                for(int i=0; i<data.getIntExtra(QUANTITY, SingleProduct.DEFAULT_PIECES); i++) {
+                    cartProducts.add((SingleProduct) data.getSerializableExtra(NEW_PRODUCT));
+                }
                 updateList();
             }
         } else if (requestCode == EDIT_REQUEST) {
@@ -238,11 +243,13 @@ public class Cart extends AppCompatActivity {
 
                 // Aggiungi o rimuovi prodotti nella loro posizione
                 if(newQuantity > oldQuantity){
-                    for(int i=0; i < newQuantity-oldQuantity; i++)
+                    for(int i=0; i < newQuantity-oldQuantity; i++) {
                         cartProducts.add(cartProducts.indexOf(oldProduct), oldProduct);
+                    }
                 } else if(newQuantity < oldQuantity){
-                    for(int i=0; i < oldQuantity-newQuantity; i++)
+                    for(int i=0; i < oldQuantity-newQuantity; i++) {
                         cartProducts.remove(oldProduct);
+                    }
                 }
 
                 // Applica le eventuali modifiche a tutti i prodotti
@@ -251,28 +258,8 @@ public class Cart extends AppCompatActivity {
                         cartProducts.set(i, (SingleProduct)data.getSerializableExtra(EDITED_PRODUCT));
                     }
                 }
-
                 updateList();
             }
-        }
-    }
-
-    // Rappresenta l'oggetto 'prodotto' nel carrello, con la relativa quantità
-    public class CartProduct {
-        private SingleProduct product;
-        private int quantity;
-
-        public SingleProduct getProduct(){
-            return product;
-        }
-
-        public int getQuantity(){
-            return quantity;
-        }
-
-        private CartProduct(SingleProduct product, int quantity){
-            this.product = product;
-            this.quantity = quantity;
         }
     }
 }

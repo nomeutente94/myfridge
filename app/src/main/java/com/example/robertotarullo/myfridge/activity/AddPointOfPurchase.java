@@ -13,6 +13,7 @@ import com.example.robertotarullo.myfridge.database.ProductDatabase;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 
+// TODO rifinire
 public class AddPointOfPurchase extends AppCompatActivity {
 
     private EditText nameField;

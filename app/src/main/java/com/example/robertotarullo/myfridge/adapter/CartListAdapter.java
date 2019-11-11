@@ -9,19 +9,20 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.activity.Cart;
+import com.example.robertotarullo.myfridge.bean.ProductForm;
 import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.R;
 import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
 import java.util.List;
 
-public class CartListAdapter extends ArrayAdapter<Cart.CartProduct> {
+public class CartListAdapter extends ArrayAdapter<ProductForm> {
     private LayoutInflater inflater;
-    private Cart.CartProduct p;
+    private ProductForm p;
     private TextView nameTextView, priceTextView;
     private Button deleteButton;
 
-    public CartListAdapter(Context context, int resourceId, List<Cart.CartProduct> products) {
+    public CartListAdapter(Context context, int resourceId, List<ProductForm> products) {
         super(context, resourceId, products);
         this.inflater = LayoutInflater.from(context);
     }

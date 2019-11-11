@@ -19,7 +19,7 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/consumeProduct"
+                android:id="@+id/consumeProductButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
@@ -30,21 +30,17 @@
             <LinearLayout
                 android:visibility="gone"
                 android:background="@android:drawable/dialog_holo_light_frame"
-                android:id="@+id/consumedCheckBoxBlock"
+                android:id="@+id/consumedBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="25dp">
 
-                <TextView
-                    android:id="@+id/consumedCheckBoxLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="È stato consumato?" />
-
                 <CheckBox
+                    android:textColor="#6e6e6e"
                     android:id="@+id/consumedCheckBox"
                     android:layout_width="wrap_content"
+                    android:text="È stato consumato?"
                     android:layout_height="wrap_content"/>
 
                 <LinearLayout
@@ -102,8 +98,7 @@
                     android:layout_height="wrap_content"
                     android:text="Quantità" />
 
-                <include
-                    layout="@layout/quantity_block"/>
+                <include layout="@layout/quantity_block"/>
 
             </LinearLayout>
 
@@ -381,23 +376,12 @@
                 android:orientation="vertical"
                 android:padding="25dp">
 
-                <LinearLayout
-                    android:id="@+id/packagedCheckBoxBlock"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/packagedCheckBoxLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="É un prodotto confezionato?" />
-
-                    <CheckBox
-                        android:id="@+id/packagedCheckBox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
+                <CheckBox
+                    android:textColor="#6e6e6e"
+                    android:text="É un prodotto confezionato?"
+                    android:id="@+id/packagedCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
                 <LinearLayout
                     android:background="@android:drawable/dialog_holo_light_frame"
@@ -407,23 +391,12 @@
                     android:orientation="vertical"
                     android:padding="25dp">
 
-                    <LinearLayout
-                        android:id="@+id/openedCheckBoxBlock"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/openedCheckBoxLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="É stato aperto?" />
-
-                        <CheckBox
-                            android:id="@+id/openedCheckBox"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
+                    <CheckBox
+                        android:textColor="#6e6e6e"
+                        android:text="É stato aperto?"
+                        android:id="@+id/openedCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
                     <LinearLayout
                         android:id="@+id/openingDateBlock"
@@ -470,22 +443,24 @@
 
             <LinearLayout
                 android:background="@android:drawable/dialog_holo_light_frame"
-                android:id="@+id/currentWeightBlock"
+                android:id="@+id/currentConsumptionBlock"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="25dp">
 
-                <TextView
-                    android:id="@+id/currentWeightFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Peso attuale (grammi)" />
-
                 <LinearLayout
+                    android:id="@+id/currentWeightBlock"
+                    android:visibility="gone"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/currentWeightFieldLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Peso attuale (grammi)" />
 
                     <EditText
                         android:id="@+id/currentWeightField"
@@ -496,16 +471,18 @@
                         android:layout_weight="1"/>
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/currentPiecesFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pezzi rimanenti" />
-
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:id="@+id/currentPiecesBlock"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent">
+
+                    <TextView
+                        android:id="@+id/currentPiecesFieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pezzi rimanenti" />
 
                     <EditText
                         android:id="@+id/currentPiecesField"
@@ -516,20 +493,21 @@
                         android:layout_weight="1"/>
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/currentPercentageFieldLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Consumazione (%)" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:id="@+id/currentPercentageBlock"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/currentPercentageFieldLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Consumazione (%)" />
 
                     <EditText
                         android:id="@+id/currentPercentageField"
-                        android:hint="100"
+                        android:text="100"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:enabled="false"
@@ -633,27 +611,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!--<LinearLayout
-                    android:id="@+id/noExpiryCheckboxBlock"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:paddingTop="11dp">
-
-                    <TextView
-                        android:id="@+id/noExpiryCheckboxLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Non scade mai" />
-
-                    <CheckBox
-                        android:id="@+id/noExpiryCheckbox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingRight="30px"/>
-                </LinearLayout>-->
-
-
                 <LinearLayout
                     android:id="@+id/expiryDateBlock"
                     android:layout_width="match_parent"
@@ -683,6 +640,7 @@
                             android:onClick="showDatePickerDialog"
                             android:tag="expiryDate" />
                         <CheckBox
+                            android:textColor="#6e6e6e"
                             android:id="@+id/noExpiryCheckbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -732,6 +690,7 @@
                             android:hint="0"
                             android:inputType="number" />
                         <CheckBox
+                            android:textColor="#6e6e6e"
                             android:id="@+id/noExpiryDaysCheckbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

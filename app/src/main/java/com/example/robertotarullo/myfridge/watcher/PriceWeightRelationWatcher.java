@@ -10,22 +10,29 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.robertotarullo.myfridge.R;
+import com.example.robertotarullo.myfridge.bean.SingleProduct;
 import com.example.robertotarullo.myfridge.utils.TextUtils;
 import com.example.robertotarullo.myfridge.utils.PriceUtils;
 
-import org.w3c.dom.Text;
-
 public class PriceWeightRelationWatcher implements TextWatcher {
+
+    private String PRICE_TAG, WEIGHT_TAG, PRICEPERKILO_TAG;
     private String type;
     private Button clearButton1, clearButton2;
     private EditText editText1, editText2, currentPercentageField;
-    private final String PRICE_TAG = "priceField", WEIGHT_TAG = "weightField", PRICEPERKILO_TAG = "pricePerKiloField";
     private SeekBar currentWeightSlider;
     private EditText currentWeightField;
-    private View currentWeightFieldLabel, currentPercentageFieldLabel;
+    private View currentWeightBlock, currentPercentageBlock;
     private TextView piecesField;
+    private String sliderTagCurrentWeight, sliderTagPieces, sliderTagPerentage;
 
     public PriceWeightRelationWatcher(String type, EditText editText1, EditText editText2, Button clearButton1, Button clearButton2, Activity activity){
+        this.PRICE_TAG = activity.getString(R.string.field_price_tag);
+        this.WEIGHT_TAG = activity.getString(R.string.field_weight_tag);
+        this.PRICEPERKILO_TAG = activity.getString(R.string.field_pricePerKilo_tag);
+        this.sliderTagCurrentWeight = activity.getString(R.string.currentweightslider_tag_weight);
+        this.sliderTagPieces = activity.getString(R.string.currentweightslider_tag_pieces);
+        this.sliderTagPerentage = activity.getString(R.string.currentweightslider_tag_percentage);
         this.type = type;
         this.editText1 = editText1;
         this.editText2 = editText2;
@@ -33,9 +40,9 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         this.clearButton1 = clearButton1;
         this.clearButton2 = clearButton2;
         this.currentWeightSlider = activity.findViewById(R.id.currentWeightSlider);
-        this.currentWeightFieldLabel = activity.findViewById(R.id.currentWeightFieldLabel);
+        this.currentWeightBlock = activity.findViewById(R.id.currentWeightBlock);
         this.currentPercentageField = activity.findViewById(R.id.currentPercentageField);
-        this.currentPercentageFieldLabel = activity.findViewById(R.id.currentPercentageFieldLabel);
+        this.currentPercentageBlock = activity.findViewById(R.id.currentPercentageBlock);
         this.piecesField = activity.findViewById(R.id.piecesField);
     }
 
@@ -51,11 +58,9 @@ public class PriceWeightRelationWatcher implements TextWatcher {
             if(type.equals(WEIGHT_TAG)) { // Campo peso
                 setWeight(0);
 
-                currentWeightFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contentente label + field
-                currentWeightField.setVisibility(View.GONE);
+                currentWeightBlock.setVisibility(View.GONE);
                 if(TextUtils.getInt(piecesField)==1){
-                    currentPercentageFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contenente label + field
-                    currentPercentageField.setVisibility(View.VISIBLE);
+                    currentPercentageBlock.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -83,11 +88,8 @@ public class PriceWeightRelationWatcher implements TextWatcher {
             if(type.equals(WEIGHT_TAG)) { // Se si tratta del campo peso modificalo
                 setWeight(TextUtils.getInt(s));
 
-                currentWeightFieldLabel.setVisibility(View.VISIBLE); // TODO controllare l'intero blocco contentente label + field
-                currentWeightField.setVisibility(View.VISIBLE);
-
-                currentPercentageFieldLabel.setVisibility(View.GONE); // TODO controllare l'intero blocco contenente label + field
-                currentPercentageField.setVisibility(View.GONE);
+                currentWeightBlock.setVisibility(View.VISIBLE);
+                currentPercentageBlock.setVisibility(View.GONE);
             }
 
             // Se si ha un campo non vuoto e abilitato e uno o non vuoto o disabilitato
@@ -103,53 +105,45 @@ public class PriceWeightRelationWatcher implements TextWatcher {
         }
     }
 
-    /**
-     * @param s è il campo modificato
-     * @param editText1 è il campo già compilato di cui si usa il valore
-     * @param editText2 è il campo di cui si vuole calcolare il valore
-     */
+    // s è il campo modificato, editText1 è il campo già compilato di cui si usa il valore, editText2 è il campo di cui si vuole calcolare il valore
     private void reflectToField(Editable s, EditText editText1, EditText editText2){
         float value = 0;
 
-        // Se si calcola weight...
-        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){
+        if(!type.equals(WEIGHT_TAG) && !editText1.getTag().equals(WEIGHT_TAG)){  // Se si calcola weight...
 
-            // price e pricePerKilo
-            if(type.equals(PRICE_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))
+            if(type.equals(PRICE_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG)) { // price e pricePerKilo
                 value = PriceUtils.getWeight(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
-
-            // pricePerKilo e price
-            else if(type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(PRICE_TAG))
+            } else if(type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(PRICE_TAG)) { // pricePerKilo e price
                 value = PriceUtils.getWeight(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
+            }
 
             // Cambia valore solo se diverso dal precedente, per evitare loop nel textwatcher
             if(!PriceUtils.getFormattedWeight(value).equals(PriceUtils.getFormattedWeight(TextUtils.getFloat(editText2)))) {
                 editText2.setText(PriceUtils.getFormattedWeight(value));
                 setWeight(Math.round(value));
             }
-
-        // Se si calcola prezzo o prezzo/kg...
-        } else {
+        } else { // Se si calcola prezzo o prezzo/kg...
 
             // weight e pricePerKilo -> price
-            if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG))
+            if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICEPERKILO_TAG)) {
                 value = PriceUtils.getPrice(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
-
+            }
             // pricePerKilo e weight -> price
-            else if (type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(WEIGHT_TAG))
+            else if (type.equals(PRICEPERKILO_TAG) && editText1.getTag().equals(WEIGHT_TAG)) {
                 value = PriceUtils.getPrice(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
-
+            }
             // price e weight -> pricePerKilo
-            else if (type.equals(PRICE_TAG) && editText1.getTag().equals(WEIGHT_TAG))
+            else if (type.equals(PRICE_TAG) && editText1.getTag().equals(WEIGHT_TAG)) {
                 value = PriceUtils.getPricePerKilo(TextUtils.getFloat(s), TextUtils.getFloat(editText1));
-
+            }
             // weight e price  -> pricePerKilo
-            else if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICE_TAG))
+            else if (type.equals(WEIGHT_TAG) && editText1.getTag().equals(PRICE_TAG)) {
                 value = PriceUtils.getPricePerKilo(TextUtils.getFloat(editText1), TextUtils.getFloat(s));
-
+            }
             // Cambia solo se il valore è diverso dal precedente, per evitare loop nel textwatcher
-            if(!PriceUtils.getFormattedPrice(value).equals(PriceUtils.getFormattedPrice(TextUtils.getFloat(editText2))))
+            if(!PriceUtils.getFormattedPrice(value).equals(PriceUtils.getFormattedPrice(TextUtils.getFloat(editText2)))) {
                 editText2.setText(PriceUtils.getFormattedPrice(value));
+            }
         }
     }
 
@@ -157,21 +151,21 @@ public class PriceWeightRelationWatcher implements TextWatcher {
     private void setWeight(int weight){
         if(weight==0){
             currentWeightField.setText("");
-            if(currentWeightSlider.getTag().toString().equals("currentWeight")){
+            if(currentWeightSlider.getTag().toString().equals(sliderTagCurrentWeight)){
                 // ripristina lo slide rispetto al valore percentuale
-                currentWeightSlider.setTag("percentage");
-                currentWeightSlider.setMax(100);
+                currentWeightSlider.setTag(sliderTagPerentage);
+                currentWeightSlider.setMax((int) SingleProduct.DEFAULT_PERCENTAGEQUANTITY);
                 currentWeightSlider.setProgress((int) Math.ceil(TextUtils.getFloat(currentPercentageField)));
             }
         } else {
-            if(currentWeightSlider.getTag().toString().equals("percentage"))
-                currentWeightSlider.setTag("currentWeight");
+            if(currentWeightSlider.getTag().toString().equals(sliderTagPerentage))
+                currentWeightSlider.setTag(sliderTagCurrentWeight);
 
-            // calcola il nuovo currentWeight rispetto al valore percentuale
-            float currentWeightAsFloat = (TextUtils.getFloat(currentPercentageField) * weight) / (float)100;
+            // Calcola il nuovo currentWeight rispetto al valore percentuale
+            float currentWeightAsFloat = (TextUtils.getFloat(currentPercentageField) * weight) / SingleProduct.DEFAULT_PERCENTAGEQUANTITY;
             int currentWeight = (int) Math.ceil(currentWeightAsFloat);
 
-            if(currentWeightSlider.getTag().toString().equals("currentWeight")) {
+            if(currentWeightSlider.getTag().toString().equals(sliderTagCurrentWeight)) {
                 currentWeightSlider.setMax(weight);
                 currentWeightSlider.setProgress(currentWeight);
             }

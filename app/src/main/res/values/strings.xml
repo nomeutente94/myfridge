@@ -1,29 +1,44 @@
 <resources>
-    <string name="app_name">MyFridge Test</string>
     <item name="warningEdit" type="id" />
     <item name="expirySwitchControl" type="id" />
 
     <!-- Generici -->
+
+    <string name="app_name">MyFridge Test</string>
 
     <string name="storage_default1">Dispensa</string>
     <string name="storage_default2">Frigorifero</string>
     <string name="storage_default3">Congelatore</string>
 
     <string name="dialog_title_warning">Attenzione</string>
+
     <string name="dialog_button_exit">Esci</string>
     <string name="dialog_button_discard">Annulla</string>
-    <string name="dialog_button_remove">Rimuovi</string>
+    <string name="dialog_button_delete">Elimina</string>
     <string name="dialog_button_add">Aggiungi</string>
     <string name="dialog_button_confirm">Conferma</string>
+    <string name="dialog_button_continue">Continua</string>
+
     <string name="dialog_title_delete">Conferma eliminazione</string>
     <string name="dialog_title_consume">Conferma consumazione</string>
     <string name="dialog_title_clone">Conferma duplicazione</string>
     <string name="dialog_title_unconsume">Conferma ripristino consumazione</string>
+    <string name="dialog_title_reset_consumption">Conferma ripristino stato consumazione</string>
+    <string name="dialog_title_reset_state">Conferma ripristino stato</string>
+
+    <string name="dialog_body_consume">Vuoi segnare il prodotto come consumato?</string>
+    <string name="dialog_body_unconsume">Vuoi segnare il prodotto come non consumato?</string>
+    <string name="dialog_body_delete">Vuoi eliminare definitivamente il prodotto?</string>
+    <string name="dialog_body_reset_consumption">Vuoi ripristinare lo stato di consumazione del prodotto? Verrano resettati tutti i campi relativi all\'apertura e alla consumazione.</string>
+    <string name="dialog_body_reset_state">Vuoi ripristinare lo stato del prodotto? Verrano resettati tutti i campi relativi allo stato (data di produzione, data di scadenza, consumazione)</string>
 
     <string name="success_delete">Prodotto rimosso</string>
     <string name="success_consume">Prodotto consumato</string>
     <string name="success_unconsume">Prodotto ripristinato</string>
+    <string name="success_update">Prodotto aggiornato</string>
+    <string name="success_edit">Prodotto modificato</string>
     <string name="success_clone">Aggiunte %1$d nuove copie del prodotto</string>
+
     <string name="error_generic">Errore generico</string>
     <string name="error_productNotFoundInList">Non è stato trovato alcun prodotto alla posizione in lista indicata</string>
     <string name="error_invalidProductType">Il tipo di prodotto non è compatibile con l\'azione che si vuole effettuare</string>
@@ -43,8 +58,43 @@
     <string name="text_cart_totalPrice_empty">€0,00</string>
     <string name="text_cart_totalPrice">€%1$s</string>
 
+    <!-- EditProduct -->
 
-    <!-- ProductsList -->
+    <string name="activity_title_editproduct_add">Aggiungi prodotto</string>
+    <string name="activity_title_editproduct_edit">Modifica prodotto</string>
+    <string name="activity_title_editproduct_update">Aggiorna prodotto</string>
+
+    <string name="dialog_body_editproduct_back">"Sono stati modificati uno o più campi, vuoi uscire comunque? Tutte le modifiche andranno perse.</string>
+
+    <string name="activity_button_add">Aggiungi</string>
+    <string name="activity_button_edit">Salva</string>
+
+    <string name="error_fields_name_empty">Il campo nome non può essere vuoto</string>
+
+    <string name="currentweightslider_tag_percentage">percentage</string>
+    <string name="currentweightslider_tag_pieces">pieces</string>
+    <string name="currentweightslider_tag_weight">currentWeight</string>
+
+    <string name="field_price_tag">priceField</string>
+    <string name="field_pricePerKilo_tag">pricePerKiloField</string>
+    <string name="field_weight_tag">weightField</string>
+
+    <string name="dialog_title_warning_suspiciousdates">Incoerenze rilevate</string>
+    <string name="dialog_body_warning_suspiciousdates">Sono state rilevate una o più incoerenze sui valori dei seguenti campi:</string>
+    <string name="dialog_body_warning_suspiciousdates_singleentry">- %1$s;</string>
+    <string name="dialog_body_warning_suspiciousdates_question">Sei sicuro di voler continuare comunque?</string>
+
+    <string name="label_storageConditionSpinner">Modalità di conservazione</string>
+    <string name="label_expiryDaysAfterOpening">Giorni entro cui consumare</string>
+    <string name="label_storageConditionSpinner_packaged">Modalità di conservazione prima dell\'apertura</string>
+    <string name="label_expiryDaysAfterOpening_packaged">Giorni entro cui consumare dopo l\'apertura</string>
+    <string name="hint_noExpiryDate">Mai</string>
+    <string name="hint_noValue"> - </string>
+    <string name="hint_noDate">Data non impostata</string>
+    <string name="spinner_noSelection">Scegli…</string>
+    <string name="spinner_noPointsOfPurchase">Nessun punto di acquisto</string>
+
+    <!-- MainActivity -->
 
     <string name="activity_title_main_default">MyFridge (test build)</string>
     <string name="activity_title_main_pick">Seleziona un prodotto</string>
@@ -58,9 +108,6 @@
     <string name="menu_main_settings">Impostazioni</string>
 
     <string name="dialog_body_main_pick">Eventuali dati presenti andranno persi, sei sicuro di voler autocompilare i campi dal prodotto selezionato?</string>
-    <string name="dialog_body_main_consume">Vuoi segnare il prodotto come consumato?</string>
-    <string name="dialog_body_main_unconsume">Vuoi segnare il prodotto come non consumato?</string>
-    <string name="dialog_body_main_delete">Vuoi eliminare definitivamente il prodotto?</string>
 
     <string name="menuitem_main_consume">Consuma</string>
     <string name="menuitem_main_update">Aggiorna</string>
